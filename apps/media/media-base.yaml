@@ -11,11 +11,11 @@ spec:
   destination:
     namespace: default
     name: in-cluster
-  project: media
+  project: apps
   syncPolicy:
     automated: { }
   source:
-    path: media/media-base
+    path: media/base
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main
 
