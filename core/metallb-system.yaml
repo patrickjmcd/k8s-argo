@@ -11,7 +11,7 @@ spec:
   destination:
     namespace: default
     name: in-cluster
-  project: core
+  project: core-components
   syncPolicy:
     automated: { }
   source:

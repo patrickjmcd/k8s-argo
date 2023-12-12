@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: core
+  name: apps
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -11,11 +11,11 @@ spec:
   destination:
     namespace: default
     name: in-cluster
-  project: core
+  project: apps
   syncPolicy:
     automated: { }
   source:
-    path: core
+    path: apps
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main
 
