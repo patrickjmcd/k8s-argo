@@ -19,7 +19,7 @@ spec:
     readOnly: false
     volumeHandle: overseerr-media-volume-id
     volumeAttributes:
-      server: ${NFS_ADDRESS}
+      server: 192.168.1.252
       share: /volume1/media/config/overseerr
 ---
 apiVersion: v1

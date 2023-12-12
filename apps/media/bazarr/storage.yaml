@@ -19,7 +19,7 @@ spec:
     readOnly: false
     volumeHandle: bazarr-media-volume-id
     volumeAttributes:
-      server: ${NFS_ADDRESS}
+      server: 192.168.1.252
       share: /volume1/media/config/bazarr
 ---
 apiVersion: v1
@@ -43,7 +43,7 @@ metadata:
   namespace: default
 provisioner: nfs.csi.k8s.io
 parameters:
-  server: ${NFS_ADDRESS}
+  server: 192.168.1.252
   share: /volume1/media/config/bazarr
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
