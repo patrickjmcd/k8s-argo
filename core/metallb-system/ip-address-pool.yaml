@@ -5,4 +5,4 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - ${METALLB_LB_RANGE}
+    - 192.168.8.200-192.168.8.210
