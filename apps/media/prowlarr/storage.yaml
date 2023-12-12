@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-config-prowlarr
+spec:
+  capacity:
+    storage: 200Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-config-prowlarr
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: prowlarr-media-volume-id
+    volumeAttributes:
+      server: ${NFS_ADDRESS}
+      share: /volume1/media/config/prowlarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-config-prowlarr-claim
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  volumeName: nfs-config-prowlarr
+  storageClassName: nfs-config-prowlarr
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-config-prowlarr
+  namespace: default
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: ${NFS_ADDRESS}
+  share: /volume1/media/config/prowlarr
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+mountOptions:
+  - hard
+  - nfsvers

@@ -1,0 +1,22 @@
+<Config>
+    <BindAddress>*</BindAddress>
+    <Port>8686</Port>
+    <SslPort>9898</SslPort>
+    <EnableSsl>False</EnableSsl>
+    <LaunchBrowser>True</LaunchBrowser>
+    <ApiKey>${LIDARR_API_KEY}</ApiKey>
+    <AuthenticationMethod>None</AuthenticationMethod>
+    <Branch>master</Branch>
+    <LogLevel>info</LogLevel>
+    <SslCertPath></SslCertPath>
+    <SslCertPassword></SslCertPassword>
+    <UrlBase></UrlBase>
+    <InstanceName>Lidarr</InstanceName>
+    <UpdateMechanism>Docker</UpdateMechanism>
+    <PostgresUser>lidarr</PostgresUser>
+    <PostgresPassword>lidarr</PostgresPassword>
+    <PostgresPort>5432</PostgresPort>
+    <PostgresHost>192.168.1.11</PostgresHost>
+    <PostgresMainDb>lidarr-main</PostgresMainDb>
+    <PostgresLogDb>lidarr-logs</PostgresLogDb>
+</Config>

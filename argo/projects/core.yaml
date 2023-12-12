@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: core-components
+  namespace: argocd
+  # Finalizer that ensures that project is not deleted until it is not referenced by any application
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Core Components
+  # Allow manifests to deploy from any Git repos
+  sourceRepos:
+    - https://github.com/patrickjmcd/k8s-argo
+  destinations:
+    - namespace: '*'
+      name: in-cluster
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: admin
+      description: Admin privileges to core-components
+      policies:
+        - p, proj:core-components:admin, applications, sync, *, allow
+        - p, proj:core-components:admin, applications, get, *, allow
+        - p, proj:core-components:admin, applications, delete, *, allow
+        - p, proj:core-components:admin, repositories, get, *, allow
+        - p, role:core-components:admin, clusters, get, *, allow

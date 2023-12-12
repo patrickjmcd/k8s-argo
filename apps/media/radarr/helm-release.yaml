@@ -1,0 +1,47 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: radarr
+  namespace: media
+spec:
+  timeout: 10m
+  interval: 5m
+  chart:
+    spec:
+      # renovate: registryUrl=https://k8s-at-home.com/charts/
+      chart: radarr
+      version: 16.3.2
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-at-home-charts
+        namespace: flux-system
+  values:
+    image:
+      repository: linuxserver/radarr
+      tag: version-4.4.4.7068
+      pullPolicy: IfNotPresent
+
+    env:
+      TZ: America/Chicago
+      PUID: 1026
+      PGID: 100
+
+    persistence:
+      # config:
+      #   enabled: true
+      #   emptyDir: false
+      #   mountPath: /config
+      #   existingClaim: "lh-radarr-pvc"
+      config:
+        type: configMap
+        mountPath: /config/config.xml
+        name: radarr-config
+        subPath: config.xml
+        enabled: true
+
+      media:
+        enabled: true
+        emptyDir: false
+        mountPath: /media
+        existingClaim: "nfs-media-claim"

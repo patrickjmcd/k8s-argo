@@ -1,0 +1,44 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sonarr
+  namespace: media
+spec:
+  timeout: 10m
+  interval: 5m
+  chart:
+    spec:
+      chart: sonarr
+      version: 16.3.2
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-at-home-charts
+        namespace: flux-system
+  values:
+    image:
+      repository: linuxserver/sonarr
+      tag: version-3.0.10.1567
+      pullPolicy: IfNotPresent
+
+    env:
+      TZ: America/Chicago
+
+    persistence:
+#      config:
+#        enabled: true
+#        emptyDir: false
+#        mountPath: /config
+#        existingClaim: nfs-config-sonarr-claim
+      config:
+        type: configMap
+        mountPath: /config/config.xml
+        name: sonarr-config
+        subPath: config.xml
+        enabled: true
+
+      media:
+        enabled: true
+        emptyDir: false
+        mountPath: /media
+        existingClaim: "nfs-media-claim"

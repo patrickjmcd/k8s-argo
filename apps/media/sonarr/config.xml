@@ -1,0 +1,22 @@
+<Config>
+    <LogLevel>Info</LogLevel>
+    <Port>8989</Port>
+    <UrlBase></UrlBase>
+    <BindAddress>*</BindAddress>
+    <SslPort>9898</SslPort>
+    <EnableSsl>False</EnableSsl>
+    <ApiKey>${SONARR_API_KEY}</ApiKey>
+    <AuthenticationMethod>External</AuthenticationMethod>
+    <Branch>main</Branch>
+    <LaunchBrowser>False</LaunchBrowser>
+    <SslCertHash></SslCertHash>
+    <UpdateMechanism>Docker</UpdateMechanism>
+    <InstanceName>Sonarr</InstanceName>
+    <SyslogPort>514</SyslogPort>
+    <PostgresUser>sonarr</PostgresUser>
+    <PostgresPassword>sonarr</PostgresPassword>
+    <PostgresPort>5432</PostgresPort>
+    <PostgresHost>192.168.1.11</PostgresHost>
+    <PostgresMainDb>sonarr-main</PostgresMainDb>
+    <PostgresLogDb>sonarr-logs</PostgresLogDb>
+</Config>

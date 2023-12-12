@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: cronjobs
+  namespace: argocd
+  # Finalizer that ensures that project is not deleted until it is not referenced by any application
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Cronjobs
+  # Allow manifests to deploy from any Git repos
+  sourceRepos:
+    - https://github.com/patrickjmcd/k8s-argo
+  destinations:
+    - namespace: '*'
+      name: in-cluster
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  roles:
+    - name: admin
+      description: Admin privileges to cronjobs
+      policies:
+        - p, proj:cronjobs:admin, applications, sync, *, allow
+        - p, proj:cronjobs:admin, applications, get, *, allow
+        - p, proj:cronjobs:admin, applications, delete, *, allow
+        - p, proj:cronjobs:admin, repositories, get, *, allow
+        - p, role:cronjobs:admin, clusters, get, *, allow

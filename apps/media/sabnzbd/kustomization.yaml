@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: sabnzbd-config
+    namespace: media
+    files:
+      - sabnzbd.ini
+
+images:
+  - name: sabnzbd
+    newName: linuxserver/sabnzbd
+    newTag: 4.1.0

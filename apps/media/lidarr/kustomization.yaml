@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: lidarr-config
+    namespace: media
+    files:
+      - config.xml
+
+images:
+  - name: lidarr
+    newName: linuxserver/lidarr
+    newTag: 1.4.5
