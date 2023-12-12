@@ -15,7 +15,7 @@ spec:
   syncPolicy:
     automated: { }
   source:
-    path: media/base
+    path: apps/media/base
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main
 
