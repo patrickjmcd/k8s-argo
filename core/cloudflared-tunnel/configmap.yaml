@@ -69,6 +69,14 @@ data:
     - hostname: youtubedl.pmcd.io
       service: http://youtubedl-material.media:17442
 
+    # ARGO
+    - hostname: argo.pmcd.io
+      service: http://argo-server.argocd:80
+
+    # PROXMOX
+    - hostname: proxmox.pmcd.io
+      service: http://192.168.1.10:8006
+
     # NETWORKING
     - hostname: longhorn.pmcd.io
       service: http://longhorn-frontend.networking:80
