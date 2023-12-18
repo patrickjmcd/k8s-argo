@@ -59,6 +59,14 @@ ingress:
   - hostname: lidarr.pmcd.io
     service: http://lidarr.media:80
 
+  # ARGO
+  - hostname: argo.pmcd.io
+    service: http://argo-server.argocd:80
+
+  # PROXMOX
+  - hostname: proxmox.pmcd.io
+    service: http://192.168.1.10:8006
+
   # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
   # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
   # in the connection from cloudflared to your local service, not from the internet to cloudflared.
