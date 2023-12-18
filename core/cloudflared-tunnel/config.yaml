@@ -61,7 +61,7 @@ ingress:
 
   # ARGO
   - hostname: argo.pmcd.io
-    service: http://argo-server.argocd:80
+    service: http://argocd-server.argocd:80
 
   # PROXMOX
   - hostname: proxmox.pmcd.io
