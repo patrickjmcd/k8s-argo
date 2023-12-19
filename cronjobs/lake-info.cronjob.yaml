@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: lake-info-fetcher
+  namespace: cron
+spec:
+  schedule: "4 * * * *"
+  successfulJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 120
+      template:
+        spec:
+          containers:
+            - name: table-rock-lake-info
+              image: ghcr.io/patrickjmcd/lake-info:v1.3.1
+              command: ["/ko-app/main.go", "scrape", "tablerock"]
+              env:
+                - name: ATLAS_CONNECTION_URI
+                  value: "mongodb://192.168.8.100:27017"
+          restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: dockerconfigjson-ghcr-io
