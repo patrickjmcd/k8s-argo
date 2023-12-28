@@ -9,12 +9,13 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
-    namespace: default
+    namespace: flux-system
     name: in-cluster
   project: core-components
-  #  syncPolicy:
-  #    automated: { }
+
   source:
-    path: core/csi-driver-nfs
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    targetRevision: main
+    chart: csi-driver-nfs
+    repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+    targetRevision: v4.2.0
+    helm:
+      releaseName: csi-driver-nfs
