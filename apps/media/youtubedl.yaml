@@ -15,11 +15,11 @@ spec:
   #  syncPolicy:
   #    automated: { }
   source:
-    chart: youtubedl
+    chart: youtubedl-material
     targetRevision: 4.4.2
     repoURL: https://k8s-at-home.com/charts/
     helm:
-      releaseName: youtubedl-material
+      releaseName: youtubedl
       valuesObject:
         image:
           repository: tzahi12345/youtubedl-material
