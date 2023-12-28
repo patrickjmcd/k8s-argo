@@ -12,10 +12,9 @@ spec:
     namespace: default
     name: in-cluster
   project: core-components
-  syncPolicy:
-    automated: { }
+  #  syncPolicy:
+  #    automated: { }
   source:
     path: core/system-upgrade
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main
-
