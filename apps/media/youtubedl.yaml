@@ -16,7 +16,7 @@ spec:
   #    automated: { }
   source:
     chart: youtubedl
-    version: 4.4.2
+    targetRevision: 4.4.2
     repoURL: https://k8s-at-home.com/charts/
     helm:
       releaseName: youtubedl
