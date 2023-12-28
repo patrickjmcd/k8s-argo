@@ -12,12 +12,13 @@ spec:
   sourceRepos:
     - https://github.com/patrickjmcd/k8s-argo
     - https://charts.external-secrets.io
+    - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
   destinations:
-    - namespace: '*'
+    - namespace: "*"
       name: in-cluster
   clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
+    - group: "*"
+      kind: "*"
   roles:
     - name: admin
       description: Admin privileges to core-components

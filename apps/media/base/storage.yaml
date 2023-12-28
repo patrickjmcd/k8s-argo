@@ -50,3 +50,40 @@ spec:
       storage: 3Gi
   volumeName: nfs-media
   storageClassName: nfs-media
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-config-youtubedl
+spec:
+  capacity:
+    storage: 200Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-config-youtubedl
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: youtubedl-media-volume-id
+    volumeAttributes:
+      server: 192.168.1.252
+      share: /volume1/config/youtubedl
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-config-youtubedl-claim
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  volumeName: nfs-config-youtubedl
+  storageClassName: nfs-config-youtubedl

@@ -15,6 +15,38 @@ spec:
   #  syncPolicy:
   #    automated: { }
   source:
-    path: apps/media/youtubedl
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    targetRevision: main
+    chart: youtubedl
+    version: 4.4.2
+    repoURL: https://k8s-at-home.com/charts/
+    helm:
+      releaseName: youtubedl
+      valuesObject:
+        image:
+          repository: tzahi12345/youtubedl-material
+          tag: "4.3.2"
+
+        env:
+          TZ: America/Chicago
+          UID: 1026
+          GID: 100
+
+        persistence:
+          media:
+            enabled: true
+            existingClaim: nfs-media-claim
+            subPath: video/youtube
+            mountPath: /app/video
+
+          config:
+            enabled: true
+            emptyDir: false
+            existingClaim: nfs-config-youtubedl-claim
+            mountPath: /app/appdata
+
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 0.1
+          limits:
+            memory: 1Gi
+            cpu: 2
