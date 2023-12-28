@@ -13,7 +13,6 @@ spec:
     - https://github.com/patrickjmcd/k8s-argo
     - https://charts.external-secrets.io
     - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-    - https://k8s-at-home.com/charts/
   destinations:
     - namespace: "*"
       name: in-cluster

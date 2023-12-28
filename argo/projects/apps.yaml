@@ -11,12 +11,13 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
     - https://github.com/patrickjmcd/k8s-argo
+    - https://k8s-at-home.com/charts/
   destinations:
-    - namespace: '*'
+    - namespace: "*"
       name: in-cluster
   clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
+    - group: "*"
+      kind: "*"
   roles:
     - name: admin
       description: Admin privileges to apps
