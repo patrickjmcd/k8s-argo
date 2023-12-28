@@ -19,7 +19,7 @@ spec:
     targetRevision: 4.4.2
     repoURL: https://k8s-at-home.com/charts/
     helm:
-      releaseName: youtubedl
+      releaseName: youtubedl-material
       valuesObject:
         image:
           repository: tzahi12345/youtubedl-material
