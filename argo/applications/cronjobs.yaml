@@ -12,8 +12,8 @@ spec:
     namespace: default
     name: in-cluster
   project: cronjobs
-  syncPolicy:
-    automated: {}
+  #syncPolicy:
+  #  automated: {}
   source:
     path: cronjobs
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
