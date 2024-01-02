@@ -13,4 +13,4 @@ configMapGenerator:
 images:
   - name: lidarr
     newName: linuxserver/lidarr
-    newTag: 1.4.5
+    newTag: 8.1.2135
