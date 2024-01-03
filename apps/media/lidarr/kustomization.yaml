@@ -4,12 +4,6 @@ resources:
   - deployment.yaml
   - service.yaml
 
-configMapGenerator:
-  - name: lidarr-config
-    namespace: media
-    files:
-      - config.xml
-
 images:
   - name: lidarr
     newName: linuxserver/lidarr
