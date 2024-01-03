@@ -75,7 +75,7 @@ spec:
           volumeMounts:
             - mountPath: /config/config/config.ini
               name: config
-              readOnly: true
+              readOnly: false
               subPath: config.ini
             - mountPath: /media
               name: media
