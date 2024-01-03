@@ -76,7 +76,7 @@ spec:
             - mountPath: /config/config/config.ini
               name: config
               readOnly: true
-              subPath: config.xml
+              subPath: config.ini
             - mountPath: /media
               name: media
 
