@@ -4,12 +4,6 @@ resources:
   - deployment.yaml
   - service.yaml
 
-configMapGenerator:
-  - name: radarr-config
-    namespace: media
-    files:
-      - config.xml
-
 images:
   - name: radarr
     newName: linuxserver/radarr

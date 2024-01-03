@@ -4,12 +4,6 @@ resources:
   - deployment.yaml
   - service.yaml
 
-configMapGenerator:
-  - name: sabnzbd-config
-    namespace: media
-    files:
-      - sabnzbd.ini
-
 images:
   - name: sabnzbd
     newName: linuxserver/sabnzbd
