@@ -1,0 +1,45 @@
+homebridge:
+  replicaCount: 1
+  image:
+    repository: oznu/homebridge
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  timezone: "America/Chicago"
+  puid: 1026
+  pgid: 100
+
+  env:
+    HOMEBRIDGE_INSECURE: 1
+    HOMEBRIDGE_CONFIG_UI: 1
+
+  service:
+    main:
+      ports:
+        http:
+          port: 8581
+
+  #    hostNetwork: true
+
+  persistence:
+    config:
+      enabled: true
+      existingClaim: nfs-config-homebridge-claim
+
+  probes:
+    liveness:
+      enabled: true
+      initialDelaySeconds: 60
+      failureThreshold: 5
+      timeoutSeconds: 10
+    readiness:
+      enabled: true
+      initialDelaySeconds: 60
+      failureThreshold: 5
+      timeoutSeconds: 10
+    startup:
+      enabled: true
+      failureThreshold: 30
+      periodSeconds: 10
+
+  resources: {}

@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homebridge
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: flux-system
+    name: in-cluster
+  project: apps
+
+  source:
+    chart: homebridge
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    path: apps/homeauto/homebridge/chart
+    targetRevision: 1.0.0
+    helm:
+      releaseName: homebridge

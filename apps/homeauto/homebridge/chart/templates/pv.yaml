@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-config-homebridge
+spec:
+  capacity:
+    storage: 1Gi # This size is used to match a volume to a tenents claim
+  accessModes:
+    - ReadWriteOnce # Access modes are defined below
+  persistentVolumeReclaimPolicy: Retain # Reclaim policies are defined below
+  storageClassName: nfs-config-homebridge
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: homebridge-volume-id
+    volumeAttributes:
+      server: ${NFS_ADDRESS}
+      share: /volume1/config/homebridge # Please change this to the relevant share
