@@ -19,5 +19,5 @@ spec:
     readOnly: false
     volumeHandle: homebridge-volume-id
     volumeAttributes:
-      server: ${NFS_ADDRESS}
+      server: 192.168.1.252
       share: /volume1/config/homebridge # Please change this to the relevant share
