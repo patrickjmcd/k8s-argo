@@ -14,7 +14,6 @@ spec:
   project: apps
 
   source:
-    chart: homebridge
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     path: apps/homeauto/homebridge/chart
     targetRevision: main
