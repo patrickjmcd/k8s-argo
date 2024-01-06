@@ -1,0 +1,11 @@
+apiVersion: v2
+name: prowlarr
+description: Prowlarr service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: prowlarr
+    version: 4.5.2
+    repository: https://k8s-at-home.com/charts/

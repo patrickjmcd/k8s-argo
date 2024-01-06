@@ -1,0 +1,20 @@
+image:
+  repository: linuxserver/prowlarr
+  tag: 1.10.5
+  pullPolicy: IfNotPresent
+
+env:
+  TZ: America/Chicago
+
+persistence:
+  config:
+    enabled: true
+    emptyDir: false
+    mountPath: /config
+    existingClaim: nfs-config-prowlarr-claim
+
+  media:
+    enabled: true
+    emptyDir: false
+    mountPath: /media
+    existingClaim: "nfs-media-claim"
