@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pgadmin
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: default
+    name: in-cluster
+  project: apps
+  #  syncPolicy:
+  #    automated: { }
+  source:
+    path: apps/pgadmin
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
