@@ -35,7 +35,7 @@ ingress:
   - hostname: ha.pmcd.dev
     service: http://home-assistant.homeauto:8123
   - hostname: homebridge.pmcd.io
-    service: http://homebridge.homeauto:8581
+    service: http://192.168.1.23:8581
   - hostname: frigate.pmcd.io
     service: http://frigate.homeauto:5000
 
