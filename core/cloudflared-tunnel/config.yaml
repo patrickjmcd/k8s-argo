@@ -60,7 +60,7 @@ ingress:
     service: http://lidarr.media:80
 
   # ARGO
-  - hostname: argo.pmcd.io
+  - hostname: argo.pmcd.dev
     service: https://argocd-server.argocd:443
     originRequest:
       noTLSVerify: true
