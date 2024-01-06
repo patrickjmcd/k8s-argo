@@ -1,0 +1,29 @@
+beets:
+  image:
+    repository: linuxserver/beets
+
+  replicaCount: 1
+
+  env:
+    TZ: America/Chicago
+    PUID: 1026
+    PGID: 100
+
+  persistence:
+    config:
+      enabled: true
+      mountPath: /config
+      existingClaim: nfs-config-beets-claim
+
+    media:
+      enabled: true
+      mountPath: /media
+      existingClaim: "nfs-media-claim"
+
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 0.1
+    limits:
+      memory: 1Gi
+      cpu: 2

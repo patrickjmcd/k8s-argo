@@ -1,0 +1,11 @@
+apiVersion: v2
+name: beets
+description: beets service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: beets
+    version: 5.4.2
+    repository: https://k8s-at-home.com/charts/
