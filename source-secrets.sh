@@ -1,0 +1,1 @@
+export $(cat secrets.env.json | jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]")
