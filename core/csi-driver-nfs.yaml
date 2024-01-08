@@ -9,7 +9,7 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
-    namespace: flux-system
+    namespace: kube-system
     name: in-cluster
   project: core-components
 
