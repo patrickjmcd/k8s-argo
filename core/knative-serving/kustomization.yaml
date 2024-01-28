@@ -4,4 +4,3 @@ resources:
   - knative-serving.yaml
   - namespace.yaml
   - peer-authentication.yaml
-  - https://github.com/knative/serving/releases/download/knative-v1.12.3/serving-default-domain.yaml
