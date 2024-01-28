@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - knative-serving.yaml
   - namespace.yaml
+  - https://github.com/knative/net-istio/releases/download/knative-v1.12.2/net-istio.yaml
