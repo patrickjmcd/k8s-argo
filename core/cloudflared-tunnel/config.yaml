@@ -24,6 +24,8 @@ ingress:
     service: http://table-rock-lake-level:80
   - hostname: pgadmin.pmcd.io
     service: http://pgadmin-pgadmin4:80
+  - hostname: pmcd.dev
+    service: http://pmcd.dev:80
 
   # FLUX SYSTEM
   - hostname: weave.pmcd.io
