@@ -1,10 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - deployment.yaml
-  - service.yaml
+- deployment.yaml
+- service.yaml
 
 images:
-  - name: table-rock-lake-level
-    newName: ghcr.io/patrickjmcd/table-rock-lake-level
-    newTag: v0.1.2
+- name: pmcd-dev
+  newName: ghcr.io/patrickjmcd/pmcd.dev
+  newTag: 0963494f0a27ebd266535be67dfaf7f07e36aec6
+- name: table-rock-lake-level
+  newName: ghcr.io/patrickjmcd/table-rock-lake-level
+  newTag: v0.1.2
