@@ -7,4 +7,4 @@ resources:
 images:
 - name: pmcd-dev
   newName: ghcr.io/patrickjmcd/pmcd.dev
-  newTag: v1.1.0
+  newTag: v1.2.0
