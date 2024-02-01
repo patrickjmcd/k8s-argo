@@ -7,7 +7,4 @@ resources:
 images:
 - name: pmcd-dev
   newName: ghcr.io/patrickjmcd/pmcd.dev
-  newTag: 9d71c70011d5aaac015468ecf26d9938cc68828a
-- name: table-rock-lake-level
-  newName: ghcr.io/patrickjmcd/table-rock-lake-level
-  newTag: v0.1.2
+  newTag: v1.0.1
