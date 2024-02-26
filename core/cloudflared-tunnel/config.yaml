@@ -30,6 +30,10 @@ ingress:
     service: http://pmcd-dev:80
   - hostname: tne.pmcd.dev
     service: http://tne-portal:80
+  - hostname: joshhawleygop.com
+    service: http://joshhawleygop:80
+  - hostname: govmikeparsons.com
+    service: http://govmikeparsons:80
 
   # FLUX SYSTEM
   - hostname: weave.pmcd.io
