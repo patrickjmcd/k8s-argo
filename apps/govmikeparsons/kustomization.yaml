@@ -7,4 +7,4 @@ resources:
 images:
 - name: govmikeparsons
   newName: ghcr.io/patrickjmcd/website-redirector
-  newTag: d31a64a
+  newTag: 6c2cda9
