@@ -19,6 +19,20 @@ spec:
         app.kubernetes.io/instance: sabnzbd
         app.kubernetes.io/name: sabnzbd
     spec:
+      initContainers:
+        - args:
+            - ' echo ''Setting configmap''  && cp /tmp/config/sabnzbd.ini /etc/config/sabnzbd.ini && chmod 777 /etc/config/sabnzbd.ini'
+          command:
+            - sh
+            - -c
+          image: busybox:latest
+          imagePullPolicy: Always
+          name: setup-config
+          volumeMounts:
+            - mountPath: /tmp/config
+              name: config
+            - mountPath: /etc/config
+              name: config-empty
       containers:
         - name: sabnzbd
           env:
@@ -71,14 +85,9 @@ spec:
               memory: 256Mi
 
           volumeMounts:
-            - mountPath: /config/sabnzbd.ini
-              name: config
-              readOnly: true
-              subPath: sabnzbd.ini
-            - mountPath: /config/sabnzbd.ini.bak
-              name: config
-              readOnly: true
-              subPath: sabnzbd.ini
+            - mountPath: /config
+              name: config-empty
+              readOnly: false
             - mountPath: /media
               name: media
 
@@ -90,6 +99,8 @@ spec:
             items:
               - key: sabnzbd.ini
                 path: sabnzbd.ini
+        - name: config-empty
+          emptyDir: {}
         - name: media
           persistentVolumeClaim:
             claimName: nfs-media-claim
