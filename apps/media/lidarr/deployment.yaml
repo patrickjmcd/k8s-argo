@@ -89,7 +89,6 @@ spec:
           volumeMounts:
             - mountPath: /config/config.xml
               name: config-empty
-              subPath: /etc/config/config.xml
             - mountPath: /media
               name: media
 
