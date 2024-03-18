@@ -87,7 +87,7 @@ spec:
               memory: 256Mi
 
           volumeMounts:
-            - mountPath: /config/config.xml
+            - mountPath: /config
               name: config-empty
             - mountPath: /media
               name: media
