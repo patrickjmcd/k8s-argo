@@ -30,7 +30,7 @@ spec:
           name: setup-config
           volumeMounts:
             - mountPath: /tmp/config/config.xml
-              name: lidarr-config
+              name: config
             - mountPath: /etc/config
               name: config-empty
       containers:
