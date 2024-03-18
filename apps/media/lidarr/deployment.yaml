@@ -21,7 +21,7 @@ spec:
     spec:
       initContainers:
         - args:
-            - ' echo ''Setting configmap''  && cp /tmp/config/config.xml /etc/config/config.xml'
+            - ' echo ''Setting configmap''  && cp /tmp/config/config.xml /etc/config/config.xml && chmod 777 /etc/config/config.xml'
           command:
             - sh
             - -c
@@ -89,6 +89,7 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: config-empty
+              readOnly: false
             - mountPath: /media
               name: media
 
