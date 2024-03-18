@@ -75,7 +75,7 @@ spec:
           volumeMounts:
             - mountPath: /config/config.xml
               name: config
-              readOnly: true
+              readOnly: false
               subPath: config.xml
             - mountPath: /media
               name: media
