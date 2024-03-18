@@ -19,6 +19,20 @@ spec:
         app.kubernetes.io/instance: lidarr
         app.kubernetes.io/name: lidarr
     spec:
+      initContainers:
+        - args:
+            - ' echo ''Setting configmap''  && cp /tmp/config/config.xml /etc/config/config.xml'
+          command:
+            - sh
+            - -c
+          image: busybox:latest
+          imagePullPolicy: Always
+          name: setup-config
+          volumeMounts:
+            - mountPath: /tmp/config/config.xml
+              name: lidar-config
+            - mountPath: /etc/config
+              name: config-empty
       containers:
         - name: lidarr
           env:
@@ -74,9 +88,8 @@ spec:
 
           volumeMounts:
             - mountPath: /config/config.xml
-              name: config
-              readOnly: false
-              subPath: config.xml
+              name: config-empty
+              subPath: /etc/config/config.xml
             - mountPath: /media
               name: media
 
@@ -88,6 +101,8 @@ spec:
             items:
               - key: config.xml
                 path: config.xml
+        - name: config-empty
+          emptyDir: {}
         - name: media
           persistentVolumeClaim:
             claimName: nfs-media-claim
