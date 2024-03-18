@@ -29,7 +29,7 @@ spec:
           imagePullPolicy: Always
           name: setup-config
           volumeMounts:
-            - mountPath: /tmp/config/config.xml
+            - mountPath: /tmp/config
               name: config
             - mountPath: /etc/config
               name: config-empty
