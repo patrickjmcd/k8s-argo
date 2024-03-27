@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: bigcapital
+    app.kubernetes.io/name: bigcapital
+  name: bigcapital
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: bigcapital
+    app.kubernetes.io/name: bigcapital
+  type: ClusterIP
