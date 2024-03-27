@@ -24,7 +24,7 @@ data:
   SYSTEM_DB_CHARSET: utf8
   TENANT_DB_NAME_PERFIX: bigcapital_tenant_
   REDIS_URL: ${REDIS_URL}
-  BASE_URL: http://example.com
+  BASE_URL: https://bigcapital.pmcd.dev
   JWT_SECRET: ${BIGCAPITAL_JWT_SECRET}
   MONGODB_DATABASE_URL: ${BIGCAPITAL_MONGODB_URL}
   AGENDASH_AUTH_USER: agendash

@@ -34,8 +34,6 @@ ingress:
     service: http://joshhawleygop:80
   - hostname: govmikeparsons.com
     service: http://govmikeparsons:80
-  - hostname: gotenberg.pmcd.io
-    service: http://gotenberg:80
   - hostname: bigcapital.pmcd.dev
     service: http://bigcapital:80
 
