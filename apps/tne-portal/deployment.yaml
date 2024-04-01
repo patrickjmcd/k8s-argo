@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: tne-api
-    app.kubernetes.io/name: tne-api
-  name: tne-api
+    app.kubernetes.io/instance: tne-portal
+    app.kubernetes.io/name: tne-portal
+  name: tne-portal
   namespace: default
 spec:
   progressDeadlineSeconds: 600
@@ -12,17 +12,17 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/instance: tne-api
-      app.kubernetes.io/name: tne-api
+      app.kubernetes.io/instance: tne-portal
+      app.kubernetes.io/name: tne-portal
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: tne-api
-        app.kubernetes.io/name: tne-api
+        app.kubernetes.io/instance: tne-portal
+        app.kubernetes.io/name: tne-portal
     spec:
       containers:
-        - name: tne-api
-          image: tne-api
+        - name: tne-portal
+          image: tne-portal
           env:
             - name: NEXT_PUBLIC_API_BASE_URL
               value: http://tne-api:80

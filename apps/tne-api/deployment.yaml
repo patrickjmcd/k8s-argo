@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: tne-portal
-    app.kubernetes.io/name: tne-portal
-  name: tne-portal
+    app.kubernetes.io/instance: tne-api
+    app.kubernetes.io/name: tne-api
+  name: tne-api
   namespace: default
 spec:
   progressDeadlineSeconds: 600
@@ -12,17 +12,17 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/instance: tne-portal
-      app.kubernetes.io/name: tne-portal
+      app.kubernetes.io/instance: tne-api
+      app.kubernetes.io/name: tne-api
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: tne-portal
-        app.kubernetes.io/name: tne-portal
+        app.kubernetes.io/instance: tne-api
+        app.kubernetes.io/name: tne-api
     spec:
       containers:
-        - name: tne-portal
-          image: tne-portal
+        - name: tne-api
+          image: tne-api
           imagePullPolicy: IfNotPresent
           env:
             - name: AWS_ACCESS_KEY_ID
