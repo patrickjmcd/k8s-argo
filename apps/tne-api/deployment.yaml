@@ -37,24 +37,12 @@ spec:
                   name: awssm-secret
             - name: AWS_REGION
               value: us-east-1
-          livenessProbe:
-            failureThreshold: 3
-            periodSeconds: 10
-            successThreshold: 1
-            tcpSocket:
-              port: http
-            timeoutSeconds: 1
+
           ports:
             - containerPort: 8080
               name: http
               protocol: TCP
-          readinessProbe:
-            failureThreshold: 3
-            periodSeconds: 10
-            successThreshold: 1
-            tcpSocket:
-              port: http
-            timeoutSeconds: 1
+
           resources:
             limits:
               cpu: 1000m
@@ -66,8 +54,22 @@ spec:
             failureThreshold: 30
             periodSeconds: 5
             successThreshold: 1
-            tcpSocket:
-              port: http
+            grpc:
+              port: 8080
+            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            grpc:
+              port: 8080
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            grpc:
+              port: 8080
             timeoutSeconds: 1
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
