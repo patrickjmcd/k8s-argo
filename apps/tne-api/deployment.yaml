@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: gotenberg
-    app.kubernetes.io/name: gotenberg
-  name: gotenberg
+    app.kubernetes.io/instance: tne-portal
+    app.kubernetes.io/name: tne-portal
+  name: tne-portal
   namespace: default
 spec:
   progressDeadlineSeconds: 600
@@ -12,29 +12,30 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/instance: gotenberg
-      app.kubernetes.io/name: gotenberg
+      app.kubernetes.io/instance: tne-portal
+      app.kubernetes.io/name: tne-portal
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: gotenberg
-        app.kubernetes.io/name: gotenberg
+        app.kubernetes.io/instance: tne-portal
+        app.kubernetes.io/name: tne-portal
     spec:
-      securityContext:
-        runAsUser: 1001
       containers:
-        - name: gotenburg
-          image: gotenberg/gotenberg:7
+        - name: tne-portal
+          image: tne-portal
           imagePullPolicy: IfNotPresent
+
           livenessProbe:
             failureThreshold: 3
             periodSeconds: 10
             successThreshold: 1
             tcpSocket:
-              port: http
+              port: 3000
             timeoutSeconds: 1
+
           ports:
             - containerPort: 3000
+              hostPort: 3000
               name: http
               protocol: TCP
           readinessProbe:
@@ -42,7 +43,7 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             tcpSocket:
-              port: http
+              port: 3000
             timeoutSeconds: 1
           resources:
             limits:
@@ -56,12 +57,10 @@ spec:
             periodSeconds: 5
             successThreshold: 1
             tcpSocket:
-              port: http
+              port: 3000
             timeoutSeconds: 1
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-      nodeSelector:
-        kubernetes.io/arch: amd64
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-registry-cred

@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: tne-portal
-    app.kubernetes.io/name: tne-portal
-  name: tne-portal
+    app.kubernetes.io/instance: tne-api
+    app.kubernetes.io/name: tne-api
+  name: tne-api
   namespace: default
 spec:
   progressDeadlineSeconds: 600
@@ -12,30 +12,30 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/instance: tne-portal
-      app.kubernetes.io/name: tne-portal
+      app.kubernetes.io/instance: tne-api
+      app.kubernetes.io/name: tne-api
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: tne-portal
-        app.kubernetes.io/name: tne-portal
+        app.kubernetes.io/instance: tne-api
+        app.kubernetes.io/name: tne-api
     spec:
       containers:
-        - name: tne-portal
-          image: tne-portal
+        - name: tne-api
+          image: tne-api
+          env:
+            - name: NEXT_PUBLIC_API_BASE_URL
+              value: http://tne-api:80
           imagePullPolicy: IfNotPresent
-
           livenessProbe:
             failureThreshold: 3
             periodSeconds: 10
             successThreshold: 1
             tcpSocket:
-              port: 3000
+              port: http
             timeoutSeconds: 1
-
           ports:
-            - containerPort: 3000
-              hostPort: 3000
+            - containerPort: 8080
               name: http
               protocol: TCP
           readinessProbe:
@@ -43,7 +43,7 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             tcpSocket:
-              port: 3000
+              port: http
             timeoutSeconds: 1
           resources:
             limits:
@@ -57,7 +57,7 @@ spec:
             periodSeconds: 5
             successThreshold: 1
             tcpSocket:
-              port: 3000
+              port: http
             timeoutSeconds: 1
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File

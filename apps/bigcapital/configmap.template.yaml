@@ -17,10 +17,6 @@ data:
   DB_ROOT_PASSWORD: root
   DB_CHARSET: utf8
   SYSTEM_DB_NAME: bigcapital_system
-  SYSTEM_DB_HOST: ${MARIADB_HOST}
-  SYSTEM_DB_USER: ${MARIADB_USER}
-  SYSTEM_DB_PASSWORD: ${MARIADB_PASSWORD}
-  SYSTEM_DB_ROOT_PASSWORD: root
   SYSTEM_DB_CHARSET: utf8
   TENANT_DB_NAME_PERFIX: bigcapital_tenant_
   REDIS_URL: ${REDIS_URL}
@@ -33,8 +29,8 @@ data:
   SIGNUP_ALLOWED_DOMAINS: ''
   SIGNUP_ALLOWED_EMAILS: ''
   API_RATE_LIMIT: 120,60,600
-  GOTENBERG_URL: http://gotenberg
-  GOTENBERG_DOCS_URL: http://gotenberg/public/
+  GOTENBERG_URL: http://gotenberg.default:80
+  GOTENBERG_DOCS_URL: http://gotenberg.default:80/public/
   EXCHANGE_RATE_SERVICE: open-exchange-rate
   OPEN_EXCHANGE_RATE_APP_ID: ''
   PLAID_ENV: sandbox
