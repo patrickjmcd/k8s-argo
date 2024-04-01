@@ -67,7 +67,7 @@ spec:
             periodSeconds: 5
             successThreshold: 1
             tcpSocket:
-              port: 3000
+              port: http
             timeoutSeconds: 1
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
