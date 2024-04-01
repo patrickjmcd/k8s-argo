@@ -7,5 +7,3 @@ resources:
 images:
 - name: tne-api
   newName: ghcr.io/the-network-effect/tne-api
-- name: tne-portal
-  newName: ghcr.io/the-network-effect/tne-api
