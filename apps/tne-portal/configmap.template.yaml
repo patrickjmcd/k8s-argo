@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tne-portal-config
+  namespace: default
+data:
+  NEXTAUTH_URL: https://tne.pmcd.dev
+  NEXTAUTH_SECRET: ${TNE_NEXTAUTH_SECRET}

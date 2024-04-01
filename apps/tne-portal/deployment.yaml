@@ -26,6 +26,9 @@ spec:
           env:
             - name: NEXT_PUBLIC_API_BASE_URL
               value: http://tne-api:80
+          envFrom:
+            - configMapRef:
+                name: tne-portal-config
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
