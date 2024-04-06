@@ -21,7 +21,7 @@ spec:
     spec:
       initContainers:
         - args:
-            - ' echo ''Setting configmap''  && cp /tmp/config/sabnzbd.ini /etc/config/sabnzbd.ini && chmod 777 /etc/config/sabnzbd.ini'
+            - " echo 'Setting configmap'  && cp /tmp/config/sabnzbd.ini /etc/config/sabnzbd.ini && chmod 777 /etc/config/sabnzbd.ini"
           command:
             - sh
             - -c
@@ -79,10 +79,10 @@ spec:
           resources:
             limits:
               cpu: 1000m
-              memory: 1024Mi
+              memory: 2000Mi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 500m
+              memory: 500Mi
 
           volumeMounts:
             - mountPath: /config
