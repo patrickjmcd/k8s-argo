@@ -8,4 +8,4 @@ resources:
 images:
   - name: sonarr
     newName: linuxserver/sonarr
-    newTag: 4.0.2-develop
+    newTag: 4.0.4-develop
