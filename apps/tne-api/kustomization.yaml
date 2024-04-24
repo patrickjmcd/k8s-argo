@@ -7,4 +7,4 @@ resources:
 images:
 - name: tne-api
   newName: ghcr.io/the-network-effect/tne-api
-  newTag: v1.2.1
+  newTag: v1.2.2
