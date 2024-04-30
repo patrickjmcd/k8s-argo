@@ -68,8 +68,8 @@ spec:
           terminationMessagePolicy: File
       volumes:
         - name: glance-config
-          persistentVolumeClaim:
-            claimName: glance-config
+          configMap:
+              name: glance-config
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-registry-cred

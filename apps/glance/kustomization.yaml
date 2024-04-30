@@ -3,9 +3,13 @@ kind: Kustomization
 resources:
 - deployment.yaml
 - service.yaml
-- storage.yaml
 
 images:
 - name: glance
   newName: glanceapp/glance
   newTag: latest
+
+configMapGenerator:
+  - name: glance-config
+    files:
+      - glance.yml
