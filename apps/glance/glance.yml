@@ -18,14 +18,12 @@ pages:
               - url: https://ishadeed.com/feed.xml
                 title: Ahmad Shadeed
 
-          - type: twitch-channels
-            channels:
-              - theprimeagen
-              - cohhcarnage
-              - christitustech
-              - blurbs
-              - asmongold
-              - jembawls
+          - type: monitor
+            cache: 1m
+            title: Services
+            sites:
+              - title: ArgoCD
+                url: https://argo.pmcd.dev
 
       - size: full
         widgets:
@@ -33,9 +31,13 @@ pages:
 
           - type: videos
             channels:
+              - UC4eYXhJI4-7wSWc8UNRwD4A # NPR Music
               - UCR-DXc1voovS8nhAvccRZhg # Jeff Geerling
               - UCv6J_jJa8GJqFwQNgNrMuww # ServeTheHome
               - UCOk-gHyjcWZNj3Br4oxwh0A # Techno Tim
+
+          - type: reddit
+            subreddit: kansascity
 
           - type: reddit
             subreddit: selfhosted
@@ -44,7 +46,7 @@ pages:
         widgets:
           - type: weather
             location: Kansas City, United States
-            unit: imperial
+            units: imperial
 
           - type: stocks
             stocks:
