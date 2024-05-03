@@ -24,22 +24,6 @@ spec:
         - env:
             - name: MONGODB_URI
               value: mongodb://192.168.8.100:27017/
-            - name: INFLUXDB_URL
-              valueFrom:
-                secretKeyRef:
-                  name: influxdb2-auth
-                  key: url
-            - name: INFLUXDB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: influxdb2-auth
-                  key: token
-            - name: INFLUXDB_ORG
-              valueFrom:
-                secretKeyRef:
-                  name: influxdb2-auth
-                  key: org
-          # image: ghcr.io/patrickjmcd/table-rock-lake-level:v0.0.3
           image: table-rock-lake-level
           imagePullPolicy: IfNotPresent
 
