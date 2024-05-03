@@ -22,6 +22,8 @@ spec:
     spec:
       containers:
         - env:
+            - name: MONGODB_URI
+              value: mongodb://192.168.8.100:27017/
             - name: INFLUXDB_URL
               valueFrom:
                 secretKeyRef:
