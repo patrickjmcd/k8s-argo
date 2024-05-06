@@ -21,9 +21,9 @@ spec:
         app.kubernetes.io/name: table-rock-lake-level
     spec:
       containers:
-        - env:
-            - name: MONGODB_URI
-              value: mongodb://192.168.8.100:27017/
+        - envFrom:
+            - secretRef:
+                name: mongo-secret
           image: table-rock-lake-level
           imagePullPolicy: IfNotPresent
 
