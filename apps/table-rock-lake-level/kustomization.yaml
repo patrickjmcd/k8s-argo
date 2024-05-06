@@ -7,4 +7,4 @@ resources:
 images:
 - name: table-rock-lake-level
   newName: ghcr.io/patrickjmcd/table-rock-lake-level
-  newTag: 718b7d2ea556d15489b1e6adeaf2e8cb819a17b6
+  newTag: 8bd8cb261f3d4b3fc67ab4080a329fd7399c83a0
