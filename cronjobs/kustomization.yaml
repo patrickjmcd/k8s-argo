@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - lake-info.cronjob.yaml
   - namespace.yaml
+  - external-secret.yaml

@@ -18,7 +18,12 @@ spec:
               command: ["/ko-app/main.go", "scrape", "tablerock"]
               env:
                 - name: ATLAS_CONNECTION_URI
-                  value: "mongodb://192.168.8.100:27017"
+                  valueFrom:
+                    secretKeyRef:
+                      name: mongo-secret
+                      key: MONGODB_URI
+
+
           restartPolicy: OnFailure
           imagePullSecrets:
             - name: dockerconfigjson-ghcr-io
