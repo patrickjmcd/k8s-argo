@@ -26,6 +26,8 @@ spec:
           env:
             - name: NEXT_PUBLIC_API_BASE_URL
               value: http://tne-api:80
+            - name: AUTH_TRUST_HOST
+              value: "true"
           envFrom:
             - configMapRef:
                 name: tne-portal-config

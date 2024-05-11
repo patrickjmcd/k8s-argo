@@ -37,8 +37,6 @@ spec:
                   name: awssm-secret
             - name: AWS_REGION
               value: us-east-1
-            - name: AUTH_TRUST_HOST
-              value: "true"
           args:
             - serve
 
