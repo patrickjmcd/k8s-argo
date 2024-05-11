@@ -37,6 +37,8 @@ spec:
                   name: awssm-secret
             - name: AWS_REGION
               value: us-east-1
+          args:
+            - serve
 
           ports:
             - containerPort: 8080
