@@ -10,6 +10,8 @@ pages:
             collapse-after: 3
             cache: 3h
             feeds:
+              - url: https://technotim.live/feed.xml
+                title: Techno Tim
               - url: https://ciechanow.ski/atom.xml
               - url: https://www.joshwcomeau.com/rss.xml
                 title: Josh Comeau
