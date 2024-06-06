@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   labels:
     app.kubernetes.io/instance: tne-portal
@@ -7,7 +7,6 @@ metadata:
   name: tne-portal
   namespace: default
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 3
   selector:
@@ -69,3 +68,8 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-registry-cred
+      strategy:
+        blueGreen:
+          autoPromotionEnabled: false
+          activeService: tne-portal
+          previewService: tne-portal-preview
