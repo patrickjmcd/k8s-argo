@@ -68,8 +68,8 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-registry-cred
-      strategy:
-        blueGreen:
-          autoPromotionEnabled: false
-          activeService: tne-portal
-          previewService: tne-portal-preview
+  strategy:
+    blueGreen:
+      autoPromotionEnabled: false
+      activeService: tne-portal
+      previewService: tne-portal-preview
