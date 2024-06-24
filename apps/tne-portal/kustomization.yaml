@@ -8,4 +8,4 @@ resources:
 images:
 - name: tne-portal
   newName: ghcr.io/the-network-effect/portal-app
-  newTag: 038306bac0b5daf842892b997f44e50db7b4bfff
+  newTag: f87fd8136c26dbc19ac2258b98412fd1af6e0a8a
