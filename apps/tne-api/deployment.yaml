@@ -24,6 +24,9 @@ spec:
         - name: tne-api
           image: tne-api
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: tne-api
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
