@@ -1,7 +1,7 @@
 pgadmin:
   image:
     repository: dpage/pgadmin4
-    tag: "8.8"
+    tag: "8.9"
     pullPolicy: IfNotPresent
 
   persistentVolume:
