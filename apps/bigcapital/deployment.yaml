@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: ghcr.io/patrickjmcd/bigcapital-webapp:latest
+          image: webapp
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -60,7 +60,7 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
         - name: server
-          image: ghcr.io/bigcapitalhq/server:latest
+          image: server
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

@@ -5,6 +5,9 @@ resources:
 - service.yaml
 
 images:
-- name: joshhawleygop
-  newName: ghcr.io/patrickjmcd/website-redirector
-  newTag: 6c2cda9
+- name: webapp
+  newName: ghcr.io/patrickjmcd/bigcapital-webapp
+  newTag: 2024-07-02.0
+- name: server
+  newName: ghcr.io/patrickjmcd/bigcapital-server
+  newTag: 2024-07-02.0
