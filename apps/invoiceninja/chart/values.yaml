@@ -656,7 +656,7 @@ invoiceninja:
     user: invoiceninja
     ## Database password
     ##
-    password: "invoiceninja"
+    password: ""
     ## Database name
     ##
     database: invoiceninja
