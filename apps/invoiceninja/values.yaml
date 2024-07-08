@@ -210,7 +210,7 @@ invoiceninja:
     image:
       registry: docker.io
       repository: bitnami/bitnami-shell
-      tag: "10"
+      tag: "11"
       pullPolicy: Always
       ## Optionally specify an array of imagePullSecrets.
       ## Secrets must be manually created in the namespace.
