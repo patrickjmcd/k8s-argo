@@ -646,7 +646,7 @@ invoiceninja:
     primary:
       nodeAffinityPreset:
         type: "hard"
-        key: "kubernetes.io/arch"
+        key: "beta.kubernetes.io/arch"
         values:
           - amd64
 
