@@ -87,7 +87,7 @@ spec:
 #              subPath: mysql
 #            - name: invoiceninja-storage
 #              mountPath: /data
-        - image: nginx:1
+        - image: nginx
           name: nginx
           ports:
             - name: http
