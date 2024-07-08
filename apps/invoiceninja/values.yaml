@@ -645,7 +645,7 @@ invoiceninja:
       # password: changeit
     primary:
       nodeSelector:
-        kubernetes.io/arch: amd64
+        beta.kubernetes.io/arch: amd64
 
   ## External Database Configuration
   ##
