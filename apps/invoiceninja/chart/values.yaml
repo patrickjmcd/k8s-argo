@@ -641,7 +641,7 @@ invoiceninja:
       ##
       username: invoiceninja
       database: invoiceninja
-      password: invoiceninja
+#      password: invoiceninja
 
   ## External Database Configuration
   ##
