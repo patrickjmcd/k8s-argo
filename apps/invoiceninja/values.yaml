@@ -153,19 +153,20 @@ invoiceninja:
     ## Node affinity type
     ## Allowed values: soft, hard
     ##
-    type: ""
+    type: "hard"
     ## Node label key to match
     ## E.g.
     ## key: "kubernetes.io/e2e-az-name"
     ##
-    key: ""
+    key: "kubernetes.io/arch"
     ## Node label values to match
     ## E.g.
     ## values:
     ##   - e2e-az1
     ##   - e2e-az2
     ##
-    values: []
+    values:
+      - amd64
 
   ## Affinity for pod assignment. Evaluated as a template.
   ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
