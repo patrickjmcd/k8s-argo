@@ -153,20 +153,19 @@ invoiceninja:
     ## Node affinity type
     ## Allowed values: soft, hard
     ##
-    type: "hard"
+    type: ""
     ## Node label key to match
     ## E.g.
     ## key: "kubernetes.io/e2e-az-name"
     ##
-    key: "kubernetes.io/arch"
+    key: ""
     ## Node label values to match
     ## E.g.
     ## values:
     ##   - e2e-az1
     ##   - e2e-az2
     ##
-    values:
-      - amd64
+    values: []
 
   ## Affinity for pod assignment. Evaluated as a template.
   ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
@@ -177,7 +176,8 @@ invoiceninja:
   ## Node labels for pod assignment. Evaluated as a template.
   ## ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/arch: amd64
 
   ## Tolerations for pod assignment. Evaluated as a template.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -644,11 +644,8 @@ invoiceninja:
       database: invoiceninja
       # password: changeit
     primary:
-      nodeAffinityPreset:
-        type: "hard"
-        key: "beta.kubernetes.io/arch"
-        values:
-          - amd64
+      nodeSelector:
+        kubernetes.io/arch: amd64
 
   ## External Database Configuration
   ##
