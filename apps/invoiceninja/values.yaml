@@ -643,9 +643,7 @@ invoiceninja:
       username: invoiceninja
       database: invoiceninja
       # password: changeit
-    primary:
-      nodeSelector:
-        beta.kubernetes.io/arch: amd64
+
 
   ## External Database Configuration
   ##
