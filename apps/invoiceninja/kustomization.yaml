@@ -13,3 +13,8 @@ images:
   - name: nginx
     newName: nginx
     newTag: 1.27.0
+
+configMapGenerator:
+  - name: invoiceninja-nginx-config
+    files:
+    - nginx.conf
