@@ -643,6 +643,12 @@ invoiceninja:
       username: invoiceninja
       database: invoiceninja
       # password: changeit
+    primary:
+      nodeAffinityPreset:
+        type: "hard"
+        key: "kubernetes.io/arch"
+        values:
+          - amd64
 
   ## External Database Configuration
   ##
