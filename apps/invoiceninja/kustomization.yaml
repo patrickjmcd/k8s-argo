@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-  - pvc.yaml
+  - pv.yaml
   - pvc.yaml
 
 images:
