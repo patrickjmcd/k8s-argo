@@ -176,8 +176,7 @@ invoiceninja:
   ## Node labels for pod assignment. Evaluated as a template.
   ## ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector:
-    kubernetes.io/arch: amd64
+  nodeSelector: {}
 
   ## Tolerations for pod assignment. Evaluated as a template.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
