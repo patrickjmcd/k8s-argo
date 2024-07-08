@@ -1,0 +1,118 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: invoiceninja
+  labels:
+    app: invoiceninja
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: invoiceninja
+  template:
+    metadata:
+      labels:
+        app: invoiceninja
+    spec:
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: ["sh", "-c", "chown -R 1500:82 /var/www/app/public /var/www/app/storage"]
+          volumeMounts:
+            - name: invoiceninja-shared
+              mountPath: /var/www/app/public
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/storage
+              subPath: storage
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/public/storage
+              subPath: public-storage
+      containers:
+        - image: invoiceninja
+          name: invoiceninja
+          ports:
+            - name: backend
+              containerPort: 9000
+          envFrom:
+            - configMapRef:
+                name: invoiceninja-env
+          volumeMounts:
+            - name: invoiceninja-shared
+              mountPath: /var/www/app/public
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/storage
+              subPath: storage
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/public/storage
+              subPath: public-storage
+        - image: invoiceninja
+          name: cron
+          command: [ 'sh', '/usr/local/bin/cron.sh' ]
+          envFrom:
+            - configMapRef:
+                name: invoiceninja-env
+          volumeMounts:
+            - name: invoiceninja-cron-config
+              mountPath: /usr/local/bin/cron.sh
+              subPath: cron.sh
+            - name: invoiceninja-shared
+              mountPath: /var/www/app/public
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/storage
+              subPath: storage
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/public/storage
+              subPath: public-storage
+#        - image: mysql:5
+#          name: mysql
+#          args: ['--default-authentication-plugin=mysql_native_password']
+#          env:
+#            - name: MYSQL_DATABASE
+#              valueFrom:
+#                configMapKeyRef:
+#                  name: invoiceninja-env
+#                  key: DB_DATABASE1
+#            - name: MYSQL_ROOT_PASSWORD
+#              valueFrom:
+#                configMapKeyRef:
+#                  name: invoiceninja-env
+#                  key: DB_PASSWORD1
+#          ports:
+#            - containerPort: 3306
+#              name: mysql
+#          volumeMounts:
+#            - name: invoiceninja-storage
+#              mountPath: /var/lib/mysql
+#              subPath: mysql
+#            - name: invoiceninja-storage
+#              mountPath: /data
+        - image: nginx:1
+          name: nginx
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: invoiceninja-shared
+              mountPath: /var/www/app/public
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/storage
+              subPath: storage
+            - name: invoiceninja-storage
+              mountPath: /var/www/app/public/storage
+              subPath: public-storage
+            - name: invoiceninja-nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: invoiceninja-shared
+          emptyDir: {}
+        - name: invoiceninja-storage
+          persistentVolumeClaim:
+            claimName: invoiceninja-data-pvc
+        - name: invoiceninja-cron-config
+          configMap:
+            name: invoiceninja-cron-config
+        - name: invoiceninja-nginx-config
+          configMap:
+            name: invoiceninja-nginx-config

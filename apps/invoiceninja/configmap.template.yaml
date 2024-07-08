@@ -1,0 +1,113 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: invoiceninja-env
+  labels:
+    app: invoiceninja
+data:
+  APP_ENV: 'production'
+  APP_DEBUG: 'false'
+  APP_URL: 'https://invoice.yourdomain.com'
+  APP_KEY: '${INVOICENINJA_APP_KEY}'
+  APP_CIPHER: 'AES-256-CBC'
+  TRUSTED_PROXIES: '*'
+  DB_TYPE: 'mariadb'
+  DB_STRICT: 'false'
+  DB_HOST1: '${MARIADB_HOST}'
+  DB_DATABASE1: 'ninja'
+  DB_USERNAME1: '${MARIADB_USER}'
+  DB_PASSWORD1: '${MARIADB_PASSWORD}'
+  MAIL_FROM_NAME: 'User Name'
+  MAIL_FROM_ADDRESS: 'finance@yourdomain.com'
+  MAIL_MAILER: 'smtp'
+  MAIL_PORT: '587'
+  MAIL_ENCRYPTION: 'TLS'
+  MAIL_HOST: 'smtp.mailgun.org'
+  MAIL_USERNAME: 'username'
+  MAIL_PASSWORD: 'password'
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: invoiceninja-cron-config
+  labels:
+    app: invoiceninja
+data:
+  cron.sh: |
+    #!/bin/sh
+
+    echo "Early Entry"
+
+    cleanup ()
+    {
+      kill -s SIGTERM $!
+      exit 0
+    }
+
+    trap cleanup SIGINT SIGTERM
+
+    while :
+    do
+      sleep 60 ; cd /var/www/app/ && php artisan schedule:run;
+    done
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: invoiceninja-nginx-config
+  labels:
+    app: invoiceninja
+data:
+  nginx.conf: |
+    user www-data;
+
+    events {
+      worker_connections 768;
+    }
+
+    http {
+        upstream backend {
+            server 127.0.0.1:9000;
+        }
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        gzip on;
+        gzip_disable "msie6";
+
+        server {
+            listen      80 default;
+            server_name _;
+
+            root /var/www/app/public;
+
+            index index.php;
+
+            charset utf-8;
+
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+
+            location = /favicon.ico { access_log off; log_not_found off; }
+            location = /robots.txt  { access_log off; log_not_found off; }
+
+            sendfile off;
+
+            location ~ \.php$ {
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                fastcgi_pass backend;
+                fastcgi_index index.php;
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_intercept_errors on;
+                fastcgi_param HTTPS 1;
+                fastcgi_buffer_size 16k;
+                fastcgi_buffers 4 16k;
+            }
+
+            location ~ /\.ht {
+                deny all;
+            }
+        }
+    }
