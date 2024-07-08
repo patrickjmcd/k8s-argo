@@ -38,6 +38,8 @@ ingress:
     service: http://govmikeparsons:80
   - hostname: bigcapital.pmcd.dev
     service: http://bigcapital:80
+  - hostname: invoiceninja.pmcd.dev
+    service: http://invoiceninja:80
   - hostname: glance.pmcd.io
     service: http://glance:80
 
