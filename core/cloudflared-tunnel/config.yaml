@@ -32,6 +32,8 @@ ingress:
     service: http://tne-portal:80
   - hostname: tne-preview.pmcd.dev
     service: http://tne-portal-preview:80
+  - hostname: cd-release-calendar.pmcd.dev
+    service: http://cd-release-calendar:80
   - hostname: joshhawleygop.com
     service: http://joshhawleygop:80
   - hostname: govmikeparsons.com

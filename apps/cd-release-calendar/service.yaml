@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: cd-release-calendar
+    app.kubernetes.io/name: cd-release-calendar
+  name: cd-release-calendar
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/instance: cd-release-calendar
+    app.kubernetes.io/name: cd-release-calendar
+  type: ClusterIP

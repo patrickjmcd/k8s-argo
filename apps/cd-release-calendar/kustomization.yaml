@@ -6,6 +6,6 @@ resources:
 - external-secret.yaml
 
 images:
-- name: tne-api
-  newName: ghcr.io/the-network-effect/tne-api
-  newTag: v1.6.0
+- name: cd-release-calendar
+  newName: ghcr.io/the-network-effect/release-calendar-api
+  newTag: v1.1.0
