@@ -8,4 +8,4 @@ resources:
 images:
 - name: cd-release-calendar
   newName: ghcr.io/the-network-effect/release-calendar-api
-  newTag: cors-test-10
+  newTag: v1.1.3
