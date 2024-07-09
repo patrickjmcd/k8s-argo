@@ -46,22 +46,25 @@ spec:
             failureThreshold: 30
             periodSeconds: 5
             successThreshold: 1
-            grpc:
-              port: 8080
+            httpGet:
+              port: http
+              path: /status
             timeoutSeconds: 1
           livenessProbe:
             failureThreshold: 3
             periodSeconds: 10
             successThreshold: 1
-            grpc:
-              port: 8080
+            httpGet:
+              port: http
+              path: /status
             timeoutSeconds: 1
           readinessProbe:
             failureThreshold: 3
             periodSeconds: 10
             successThreshold: 1
-            grpc:
-              port: 8080
+            httpGet:
+              port: http
+              path: /status
             timeoutSeconds: 1
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
