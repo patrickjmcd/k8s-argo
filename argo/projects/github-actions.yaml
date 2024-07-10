@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: github-actions-runner
+  namespace: argocd
+  # Finalizer that ensures that project is not deleted until it is not referenced by any application
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Applications
+  # Allow manifests to deploy from any Git repos
+  sourceRepos:
+    - https://github.com/patrickjmcd/k8s-argo
+    - https://k8s-at-home.com/charts/
+    - https://helm.runix.net
+    - ghcr.io/actions/actions-runner-controller-charts
+  destinations:
+    - namespace: "*"
+      name: in-cluster
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  roles:
+    - name: admin
+      description: Admin privileges to github-actions-runner
+      policies:
+        - p, proj:github-actions-runner:admin, applications, sync, *, allow
+        - p, proj:github-actions-runner:admin, applications, get, *, allow
+        - p, proj:github-actions-runner:admin, applications, delete, *, allow
+        - p, proj:github-actions-runner:admin, repositories, get, *, allow
+        - p, role:github-actions-runner:admin, clusters, get, *, allow

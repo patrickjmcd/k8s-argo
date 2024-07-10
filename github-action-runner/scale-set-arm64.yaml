@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-runner-set-arm64
+  namespace: argocd
+spec:
+  project: github-actions-runner
+  source:
+    chart: gha-runner-scale-set
+    repoURL: ghcr.io/actions/actions-runner-controller-charts  # note: the oci:// syntax is not included.
+    targetRevision: 0.9.3
+    helm:
+      releaseName: arc-runner-set-tne-arm64
+      valuesObject:
+        githubConfigUrl: https://github.com/the-network-effect
+        githubConfigSecret: github-app-secret
+        controllerServiceAccount:
+          namespace: arc-systems
+          name: github-actions-controller-gha-rs-controller
+        containerMode:
+          type: kubernetes
+          kubernetesModeWorkVolumeClaim:
+            accessModes:
+              - ReadWriteOnce
+            storageClassName: local-path
+            resources:
+              requests:
+                storage: 1Gi
+        template:
+          spec:
+            containers:
+              - name: runner
+                image: ghcr.io/actions/actions-runner:latest
+                command: [ "/home/runner/run.sh" ]
+                env:
+                  - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+                    value: "false"
+            nodeSelector:
+              kubernetes.io/arch: arm64
+  destination:
+    name: "in-cluster"
+    namespace: arc-systems
