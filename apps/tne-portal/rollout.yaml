@@ -30,6 +30,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: tne-portal-config
+            - secretRef:
+                name: tne-portal
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3

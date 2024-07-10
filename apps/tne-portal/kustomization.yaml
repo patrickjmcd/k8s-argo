@@ -4,6 +4,7 @@ resources:
 - rollout.yaml
 - service.yaml
 - service-preview.yaml
+- external-secret.yaml
 
 images:
 - name: tne-portal
