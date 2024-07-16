@@ -45,6 +45,9 @@ ingress:
   - hostname: glance.pmcd.io
     service: http://glance:80
 
+  - hostname: rancher.pmcd.io
+    service: http://rancher.cattle-system:80
+
   # FLUX SYSTEM
   - hostname: weave.pmcd.io
     service: http://ww-gitops-weave-gitops.flux-system:9001
