@@ -76,7 +76,7 @@ ingress:
   - hostname: overseerr.pmcd.io
     service: http://overseerr.media:5055
   - hostname: prowlarr.pmcd.io
-    service: http://prowlarr.media:9696
+    service: http://prowlarr.media:80
   - hostname: youtubedl.pmcd.io
     service: http://youtubedl-material.media:17442
   - hostname: lidarr.pmcd.io
