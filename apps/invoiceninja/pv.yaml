@@ -5,9 +5,9 @@ metadata:
   name: nfs-data-invoiceninja
 spec:
   capacity:
-    storage: 1000Mi
+    storage: 1Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: nfs-data-invoiceninja
   mountOptions:
