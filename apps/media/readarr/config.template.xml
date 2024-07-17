@@ -7,7 +7,7 @@
   <SslPort>6969</SslPort>
   <EnableSsl>False</EnableSsl>
   <LaunchBrowser>True</LaunchBrowser>
-  <ApiKey>291cdfc69c6a42d9a9b18b6ee6b7429c</ApiKey>
+  <ApiKey>${READARR_API_KEY}</ApiKey>
   <AuthenticationMethod>Forms</AuthenticationMethod>
   <Branch>master</Branch>
   <SslCertPath></SslCertPath>
