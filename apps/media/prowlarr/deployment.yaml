@@ -42,14 +42,8 @@ spec:
             timeoutSeconds: 1
 
           livenessProbe:
-            exec:
-              command:
-                - /usr/bin/env
-                - bash
-                - -c
-                - curl --fail localhost:9696/api/v3/system/status?apiKey=`IFS=\> && while
-                  read -d \< E C; do if [[ $E = "ApiKey" ]]; then echo $C; fi; done <
-                  /config/config.xml`
+            tcpSocket:
+              port: http
             failureThreshold: 5
             initialDelaySeconds: 60
             periodSeconds: 10
