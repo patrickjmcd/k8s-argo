@@ -15,7 +15,5 @@ spec:
 
   source:
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    path: apps/media/prowlarr/chart
+    path: apps/media/prowlarr
     targetRevision: main
-    helm:
-      releaseName: prowlarr
