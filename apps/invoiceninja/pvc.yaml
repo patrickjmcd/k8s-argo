@@ -9,5 +9,8 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  storageClassName: nfs-data-invoiceninja
+  volumeName: nfs-data-invoiceninja
   #storageClassName: manual
   #volumeName: invoiceninja-data
+

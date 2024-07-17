@@ -3,12 +3,12 @@
   <UrlBase></UrlBase>
   <UpdateMechanism>Docker</UpdateMechanism>
   <BindAddress>*</BindAddress>
-  <Port>9696</Port>
-  <SslPort>6969</SslPort>
+  <Port>8787</Port>
+  <SslPort>7878</SslPort>
   <EnableSsl>False</EnableSsl>
   <LaunchBrowser>True</LaunchBrowser>
   <ApiKey>${READARR_API_KEY}</ApiKey>
-  <AuthenticationMethod>Forms</AuthenticationMethod>
+  <AuthenticationMethod>External</AuthenticationMethod>
   <Branch>master</Branch>
   <SslCertPath></SslCertPath>
   <SslCertPassword></SslCertPassword>

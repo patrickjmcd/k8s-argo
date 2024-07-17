@@ -1,21 +1,24 @@
-# ---
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: invoiceninja-data
-#   labels:
-#     app: invoiceninja
-# spec:
-#   capacity:
-#     storage: 1Gi
-#   volumeMode: Filesystem
-#   accessModes:
-#     - ReadWriteOnce
-#   persistentVolumeReclaimPolicy: Retain
-#   storageClassName: manual
-#   claimRef:
-#     name: invoiceninja-data-pvc
-#     namespace: invoiceninja # <---------- Make sure this matches your deployment
-#   awsElasticBlockStore:
-#     volumeID: vol-0123456789abcdef
-#     fsType: ext4
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-data-invoiceninja
+spec:
+  capacity:
+    storage: 1000Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-data-invoiceninja
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: invoiceninja-media-volume-id
+    volumeAttributes:
+      server: 192.168.1.252
+      share: /volume1/data/invoiceninja
+
