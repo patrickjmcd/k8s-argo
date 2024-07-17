@@ -81,6 +81,8 @@ ingress:
     service: http://youtubedl-material.media:17442
   - hostname: lidarr.pmcd.io
     service: http://lidarr.media:80
+  - hostname: readarr.pmcd.io
+    service: http://readarr.media:80
 
   # ARGO
   - hostname: argo.pmcd.dev
