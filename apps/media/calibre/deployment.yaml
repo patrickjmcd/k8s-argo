@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: calibre
+    app.kubernetes.io/name: calibre
+  name: calibre
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: calibre
+      app.kubernetes.io/name: calibre
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: calibre
+        app.kubernetes.io/name: calibre
+    spec:
+      containers:
+        - name: calibre
+          env:
+            - name: TZ
+              value: America/Chicago
+
+          image: calibre
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8080
+              name: desktop-gui
+              protocol: TCP
+            - containerPort: 8081
+              name: webserver-gui
+              protocol: TCP
+
+          readinessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          livenessProbe:
+            tcpSocket:
+              port: http
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+
+          startupProbe:
+            failureThreshold: 30
+            periodSeconds: 5
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+          volumeMounts:
+            - mountPath: /media
+              name: media
+
+      restartPolicy: Always
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: nfs-media-claim
