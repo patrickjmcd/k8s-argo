@@ -7,6 +7,6 @@ resources:
   - external-secret.yaml
 
 images:
-  - name: tne-portal
+  - name: the-irish-aires
     newName: ghcr.io/the-network-effect/the-irish-aires
-    newTag: v1.9.14
+    newTag: test-1
