@@ -45,6 +45,11 @@ ingress:
   - hostname: glance.pmcd.io
     service: http://glance:80
 
+  - hostname: theirishaires-preview.pmcd.dev
+    service: http://the-irish-aires-preview:80
+  - hostname: theirishaires.pmcd.dev
+    service: http://the-irish-aires:80
+
   - hostname: rancher.pmcd.io
     service: http://rancher.cattle-system:80
 
