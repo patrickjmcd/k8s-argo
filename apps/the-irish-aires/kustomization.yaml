@@ -8,5 +8,5 @@ resources:
 
 images:
   - name: the-irish-aires
-    newName: ghcr.io/the-network-effect/the-irish-aires
+    newName: ghcr.io/patrickjmcd/the-irish-aires
     newTag: test-1
