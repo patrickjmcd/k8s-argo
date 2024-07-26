@@ -8,4 +8,4 @@ resources:
 images:
 - name: cd-release-calendar
   newName: ghcr.io/the-network-effect/feedback-api
-  newTag: v1.0.3
+  newTag: v1.0.4
