@@ -7,5 +7,5 @@ resources:
 
 images:
 - name: cd-release-calendar
-  newName: ghcr.io/the-network-effect/release-calendar-api
-  newTag: v1.1.4
+  newName: ghcr.io/the-network-effect/feedback-api
+  newTag: v1.0.0
