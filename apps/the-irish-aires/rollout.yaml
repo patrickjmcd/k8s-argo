@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/name: the-irish-aires
     spec:
       containers:
-        - name: the-irish-airetemplate_ksb8vlhs
+        - name: the-irish-aires
           image: the-irish-aires
           envFrom:
             - secretRef:
