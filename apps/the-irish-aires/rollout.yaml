@@ -20,11 +20,13 @@ spec:
         app.kubernetes.io/name: the-irish-aires
     spec:
       containers:
-        - name: the-irish-aires
+        - name: the-irish-airetemplate_ksb8vlhs
           image: the-irish-aires
           envFrom:
             - secretRef:
                 name: the-irish-aires-service-account-b64
+            - secretRef:
+                name: the-irish-aires
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3

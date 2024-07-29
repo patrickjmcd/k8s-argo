@@ -5,6 +5,7 @@ resources:
   - service.yaml
   - service-preview.yaml
   - external-secret.yaml
+  - external-secret-service-account.yaml
 
 images:
   - name: the-irish-aires
