@@ -8,4 +8,4 @@ resources:
 images:
 - name: table-rock-lake-level
   newName: ghcr.io/patrickjmcd/table-rock-lake-level
-  newTag: v0.2.10
+  newTag: v0.2.13
