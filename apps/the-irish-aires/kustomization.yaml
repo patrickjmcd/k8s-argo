@@ -10,4 +10,4 @@ resources:
 images:
   - name: the-irish-aires
     newName: ghcr.io/patrickjmcd/the-irish-aires
-    newTag: test-9
+    newTag: test-10
