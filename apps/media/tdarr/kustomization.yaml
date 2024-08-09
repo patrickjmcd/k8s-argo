@@ -12,7 +12,6 @@ images:
   - name: tdarr-server
     newName: ghcr.io/haveagitgat/tdarr
     newTag: 2.23.01
-
   - name: tdarr-node
     newName: ghcr.io/haveagitgat/tdarr_node
-    newTag: 2.23.01ß
+    newTag: 2.23.01
