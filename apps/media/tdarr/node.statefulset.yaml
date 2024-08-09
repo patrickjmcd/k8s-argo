@@ -43,6 +43,12 @@ spec:
               name: logs
             - mountPath: /media
               name: media
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 500Mi
+            limits:
+              memory: 1000Mi
       volumes:
         - name: logs
           emptyDir: {}
