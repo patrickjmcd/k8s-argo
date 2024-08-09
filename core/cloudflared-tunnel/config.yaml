@@ -89,7 +89,7 @@ ingress:
   - hostname: readarr.pmcd.io
     service: http://readarr.media:80
   - hostname: tdarr.pmcd.io
-    service: http://tdarr.media:80
+    service: http://tdarr-ui.media:80
 
   # ARGO
   - hostname: argo.pmcd.dev
