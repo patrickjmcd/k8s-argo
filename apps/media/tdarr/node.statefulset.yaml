@@ -45,4 +45,4 @@ spec:
             claimName: nfs-media-claim
         - name: config
           persistentVolumeClaim:
-            claimName: tdarr-config-config-pvc
+            claimName: nfs-config-config-pvc

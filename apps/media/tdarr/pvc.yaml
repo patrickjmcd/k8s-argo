@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: tdarr-config-server-pvc
+  name: nfs-config-tdarr-server
   namespace: media
 spec:
   accessModes:
@@ -16,7 +16,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: tdarr-config-config-pvc
+  name: nfs-config-tdarr-config
   namespace: media
 spec:
   accessModes:
