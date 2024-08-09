@@ -52,7 +52,7 @@ spec:
             - mountPath: /app/server
               name: tdarr-server
       volumes:
-        - name: media-library
+        - name: media
           persistentVolumeClaim:
             claimName: nfs-media-claim
         - name: tdarr-config
