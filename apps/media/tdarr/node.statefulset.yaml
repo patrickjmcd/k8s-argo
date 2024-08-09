@@ -6,14 +6,15 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/instance: tdarr-server
-      app.kubernetes.io/name: tdarr-server
+      app.kubernetes.io/instance: tdarr-node
+      app.kubernetes.io/name: tdarr-node
   serviceName: tdarr
   replicas: 2
   template:
     metadata:
       labels:
-        app: tdarr
+        app.kubernetes.io/instance: tdarr-node
+        app.kubernetes.io/name: tdarr-node
     spec:
       containers:
         - name: tdarr
