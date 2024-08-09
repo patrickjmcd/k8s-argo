@@ -15,7 +15,7 @@ spec:
   selector:
     app.kubernetes.io/instance: tdarr-server
     app.kubernetes.io/name: tdarr-server
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: Service
