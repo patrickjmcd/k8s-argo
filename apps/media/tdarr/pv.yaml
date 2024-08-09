@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-config-tdarr-server
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-config-tdarr-server
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: tdarr-server-media-volume-id
+    volumeAttributes:
+      server: 192.168.1.252
+      share: /volume1/config/tdarr/server
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-config-tdarr-config
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-config-tdarr-config
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: tdarr-config-media-volume-id
+    volumeAttributes:
+      server: 192.168.1.252
+      share: /volume1/config/tdarr/config

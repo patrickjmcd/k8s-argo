@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tdarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: tdarr-server
+      app.kubernetes.io/name: tdarr-server
+  serviceName: tdarr
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: tdarr
+    spec:
+      containers:
+        - name: tdarr
+          image: tdarr-node
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: internalNode
+              value: "true"
+            - name: nodeID
+              value: "internal"
+          ports:
+            - containerPort: 8265
+              name: ui
+            - containerPort: 8266
+              name: server
+          volumeMounts:
+            - mountPath: /app/configs
+              name: config
+            - mountPath: /app/logs
+              name: logs
+            - mountPath: /media
+              name: media
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: media
+          persistentVolumeClaim:
+            claimName: nfs-media-claim
+        - name: config
+          persistentVolumeClaim:
+            claimName: tdarr-config-config-pvc
