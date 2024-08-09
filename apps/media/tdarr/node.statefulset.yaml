@@ -24,7 +24,13 @@ spec:
             - name: internalNode
               value: "true"
             - name: nodeID
-              value: "internal"
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: nodeName
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           ports:
             - containerPort: 8265
               name: ui
