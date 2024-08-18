@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: baby-buddy
+    app.kubernetes.io/name: baby-buddy
+  name: baby-buddy
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+  selector:
+    app.kubernetes.io/instance: baby-buddy
+    app.kubernetes.io/name: baby-buddy
+  type: LoadBalancer
