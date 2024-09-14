@@ -14,4 +14,4 @@ images:
     newTag: 2.24.05
   - name: tdarr-node
     newName: ghcr.io/haveagitgat/tdarr_node
-    newTag: 2.24.05
+    newTag: 2.25.01
