@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: table-rock-lake-info
-              image: ghcr.io/patrickjmcd/lake-info:v1.3.1
+              image: ghcr.io/patrickjmcd/lake-info:v1.6.0
               command: ["/ko-app/main.go", "scrape", "tablerock"]
               env:
                 - name: ATLAS_CONNECTION_URI
@@ -22,6 +22,9 @@ spec:
                     secretKeyRef:
                       name: mongo-secret
                       key: MONGODB_URI
+              envFrom:
+                - secretRef:
+                    name: lake-info-secret
 
 
           restartPolicy: OnFailure
