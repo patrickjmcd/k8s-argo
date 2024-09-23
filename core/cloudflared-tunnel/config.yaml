@@ -92,6 +92,8 @@ ingress:
     service: http://tdarr-ui.media:80
   - hostname: babybuddy.pmcd.io
     service: http://baby-buddy:80
+  - hostname: babybuddy.pmcd.dev
+    service: http://baby-buddy:80
 
   # ARGO
   - hostname: argo.pmcd.dev
