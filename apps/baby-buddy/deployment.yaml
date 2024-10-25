@@ -77,3 +77,14 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-registry-cred
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: "mission-critical"
+                    operator: In
+                    values:
+                      - "true"
+              weight: 1
+
