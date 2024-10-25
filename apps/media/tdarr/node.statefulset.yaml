@@ -58,3 +58,12 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: nfs-config-tdarr-config
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: "allow-tdarr"
+                  operator: In
+                  values:
+                    - "true"
