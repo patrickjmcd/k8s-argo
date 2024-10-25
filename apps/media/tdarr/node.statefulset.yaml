@@ -9,7 +9,7 @@ spec:
       app.kubernetes.io/instance: tdarr-node
       app.kubernetes.io/name: tdarr-node
   serviceName: tdarr
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
