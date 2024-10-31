@@ -44,3 +44,26 @@ spec:
     volumeAttributes:
       server: 192.168.1.252
       share: /volume1/config/tdarr/config
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-tdarr-cache
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-tdarr-cache
+  mountOptions:
+    - hard
+    - nolock
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    readOnly: false
+    volumeHandle: tdarr-cache-volume-id
+    volumeAttributes:
+      server: 192.168.1.210
+      share: /mnt/usb/transcodecache

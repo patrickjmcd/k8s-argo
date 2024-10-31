@@ -26,4 +26,18 @@ spec:
       storage: 1Gi
   storageClassName: nfs-config-tdarr-config
   volumeName: nfs-config-tdarr-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-tdarr-cache
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: nfs-tdarr-cache
+  volumeName: nfs-tdarr-cache
 
