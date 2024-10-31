@@ -8,4 +8,4 @@ resources:
 images:
 - name: tne-api
   newName: ghcr.io/the-network-effect/tne-api
-  newTag: v1.18.4
+  newTag: v1.18.5
