@@ -37,10 +37,10 @@ spec:
               memory: 256Mi
 
           volumeMounts:
-            - mountPath: /config/config.yaml
+            - mountPath: /config/recyclarr.yaml
               name: config
               readOnly: true
-              subPath: config.yaml
+              subPath: recyclarr.yaml
 
       restartPolicy: Always
       volumes:
@@ -48,5 +48,5 @@ spec:
           configMap:
             name: recyclarr-config
             items:
-              - key: config.yaml
-                path: config.yaml
+              - key: recyclarr.yaml
+                path: recyclarr.yaml
