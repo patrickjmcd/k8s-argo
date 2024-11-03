@@ -8,4 +8,4 @@ resources:
 images:
   - name: readarr
     newName: linuxserver/readarr
-    newTag: 0.4.2-develop
+    newTag: 0.4.3-develop
