@@ -1,0 +1,8 @@
+sonarr:
+  main:
+    base_url: http://sonarr:80
+    api_key: ${SONARR_API_KEY}
+radarr:
+  main:
+    base_url: http://radarr:80
+    api_key: ${RADARR_API_KEY}
