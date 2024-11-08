@@ -12,6 +12,8 @@ spec:
     namespace: media
     name: in-cluster
   project: apps
+  syncPolicy:
+    automated: { }
 
   source:
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
