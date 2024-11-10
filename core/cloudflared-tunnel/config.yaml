@@ -80,6 +80,8 @@ ingress:
     service: http://beets.media:8337
   - hostname: overseerr.pmcd.io
     service: http://overseerr.media:5055
+  - hostname: request.pmcd.dev
+    service: http://overseerr.media:5055
   - hostname: prowlarr.pmcd.io
     service: http://prowlarr.media:80
   - hostname: youtubedl.pmcd.io
