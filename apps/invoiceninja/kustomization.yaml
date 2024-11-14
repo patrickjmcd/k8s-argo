@@ -9,7 +9,7 @@ resources:
 images:
   - name: invoiceninja
     newName: invoiceninja/invoiceninja
-    newTag: 5.10.44
+    newTag: 5.10.50
   - name: nginx
     newName: nginx
     newTag: 1.27.2
