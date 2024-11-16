@@ -12,8 +12,8 @@ spec:
     namespace: default
     name: in-cluster
   project: apps
-  #  syncPolicy:
-  #    automated: { }
+  syncPolicy:
+    automated: { }
   source:
     path: apps/baby-buddy
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
