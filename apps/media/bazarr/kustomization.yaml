@@ -7,4 +7,4 @@ resources:
 images:
   - name: bazarr
     newName: linuxserver/bazarr
-    newTag: 1.5.1-development
+    newTag: 1.5.2-development
