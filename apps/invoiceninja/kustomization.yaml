@@ -12,7 +12,7 @@ images:
     newTag: 5.11.36
   - name: nginx
     newName: nginx
-    newTag: 1.27.3
+    newTag: 1.27.4
 
 configMapGenerator:
   - name: invoiceninja-nginx-config
