@@ -41,4 +41,4 @@ spec:
         enabled: true
         emptyDir: false
         mountPath: /media
-        existingClaim: "nfs-media-claim"
+        existingClaim: smb-media-claim
