@@ -18,8 +18,6 @@ ingress:
   # The first rule proxies traffic to the httpbin sample Service defined in app.yaml
 
   # DEFAULT
-  - hostname: influxdb.pmcd.io
-    service: http://influxdb2:80
   - hostname: tablerocklakelevel.com
     service: http://table-rock-lake-level:80
   - hostname: pgadmin.pmcd.io
@@ -28,18 +26,10 @@ ingress:
     service: http://pmcd-dev:80
   - hostname: pmcd.dev
     service: http://pmcd-dev:80
-  - hostname: tne.pmcd.dev
-    service: http://tne-portal:80
-  - hostname: tne-preview.pmcd.dev
-    service: http://tne-portal-preview:80
-  - hostname: cd-release-calendar.pmcd.dev
-    service: http://cd-release-calendar:80
   - hostname: joshhawleygop.com
     service: http://joshhawleygop:80
   - hostname: govmikeparsons.com
     service: http://govmikeparsons:80
-  - hostname: bigcapital.pmcd.dev
-    service: http://bigcapital:80
   - hostname: invoiceninja.pmcd.dev
     service: http://invoiceninja:80
   - hostname: glance.pmcd.io
@@ -50,22 +40,9 @@ ingress:
   - hostname: theirishaires.pmcd.dev
     service: http://the-irish-aires:80
 
-  - hostname: rancher.pmcd.io
-    service: http://rancher.cattle-system:80
-
-  # FLUX SYSTEM
-  - hostname: weave.pmcd.io
-    service: http://ww-gitops-weave-gitops.flux-system:9001
-
   # HOME AUTOMATION
-  - hostname: ha.pmcd.io
-    service: http://home-assistant.homeauto:8123
-  - hostname: ha.pmcd.dev
-    service: http://home-assistant.homeauto:8123
   - hostname: homebridge.pmcd.io
     service: http://192.168.1.23:8581
-  - hostname: frigate.pmcd.io
-    service: http://frigate.homeauto:5000
 
   # MEDIA
   - hostname: bazarr.pmcd.io
@@ -85,27 +62,19 @@ ingress:
   - hostname: prowlarr.pmcd.io
     service: http://prowlarr.media:80
   - hostname: youtubedl.pmcd.io
-    service: http://youtubedl-material.media:17442
+    service: http://youtubedl-youtubedl-material.media:17442
   - hostname: lidarr.pmcd.io
     service: http://lidarr.media:80
   - hostname: readarr.pmcd.io
     service: http://readarr.media:80
   - hostname: tdarr.pmcd.io
     service: http://tdarr-ui.media:80
-  - hostname: babybuddy.pmcd.io
-    service: http://baby-buddy:80
-  - hostname: babybuddy.pmcd.dev
-    service: http://baby-buddy:80
 
   # ARGO
   - hostname: argo.pmcd.dev
     service: https://argocd-server.argocd:443
     originRequest:
       noTLSVerify: true
-
-  # PROXMOX
-  - hostname: proxmox.pmcd.io
-    service: http://192.168.1.10:8006
 
   # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
   # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
