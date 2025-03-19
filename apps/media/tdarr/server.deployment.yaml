@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: media
           persistentVolumeClaim:
-            claimName: nfs-media-claim
+            claimName: smb-media-claim
         - name: tdarr-config
           persistentVolumeClaim:
             claimName: nfs-config-tdarr-config

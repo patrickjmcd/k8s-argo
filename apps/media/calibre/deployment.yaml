@@ -77,4 +77,4 @@ spec:
       volumes:
         - name: media
           persistentVolumeClaim:
-            claimName: nfs-media-claim
+            claimName: smb-media-claim

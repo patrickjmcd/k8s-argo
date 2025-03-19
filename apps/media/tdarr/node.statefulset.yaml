@@ -56,7 +56,7 @@ spec:
           emptyDir: {}
         - name: media
           persistentVolumeClaim:
-            claimName: nfs-media-claim
+            claimName: smb-media-claim
         - name: config
           persistentVolumeClaim:
             claimName: nfs-config-tdarr-config
