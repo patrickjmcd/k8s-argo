@@ -33,7 +33,7 @@ spec:
         persistence:
           media:
             enabled: true
-            existingClaim: nfs-media-claim
+            existingClaim: smb-media-claim
             subPath: video/youtube
             mountPath: /app/video
 

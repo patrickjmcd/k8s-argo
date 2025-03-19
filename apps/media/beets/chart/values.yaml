@@ -18,7 +18,7 @@ beets:
     media:
       enabled: true
       mountPath: /media
-      existingClaim: "nfs-media-claim"
+      existingClaim: "smb-media-claim"
 
   resources:
     requests:
