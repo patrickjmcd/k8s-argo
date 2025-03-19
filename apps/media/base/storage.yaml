@@ -87,3 +87,29 @@ spec:
       storage: 200Mi
   volumeName: nfs-config-youtubedl
   storageClassName: nfs-config-youtubedl
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-media
+  namespace: media
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 2Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: media-smb-media-volume-id
+    volumeAttributes:
+      source: '//192.168.1.253/Media'
+    nodeStageSecretRef:
+      name: smb-creds
+      namespace: csi-smb-provisioner
