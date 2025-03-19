@@ -113,3 +113,17 @@ spec:
     nodeStageSecretRef:
       name: smb-creds
       namespace: csi-smb-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-media-claim
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Ti
+  volumeName: smb-media
+  storageClassName: ""
