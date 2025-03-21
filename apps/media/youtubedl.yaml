@@ -27,8 +27,6 @@ spec:
 
         env:
           TZ: America/Chicago
-          UID: 1026
-          GID: 100
 
         persistence:
           media:
