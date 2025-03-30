@@ -7,4 +7,4 @@ resources:
 images:
   - name: sonarr
     newName: linuxserver/sonarr
-    newTag: 4.0.13-develop
+    newTag: 4.0.14-develop
