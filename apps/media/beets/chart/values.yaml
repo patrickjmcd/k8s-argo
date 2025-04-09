@@ -13,7 +13,7 @@ beets:
     config:
       enabled: true
       mountPath: /config
-      existingClaim: nfs-config-beets-claim
+      existingClaim: smb-appconfig-beets-claim
 
     media:
       enabled: true

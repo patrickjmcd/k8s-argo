@@ -2,36 +2,39 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-config-beets
+  name: smb-appconfig-beets
+  namespace: media
 spec:
+  storageClassName: ""
   capacity:
     storage: 200Mi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs-config-beets
   mountOptions:
-    - hard
-    - nolock
-    - nfsvers=4.1
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
   csi:
-    driver: nfs.csi.k8s.io
+    driver: smb.csi.k8s.io
     readOnly: false
-    volumeHandle: beets-media-volume-id
+    volumeHandle: media-smb-beets-volume-id
     volumeAttributes:
-      server: 192.168.1.252
-      share: /volume1/media/config/beets
+      source: '//192.168.1.253/AppConfig/beets'
+    nodeStageSecretRef:
+      name: smb-creds
+      namespace: csi-smb-provisioner
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nfs-config-beets-claim
+  name: smb-appconfig-beets-claim
   namespace: media
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 200Mi
-  volumeName: nfs-config-beets
-  storageClassName: nfs-config-beets
+  volumeName: smb-appconfig-beets
+  storageClassName: ""

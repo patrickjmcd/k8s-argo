@@ -15,4 +15,4 @@ overseerr:
     config:
       enabled: true
       mountPath: /config
-      existingClaim: nfs-config-overseerr-claim
+      existingClaim: smb-appconfig-overseerr-claim

@@ -38,7 +38,7 @@ spec:
           config:
             enabled: true
             emptyDir: false
-            existingClaim: nfs-config-youtubedl-claim
+            existingClaim: smb-appconfig-youtubedl-claim
             mountPath: /app/appdata
 
         resources:
