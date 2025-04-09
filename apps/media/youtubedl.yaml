@@ -27,6 +27,8 @@ spec:
 
         env:
           TZ: America/Chicago
+          UID: "1000"
+          GID: "1000"
 
         persistence:
           media:
