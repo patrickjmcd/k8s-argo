@@ -1,9 +1,0 @@
-pgadmin:
-  image:
-    repository: dpage/pgadmin4
-    tag: "9.1"
-    pullPolicy: IfNotPresent
-
-  persistentVolume:
-    enabled: true
-    existingClaim: nfs-data-pgadmin-claim
