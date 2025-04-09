@@ -29,7 +29,7 @@ metadata:
 spec:
   storageClassName: ""
   capacity:
-    storage: 200Mi
+    storage: 20Gi
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
@@ -55,7 +55,7 @@ metadata:
 spec:
   storageClassName: ""
   capacity:
-    storage: 200Mi
+    storage: 20Gi
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain

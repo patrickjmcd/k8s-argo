@@ -23,7 +23,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 200Mi
+      storage: 20Gi
   volumeName: smb-appconfig-tdarr-server
   storageClassName: ""
 
@@ -38,6 +38,6 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 200Mi
+      storage: 20Gi
   volumeName: smb-appconfig-tdarr-config
   storageClassName: ""
