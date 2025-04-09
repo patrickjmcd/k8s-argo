@@ -57,10 +57,10 @@ spec:
             claimName: smb-media-claim
         - name: tdarr-config
           persistentVolumeClaim:
-            claimName: nfs-config-tdarr-config
+            claimName: smb-appconfig-tdarr-config
         - name: tdarr-server
           persistentVolumeClaim:
-            claimName: nfs-config-tdarr-server
+            claimName: smb-appconfig-tdarr-server
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

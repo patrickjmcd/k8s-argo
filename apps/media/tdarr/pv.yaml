@@ -1,50 +1,3 @@
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-config-tdarr-server
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs-config-tdarr-server
-  mountOptions:
-    - hard
-    - nolock
-    - nfsvers=4.1
-  csi:
-    driver: nfs.csi.k8s.io
-    readOnly: false
-    volumeHandle: tdarr-server-media-volume-id
-    volumeAttributes:
-      server: 192.168.1.252
-      share: /volume1/config/tdarr/server
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-config-tdarr-config
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs-config-tdarr-config
-  mountOptions:
-    - hard
-    - nolock
-    - nfsvers=4.1
-  csi:
-    driver: nfs.csi.k8s.io
-    readOnly: false
-    volumeHandle: tdarr-config-media-volume-id
-    volumeAttributes:
-      server: 192.168.1.252
-      share: /volume1/config/tdarr/config
----
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -67,3 +20,55 @@ spec:
     volumeAttributes:
       server: 192.168.1.210
       share: /mnt/usb/transcodecache
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-appconfig-tdarr-server
+  namespace: media
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 200Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: media-smb-tdarr-server-volume-id
+    volumeAttributes:
+      source: '//192.168.1.253/AppConfig/tdarr/server'
+    nodeStageSecretRef:
+      name: smb-creds
+      namespace: csi-smb-provisioner
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-appconfig-tdarr-config
+  namespace: media
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 200Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: media-smb-tdarr-config-volume-id
+    volumeAttributes:
+      source: '//192.168.1.253/AppConfig/tdarr/config'
+    nodeStageSecretRef:
+      name: smb-creds
+      namespace: csi-smb-provisioner
