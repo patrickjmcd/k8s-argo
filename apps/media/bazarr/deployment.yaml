@@ -19,6 +19,20 @@ spec:
         app.kubernetes.io/instance: bazarr
         app.kubernetes.io/name: bazarr
     spec:
+      initContainers:
+        - args:
+            - " echo 'Setting configmap'  && cp /tmp/config/config.ini /config/config/config.ini && chmod 777 /config/config/config.ini"
+          command:
+            - sh
+            - -c
+          image: busybox:latest
+          imagePullPolicy: Always
+          name: setup-config
+          volumeMounts:
+            - mountPath: /tmp/config
+              name: config
+            - mountPath: /config/config
+              name: config-empty
       containers:
         - name: bazarr
           env:
@@ -77,14 +91,8 @@ spec:
               memory: 256Mi
 
           volumeMounts:
-            - mountPath: /config/config/config.ini
-              name: config
-              readOnly: false
-              subPath: config.ini
-            - mountPath: /config/config/config.ini.old
-              name: config
-              readOnly: false
-              subPath: config.ini
+            - mountPath: /config/config
+              name: config-empty
             - mountPath: /media
               name: media
 
@@ -96,6 +104,8 @@ spec:
             items:
               - key: config.ini
                 path: config.ini
+        - name: config-empty
+          emptyDir: { }
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
