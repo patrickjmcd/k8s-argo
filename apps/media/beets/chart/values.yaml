@@ -6,8 +6,8 @@ beets:
 
   env:
     TZ: America/Chicago
-    PUID: 1026
-    PGID: 100
+    PUID: 1000
+    PGID: 1000
 
   persistence:
     config:
