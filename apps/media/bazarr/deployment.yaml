@@ -81,6 +81,10 @@ spec:
               name: config
               readOnly: false
               subPath: config.ini
+            - mountPath: /config/config/config.ini.old
+              name: config
+              readOnly: false
+              subPath: config.ini
             - mountPath: /media
               name: media
 
