@@ -24,6 +24,10 @@ spec:
           env:
             - name: TZ
               value: America/Chicago
+            - name: GID
+              value: "1000"
+            - name: UID
+              value: "1000"
 
           image: bazarr
           imagePullPolicy: IfNotPresent
