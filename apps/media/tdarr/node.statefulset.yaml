@@ -59,7 +59,7 @@ spec:
             claimName: smb-media-claim
         - name: config
           persistentVolumeClaim:
-            claimName: smb-appconfig-tdarr-config
+            claimName: smb-appconfig-tdarr-config-claim
         - name: tdarr-cache
           persistentVolumeClaim:
             claimName: nfs-tdarr-cache
