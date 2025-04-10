@@ -24,9 +24,9 @@ spec:
           env:
             - name: TZ
               value: America/Chicago
-            - name: GID
+            - name: PGID
               value: "1000"
-            - name: UID
+            - name: PUID
               value: "1000"
 
           image: bazarr
