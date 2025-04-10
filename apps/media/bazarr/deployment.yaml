@@ -21,7 +21,7 @@ spec:
     spec:
       initContainers:
         - args:
-            - " echo 'Setting configmap'  && cp /tmp/config/config.ini /config/config/config.ini && chmod 777 /config/config/config.ini"
+            - " echo 'Setting configmap'  && cp /tmp/config/config.ini /config/config/config.ini && chmod 777 /config/config/config.ini && ls /config/config"
           command:
             - sh
             - -c
