@@ -7,4 +7,4 @@ resources:
 images:
   - name: sabnzbd
     newName: linuxserver/sabnzbd
-    newTag: 4.5.0
+    newTag: 4.5.1
