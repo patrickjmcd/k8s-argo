@@ -1,7 +1,7 @@
 beets:
   image:
     repository: linuxserver/beets
-    tag: 2.2.0
+    tag: 2.3.0
 
   replicaCount: 1
 
