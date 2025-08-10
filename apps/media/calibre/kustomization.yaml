@@ -8,4 +8,4 @@ resources:
 images:
   - name: calibre
     newName: linuxserver/calibre
-    newTag: 8.7.0
+    newTag: 8.8.0
