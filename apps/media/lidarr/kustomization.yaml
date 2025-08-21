@@ -6,5 +6,5 @@ resources:
 
 images:
   - name: lidarr
-    newName: ghcr.io/hotio/lidarr
-    newTag: release-2.1.7.4030
+    newName: linuxserver/lidarr
+    newTag: 2.12.4
