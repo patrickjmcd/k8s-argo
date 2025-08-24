@@ -8,4 +8,4 @@ resources:
 images:
   - name: prowlarr
     newName: linuxserver/prowlarr
-    newTag: 1.37.0
+    newTag: 2.0.5
