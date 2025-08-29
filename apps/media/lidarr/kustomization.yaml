@@ -7,4 +7,4 @@ resources:
 images:
   - name: lidarr
     newName: linuxserver/lidarr
-    newTag: 2.12.4
+    newTag: 2.13.3
