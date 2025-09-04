@@ -68,6 +68,12 @@ ingress:
   - hostname: readarr.pmcd.io
     service: http://readarr.media:80
 
+  - hostname: studio-sb-staging.pmcd.dev
+    service: http://cd-staging-supabase-studio:3000
+
+  - hostname: api-sb-staging.pmcd.dev
+    service: http://cd-staging-supabase-rest:3000
+
   # ARGO
   - hostname: argo.pmcd.dev
     service: https://argocd-server.argocd:443
