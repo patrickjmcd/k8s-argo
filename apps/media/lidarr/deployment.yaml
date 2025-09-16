@@ -21,7 +21,7 @@ spec:
     spec:
       initContainers:
         - args:
-            - ' echo ''Setting configmap''  && cp /tmp/config/config.xml /etc/config/config.xml && chmod 777 /etc/config/config.xml'
+            - " echo 'Setting configmap'  && cp /tmp/config/config.xml /etc/config/config.xml && chmod 777 /etc/config/config.xml"
           command:
             - sh
             - -c
@@ -81,7 +81,7 @@ spec:
           resources:
             limits:
               cpu: 1000m
-              memory: 1024Mi
+              memory: 2048Mi
             requests:
               cpu: 100m
               memory: 256Mi
