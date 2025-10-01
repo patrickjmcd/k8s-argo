@@ -54,7 +54,7 @@ ingress:
   - hostname: youtubedl.pmcd.io
     service: http://youtubedl-youtubedl-material.media:17442
   - hostname: tronbyt.pmcd.io
-    service: http://tronbyt:8000
+    service: http://tronbyt:80
 
 
   - hostname: studio-sb-staging.pmcd.dev
