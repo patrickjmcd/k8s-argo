@@ -15,4 +15,4 @@ spec:
   selector:
     app.kubernetes.io/instance: tronbyt-server
     app.kubernetes.io/name: tronbyt-server
-  type: ClusterIP
+  type: LoadBalancer
