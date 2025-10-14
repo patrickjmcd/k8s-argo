@@ -63,6 +63,9 @@ ingress:
   - hostname: api-sb-staging.pmcd.dev
     service: http://cd-staging-supabase-rest:3000
 
+  - hostname: auth-sb-staging.pmcd.dev
+    service: http://cd-staging-supabase-auth:9999
+
   # ARGO
   - hostname: argo.pmcd.dev
     service: https://argocd-server.argocd:443
