@@ -61,7 +61,7 @@ ingress:
     service: http://cd-staging-supabase-studio:3000
 
   - hostname: api-sb-staging.pmcd.dev
-    service: http://cd-staging-supabase-rest:3000
+    service: http://cd-staging-supabase-kong:8000
 
   - hostname: auth-sb-staging.pmcd.dev
     service: http://cd-staging-supabase-auth:9999
