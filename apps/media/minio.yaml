@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: default
+    name: in-cluster
+  project: apps
+  syncPolicy:
+    automated: { }
+
+  source:
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    path: apps/minio/chart
+    targetRevision: main
+    helm:
+      releaseName: minio
