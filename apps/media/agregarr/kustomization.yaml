@@ -6,6 +6,6 @@ resources:
   - storage.yaml
 
 images:
-  - name: agregar
+  - name: agregarr
     newName: agregarr/agregarr
     newTag: 1.4.2
