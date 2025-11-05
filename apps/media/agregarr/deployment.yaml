@@ -69,9 +69,14 @@ spec:
           volumeMounts:
             - mountPath: /media
               name: media
+            - mountPath: /app/config
+              name: config
 
       restartPolicy: Always
       volumes:
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
+        - name: config
+          persistentVolumeClaim:
+            claimName: smb-appconfig-agregarr-claim
