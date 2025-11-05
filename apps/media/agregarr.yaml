@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aggregarr
+  name: agregarr
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -15,6 +15,6 @@ spec:
   syncPolicy:
     automated: { }
   source:
-    path: apps/media/aggregarr
+    path: apps/media/agregarr
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main

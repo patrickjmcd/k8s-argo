@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: smb-appconfig-aggregarr
+  name: smb-appconfig-agregarr
   namespace: default
 spec:
   storageClassName: ""
@@ -18,9 +18,9 @@ spec:
   csi:
     driver: smb.csi.k8s.io
     readOnly: false
-    volumeHandle: default-smb-aggregarr-volume-id
+    volumeHandle: default-smb-agregarr-volume-id
     volumeAttributes:
-      source: '//192.168.1.253/AppConfig/aggregarr'
+      source: '//192.168.1.253/AppConfig/agregarr'
     nodeStageSecretRef:
       name: smb-creds
       namespace: csi-smb-provisioner
@@ -28,7 +28,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: smb-appconfig-aggregarr-claim
+  name: smb-appconfig-agregarr-claim
   namespace: default
 spec:
   accessModes:
@@ -36,5 +36,5 @@ spec:
   resources:
     requests:
       storage: 200Mi
-  volumeName: smb-appconfig-aggregarr
+  volumeName: smb-appconfig-agregarr
   storageClassName: ""
