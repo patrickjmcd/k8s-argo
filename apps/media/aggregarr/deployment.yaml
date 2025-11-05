@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: aggregarr
+    app.kubernetes.io/name: aggregarr
+  name: aggregarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: aggregarr
+      app.kubernetes.io/name: aggregarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: aggregarr
+        app.kubernetes.io/name: aggregarr
+    spec:
+      containers:
+        - name: aggregarr
+          env:
+            - name: TZ
+              value: America/Chicago
+
+          image: aggregarr
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 7171
+              name: http
+              protocol: TCP
+
+          readinessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          livenessProbe:
+            tcpSocket:
+              port: http
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+
+          startupProbe:
+            failureThreshold: 30
+            periodSeconds: 5
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+          volumeMounts:
+            - mountPath: /media
+              name: media
+
+      restartPolicy: Always
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: smb-media-claim
