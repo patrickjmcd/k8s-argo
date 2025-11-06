@@ -9,9 +9,9 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
-    namespace: media
+    namespace: default
     name: in-cluster
-  project: apps
+  project: core
   syncPolicy:
     automated: { }
   source:
