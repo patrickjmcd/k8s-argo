@@ -57,6 +57,7 @@ spec:
             matchRule: Host(`traefic.x.pmcd.io`)
             entryPoints:
               - web
+              - wesecure
         providers:
           kubernetesGateway:
             enabled: true
