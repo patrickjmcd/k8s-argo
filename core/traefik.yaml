@@ -48,9 +48,6 @@ spec:
               volumeMounts:
                 - mountPath: /data
                   name: data
-        podSecurityContext:
-          fsGroup: 65532
-          fsGroupChangePolicy: "OnRootMismatch"
         ingressRoute:
           dashboard:
             enabled: true
