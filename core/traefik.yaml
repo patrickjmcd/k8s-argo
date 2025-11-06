@@ -61,6 +61,8 @@ spec:
             entryPoints:
               - web
               - websecure
+            tls:
+              certResolver: pmcdio
         providers:
           kubernetesGateway:
             enabled: true
