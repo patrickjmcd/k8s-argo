@@ -20,5 +20,18 @@ spec:
     repoURL: https://traefik.github.io/charts
     helm:
       releaseName: traefik
-      valueFiles:
-        - traefik/values.yaml
+      valuesObject:
+        ingressRoute:
+          dashboard:
+            enabled: true
+            matchRule: Host(`traefic.x.pmcd.io`)
+            entryPoints:
+              - web
+        providers:
+          kubernetesGateway:
+            enabled: true
+        gateway:
+          listeners:
+            web:
+              namespacePolicy:
+                from: All
