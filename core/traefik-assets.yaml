@@ -12,8 +12,8 @@ spec:
     namespace: default
     name: in-cluster
   project: core-components
-  #  syncPolicy:
-  #    automated: { }
+  syncPolicy:
+    automated: { }
   source:
     path: core/traefik-assets
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
