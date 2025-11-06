@@ -21,4 +21,4 @@ spec:
     helm:
       releaseName: traefik
       valueFiles:
-        - core/traefik/values.yaml
+        - ../core/traefik/values.yaml
