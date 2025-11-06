@@ -80,7 +80,7 @@ ingress:
 
   # ARGO
   - hostname: argo.pmcd.dev
-    service: https://argocd-server.argocd:443
+    service: https://argocd-server.argocd:4438
     originRequest:
       noTLSVerify: true
 
