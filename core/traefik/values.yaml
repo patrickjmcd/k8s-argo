@@ -207,7 +207,7 @@ ingressRoute:
     # -- Additional ingressRoute labels (e.g. for filtering IngressRoute by custom labels)
     labels: {}
     # -- The router match rule used for the dashboard ingressRoute
-    matchRule: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+    matchRule: Host(`traefik.x.pmcd.io`)
     # -- The internal service used for the dashboard ingressRoute
     services:
       - name: api@internal
