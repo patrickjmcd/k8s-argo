@@ -12,3 +12,8 @@ spec:
       services:
         - name: agregarr
           port: 80
+  tls:
+    certResolver: pmcdio
+    domains:
+      - main: agregar.x.pmcd.io
+    secretName: tls-pmcdio-agregar
