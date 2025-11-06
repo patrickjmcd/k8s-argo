@@ -90,7 +90,7 @@ spec:
             - mountPath: /config
               name: config-empty
               readOnly: false
-            - mountPath: /media
+            - mountPath: /mnt/media
               name: media
 
       restartPolicy: Always
