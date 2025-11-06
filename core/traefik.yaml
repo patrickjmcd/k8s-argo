@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: media
+    name: in-cluster
+  project: apps
+  syncPolicy:
+    automated: { }
+  source:
+    chart: traefik
+    targetRevision: 37.2.0
+    repoURL: https://traefik.github.io/charts
+    helm:
+      releaseName: traefik
+      valuesFiles:
+        - core/traefik/values.yaml
