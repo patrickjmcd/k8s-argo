@@ -14,6 +14,7 @@ spec:
     - https://k8s-at-home.com/charts/
     - https://helm.runix.net
     - registry-1.docker.io/bitnamicharts/minio
+    - https://traefik.github.io/charts
   destinations:
     - namespace: "*"
       name: in-cluster
