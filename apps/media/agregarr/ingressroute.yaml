@@ -1,0 +1,14 @@
+# whoami-ingressroute.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: agregarr
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/agregarr`)
+      kind: Rule
+      services:
+        - name: agregarr
+          port: 80
