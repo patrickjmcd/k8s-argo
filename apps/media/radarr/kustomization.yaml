@@ -7,4 +7,4 @@ resources:
 images:
   - name: radarr
     newName: linuxserver/radarr
-    newTag: version-4.4.4.7068
+    newTag: 5.28.0

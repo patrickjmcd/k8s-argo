@@ -57,6 +57,16 @@ ingress:
     service: http://tronbyt-server:80
   - hostname: agregarr.pmcd.io
     service: http://agregarr.media:80
+  - hostname: radarr.pmcd.io
+    service: http://radarr.media:80
+  - hostname: sonarr.pmcd.io
+    service: http://sonarr.media:80
+  - hostname: lidarr.pmcd.io
+    service: http://lidarr.media:80
+  - hostname: prowlarr.pmcd.io
+    service: http://prowlarr.media:80
+  - hostname: sabnzbd.pmcd.io
+    service: http://sabnzbd.media:80
 
 
   - hostname: studio-sb-staging.pmcd.dev
