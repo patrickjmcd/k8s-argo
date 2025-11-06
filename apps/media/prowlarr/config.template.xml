@@ -17,7 +17,7 @@
   <PostgresUser>prowlarr</PostgresUser>
   <PostgresPassword>prowlarr</PostgresPassword>
   <PostgresPort>5432</PostgresPort>
-  <PostgresHost>192.168.1.11</PostgresHost>
+  <PostgresHost>192.168.4.11</PostgresHost>
   <PostgresMainDb>prowlarr-main</PostgresMainDb>
   <PostgresLogDb>prowlarr-logs</PostgresLogDb>
 </Config>

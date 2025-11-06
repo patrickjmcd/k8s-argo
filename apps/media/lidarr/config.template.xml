@@ -16,7 +16,7 @@
     <PostgresUser>lidarr</PostgresUser>
     <PostgresPassword>lidarr</PostgresPassword>
     <PostgresPort>5432</PostgresPort>
-    <PostgresHost>192.168.1.11</PostgresHost>
+    <PostgresHost>192.168.4.11</PostgresHost>
     <PostgresMainDb>lidarr</PostgresMainDb>
     <PostgresLogDb>lidarr-logs</PostgresLogDb>
 </Config>

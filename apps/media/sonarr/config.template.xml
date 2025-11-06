@@ -16,7 +16,7 @@
     <PostgresUser>sonarr</PostgresUser>
     <PostgresPassword>sonarr</PostgresPassword>
     <PostgresPort>5432</PostgresPort>
-    <PostgresHost>192.168.1.11</PostgresHost>
+    <PostgresHost>192.168.4.11</PostgresHost>
     <PostgresMainDb>sonarr-main</PostgresMainDb>
     <PostgresLogDb>sonarr-logs</PostgresLogDb>
 </Config>

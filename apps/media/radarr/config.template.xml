@@ -16,7 +16,7 @@
     <PostgresUser>radarr</PostgresUser>
     <PostgresPassword>radarr</PostgresPassword>
     <PostgresPort>5432</PostgresPort>
-    <PostgresHost>192.168.1.11</PostgresHost>
+    <PostgresHost>192.168.4.11</PostgresHost>
     <PostgresMainDb>radarr-main</PostgresMainDb>
     <PostgresLogDb>radarr-logs</PostgresLogDb>
 </Config>
