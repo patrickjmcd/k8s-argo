@@ -66,3 +66,7 @@ spec:
             web:
               namespacePolicy:
                 from: All
+
+        persistence:
+          enabled: true
+          existingClaim: smb-appconfig-traefik-claim
