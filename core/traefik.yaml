@@ -20,5 +20,5 @@ spec:
     repoURL: https://traefik.github.io/charts
     helm:
       releaseName: traefik
-      valuesFiles:
+      valueFiles:
         - core/traefik/values.yaml
