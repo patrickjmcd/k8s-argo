@@ -1,15 +1,15 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: agregarr
+  name: radarr
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`agregarr.x.pmcd.io`)
+    - match: Host(`radarr.x.pmcd.io`)
       kind: Rule
       services:
-        - name: agregarr
+        - name: radarr
           port: 80
   tls:
     certResolver: pmcdio
