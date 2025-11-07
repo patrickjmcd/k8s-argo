@@ -21,9 +21,10 @@ spec:
     helm:
       releaseName: traefik
       valuesObject:
-        entryPoints:
+        ports:
           web:
-            address: ":80"
+            port: 80
+            nodePort: 30000
             http:
               redirections:
                 entryPoint:
@@ -31,7 +32,8 @@ spec:
                   scheme: https
                   permanent: true
           websecure:
-            address: ":443"
+            port: 443
+            nodePort: 30001
         certificatesResolvers:
           pmcdio:
             acme:
@@ -74,9 +76,29 @@ spec:
             enabled: true
         gateway:
           listeners:
-            web:
+            web: # HTTP listener that matches entryPoint `web`
+              port: 80
+              protocol: HTTP
               namespacePolicy:
                 from: All
+
+            websecure: # HTTPS listener that matches entryPoint `websecure`
+              port: 443
+              protocol: HTTPS  # TLS terminates inside Traefik
+              namespacePolicy:
+                from: All
+        # Enable Observability
+        logs:
+          general:
+            level: INFO
+          # This enables access logs, outputting them to Traefik's standard output by default. The [Access Logs Documentation](https://doc.traefik.io/traefik/observability/access-logs/) covers formatting, filtering, and output options.
+          access:
+            enabled: true
+
+        # Enables Prometheus for Metrics
+        metrics:
+          prometheus:
+            enabled: true
 
 #        persistence:
 #          enabled: true
