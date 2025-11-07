@@ -24,7 +24,7 @@ spec:
         ports:
           web:
             port: 80
-            nodePort: 30000
+            nodePort: 33333
             http:
               redirections:
                 entryPoint:
@@ -33,7 +33,7 @@ spec:
                   permanent: true
           websecure:
             port: 443
-            nodePort: 30001
+            nodePort: 33334
         certificatesResolvers:
           pmcdio:
             acme:
