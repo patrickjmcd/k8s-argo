@@ -82,11 +82,11 @@ spec:
               namespacePolicy:
                 from: All
 
-            websecure: # HTTPS listener that matches entryPoint `websecure`
-              port: 443
-              protocol: HTTPS  # TLS terminates inside Traefik
-              namespacePolicy:
-                from: All
+#            websecure: # HTTPS listener that matches entryPoint `websecure`
+#              port: 443
+#              protocol: HTTPS  # TLS terminates inside Traefik
+#              namespacePolicy:
+#                from: All
         # Enable Observability
         logs:
           general:
