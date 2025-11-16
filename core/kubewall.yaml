@@ -16,7 +16,7 @@ spec:
     automated: { }
   source:
     chart: kubewall
-    targetRevision: v0.0.14
+    targetRevision: 0.0.14
     repoURL: oci://ghcr.io/kubewall/charts/kubewall
     helm:
       releaseName: kubewall
