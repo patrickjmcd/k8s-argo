@@ -12,5 +12,5 @@ spec:
       services:
         - name: kubewall
           port: 8443
-  tls:
-    certResolver: pmcdio
+#  tls:
+#    certResolver: pmcdio
