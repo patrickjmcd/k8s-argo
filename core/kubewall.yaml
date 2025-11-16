@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: supabase-cd-staging
+  name: kubewall
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -9,12 +9,14 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
-    namespace: default
+    namespace: kubewall
     name: in-cluster
-  project: apps
-  #  syncPolicy:
-  #    automated: { }
+  project: core-components
+  syncPolicy:
+    automated: { }
   source:
-    path: apps/supabase
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    targetRevision: main
+    chart: kubewall
+    targetRevision: v0.0.14
+    repoURL: oci://ghcr.io/kubewall/charts/kubewall
+    helm:
+      releaseName: kubewall

@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kubewall
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`kubewall.x.pmcd.io`)
+      kind: Rule
+      services:
+        - name: kubewall
+          port: 80
+  tls:
+    certResolver: pmcdio
