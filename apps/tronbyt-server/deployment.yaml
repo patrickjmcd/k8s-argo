@@ -46,6 +46,16 @@ spec:
             periodSeconds: 90
             timeoutSeconds: 10
             failureThreshold: 3
-      restartPolicy: Always
-#      imagePullSecrets:
-#        - name: ghcr-registry-cred
+          volumeMounts:
+            - mountPath: /app/users
+              name: appconfig
+              subPath: users
+            - mountPath: /app/data
+              name: appconfig
+              subPath: data
+
+          restartPolicy: Always
+      volumes:
+        - name: appconfig
+          persistentVolumeClaim:
+            claimName: mb-appconfig-tronbyt-server-claim
