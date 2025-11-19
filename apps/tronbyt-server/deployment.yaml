@@ -56,4 +56,4 @@ spec:
       volumes:
         - name: appconfig
           persistentVolumeClaim:
-            claimName: mb-appconfig-tronbyt-server-claim
+            claimName: smb-appconfig-tronbyt-server-claim
