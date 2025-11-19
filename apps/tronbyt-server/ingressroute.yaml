@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: tronbyt-server
+  namespace: main
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`tronbyt.x.pmcd.io`)
+      kind: Rule
+      services:
+        - name: tronbyt-server
+          port: 8888
+#  tls:
+#    certResolver: pmcdio
