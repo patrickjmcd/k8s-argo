@@ -6,11 +6,12 @@ metadata:
 spec:
   entryPoints:
     - websecure
+    - web
   routes:
     - match: Host(`tronbyt.x.pmcd.io`)
       kind: Rule
       services:
         - name: tronbyt-server
           port: 8888
-#  tls:
-#    certResolver: pmcdio
+  tls:
+    certResolver: pmcdio
