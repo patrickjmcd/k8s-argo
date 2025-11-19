@@ -40,8 +40,8 @@ spec:
               cpu: 100m
               memory: 256Mi
           readinessProbe:
-            exec:
-              command: [ "python3", "/app/healthcheck.py", "http://localhost:8000/health" ]
+            httpGet:
+              port: http
             initialDelaySeconds: 10
             periodSeconds: 90
             timeoutSeconds: 10
