@@ -53,8 +53,6 @@ spec:
             - mountPath: /app/data
               name: appconfig
               subPath: data
-
-          restartPolicy: Always
       volumes:
         - name: appconfig
           persistentVolumeClaim:
