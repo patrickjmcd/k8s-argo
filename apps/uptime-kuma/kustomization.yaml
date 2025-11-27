@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+- ingressroute.yaml
+- service.yaml
+- storage.yaml
+
+images:
+- name: uptime-kuma
+  newName: louislam/uptime-kuma
+  newTag: "1"
