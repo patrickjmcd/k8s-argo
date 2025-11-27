@@ -8,7 +8,7 @@ spec:
     - websecure
     - web
   routes:
-    - match: Host(`uptime-kuma.pmcd.io`)
+    - match: Host(`uptime-kuma.x.pmcd.io`)
       kind: Rule
       services:
         - name: uptime-kuma
