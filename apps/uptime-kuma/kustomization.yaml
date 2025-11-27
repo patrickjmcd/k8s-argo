@@ -9,4 +9,4 @@ resources:
 images:
 - name: uptime-kuma
   newName: louislam/uptime-kuma
-  newTag: "1"
+  newTag: "2.0.2"
