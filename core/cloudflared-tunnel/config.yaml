@@ -34,6 +34,8 @@ ingress:
     service: http://invoiceninja:80
   - hostname: glance.pmcd.io
     service: http://glance:80
+  - hostname: uptime-kuma.pmcd.io
+    service: http://uptime-kuma:3001
 
   - hostname: theirishaires-preview.pmcd.dev
     service: http://the-irish-aires-preview:80
