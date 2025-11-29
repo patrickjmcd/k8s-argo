@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ia-ignition
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+    - web
+  routes:
+    - match: Host(`ignition.x.pmcd.io`)
+      kind: Rule
+      services:
+        - name: ia-ignition
+          port: 8088
+  tls:
+    certResolver: pmcdio
