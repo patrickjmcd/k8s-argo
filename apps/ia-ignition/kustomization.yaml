@@ -10,4 +10,7 @@ images:
   newName:  inductiveautomation/ignition
   newTag: "8.3"
 
-
+configMapGenerator:
+  - name: ia-ignition-config
+    files:
+      - .env

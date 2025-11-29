@@ -24,6 +24,9 @@ spec:
         - name: ia-ignition
           image: ia-ignition
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: ia-ignition-config
           ports:
             - containerPort: 8088
               name: http
