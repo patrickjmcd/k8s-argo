@@ -82,9 +82,7 @@ ingress:
 
   # ARGO
   - hostname: argo.pmcd.dev
-    service: https://argocd-server.argocd:4438
-    originRequest:
-      noTLSVerify: true
+    service: http://argocd-server.argocd:8080
 
 
   - hostname: kubewall.pmcd.io
