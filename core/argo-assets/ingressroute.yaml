@@ -8,10 +8,19 @@ spec:
     - websecure
     - web
   routes:
-    - match: Host(`argo.x.pmcd.io`)
-      kind: Rule
-      services:
-        - name: argocd-server
-          port: 8080
+    routes:
+      - kind: Rule
+        match: Host(`argo.x.pmcd.io`)
+        priority: 10
+        services:
+          - name: argocd-server
+            port: 8080
+      - kind: Rule
+        match: Host(`argo.x.pmcd.io`) && Header(`Content-Type`, `application/grpc`)
+        priority: 11
+        services:
+          - name: argocd-server
+            port: 8080
+            scheme: h2c
   tls:
     certResolver: pmcdio
