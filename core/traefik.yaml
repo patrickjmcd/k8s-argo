@@ -46,6 +46,9 @@ spec:
               secretKeyRef:
                 name: cloudflare-pmcdio-credentials
                 key: CLOUDFLARE_TOKEN
+        service:
+          spec:
+            loadBalancerIP: 192.168.8.200
 #        deployment:
 #          initContainers:
 #            - name: volume-permissions
@@ -89,7 +92,7 @@ spec:
         logs:
           general:
             level: INFO
-          # This enables access logs, outputting them to Traefik's standard output by default. The [Access Logs Documentation](https://doc.traefik.io/traefik/observability/access-logs/) covers formatting, filtering, and output options.
+          # This enables access logs, outputting them to Traefik's standard output by default. The [Access Logs Documentation](https://doc.traefik.io/traefik/observability/access-logs/) covers for[...]
           access:
             enabled: true
 
