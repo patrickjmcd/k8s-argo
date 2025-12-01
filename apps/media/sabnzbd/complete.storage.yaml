@@ -12,7 +12,7 @@ spec:
   mountOptions:
     - hard
     - nolock
-    - nfsvers=4.1
+    - nfsvers=3
   csi:
     driver: nfs.csi.k8s.io
     volumeHandle: sab-complete-pv   # just a unique ID string
