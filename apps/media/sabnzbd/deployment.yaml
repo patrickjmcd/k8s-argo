@@ -88,8 +88,8 @@ spec:
             - mountPath: /config
               name: config-empty
               readOnly: false
-            - mountPath: /mnt/complete
-              name: complete-storage
+            - mountPath: /mnt/media
+              name: media
             - mountPath: /mnt/incomplete
               name: incomplete-storage
 
@@ -106,6 +106,6 @@ spec:
         - name: incomplete-storage
           persistentVolumeClaim:
             claimName: sab-incomplete-pvc
-        - name: complete-storage
+        - name: media
           persistentVolumeClaim:
-            claimName: sab-complete-pvc
+            claimName: smb-media-claim
