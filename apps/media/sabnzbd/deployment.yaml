@@ -88,8 +88,10 @@ spec:
             - mountPath: /config
               name: config-empty
               readOnly: false
-            - mountPath: /mnt/media
-              name: media
+            - mountPath: /mnt/complete
+              name: complete-storage
+            - mountPath: /mnt/incomplete
+              name: incomplete-storage
 
       restartPolicy: Always
       volumes:
@@ -101,6 +103,9 @@ spec:
                 path: sabnzbd.ini
         - name: config-empty
           emptyDir: {}
-        - name: media
+        - name: incomplete-storage
           persistentVolumeClaim:
-            claimName: smb-media-claim
+            claimName: sab-incomplete-pvc
+        - name: complete-storage
+          persistentVolumeClaim:
+            claimName: sab-complete-pvc

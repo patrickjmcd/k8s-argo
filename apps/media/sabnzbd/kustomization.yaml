@@ -4,6 +4,8 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingressroute.yaml
+  - complete.storage.yaml
+  - incomplete.storage.yaml
 
 images:
   - name: sabnzbd
