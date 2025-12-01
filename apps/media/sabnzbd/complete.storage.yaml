@@ -2,6 +2,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: sab-complete-pv
+  namespace: media
 spec:
   capacity:
     storage: 500Gi           # logical size; NFS itself enforces real size
