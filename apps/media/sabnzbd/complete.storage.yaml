@@ -18,4 +18,4 @@ spec:
     volumeHandle: sab-complete-pv   # just a unique ID string
     volumeAttributes:
       server: 192.168.1.253               # NFS server IP/hostname
-      share: /var/nfs/Media/downloads/complete
+      share: /var/nfs/shared/Media/downloads/complete
