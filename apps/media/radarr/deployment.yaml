@@ -95,4 +95,4 @@ spec:
             claimName: smb-media-claim
         - name: downloads
           persistentVolumeClaim:
-            claimName: sab-downloads-claim
+            claimName: sab-downloads-pvc
