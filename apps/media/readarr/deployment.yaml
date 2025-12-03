@@ -73,6 +73,8 @@ spec:
               subPath: config.xml
             - mountPath: /media
               name: media
+            - mountPath: /mnt/downloads
+              name: downloads
 
       restartPolicy: Always
       volumes:
@@ -85,3 +87,6 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: sab-downloads-pvc
