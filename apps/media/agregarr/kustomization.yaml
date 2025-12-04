@@ -4,6 +4,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingressroute.yaml
+  - storage.yaml
 
 images:
   - name: agregarr
