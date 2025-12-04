@@ -110,12 +110,8 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: nvme-storage-available
-            operator: In
-            values:
-            - "true"
+      tolerations:
+        - key: nvme-storage-available
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
