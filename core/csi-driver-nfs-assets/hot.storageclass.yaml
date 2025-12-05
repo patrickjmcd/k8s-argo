@@ -1,0 +1,15 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-csi-hot
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: 192.168.1.253
+  share: /var/nfs/shared/Hot
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+mountOptions:
+  - hard
+  - nolock
+  - nfsvers=3
