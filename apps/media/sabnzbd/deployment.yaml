@@ -106,12 +106,12 @@ spec:
           emptyDir: {}
         - name: incomplete-storage
           persistentVolumeClaim:
-            claimName: sab-incomplete-pvc
+            claimName: rpi51-nvme-pvc
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
-#      tolerations:
-#        - key: nvme-storage-available
-#          operator: Equal
-#          value: "true"
-#          effect: NoSchedule
+      tolerations:
+        - key: nvme-storage-available
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
