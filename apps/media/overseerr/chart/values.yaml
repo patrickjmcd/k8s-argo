@@ -2,7 +2,7 @@ overseerr:
   image:
     repository: linuxserver/overseerr
     pullPolicy: IfNotPresent
-    tag: version-v1.24.0
+    tag: 1.34.0
 
   env:
     TZ: America/Chicago
