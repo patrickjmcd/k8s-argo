@@ -8,4 +8,4 @@ resources:
 images:
   - name: lidarr
     newName: linuxserver/lidarr
-    newTag: 3.1.0
+    newTag: 8.1.2135
