@@ -6,5 +6,5 @@ resources:
 
 images:
   - name: kometa
-    newName: kometa/kometa
-    newTag: latest
+    newName: registry.gitlab.com/linuxserver.io/docker-kometa/kometa
+    newTag: 2.2.2
