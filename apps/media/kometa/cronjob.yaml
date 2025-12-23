@@ -26,15 +26,11 @@ spec:
                   mountPath: /config
                 - name: kometa-config
                   mountPath: /config/config.yml
-                  subPath: config.yml
           volumes:
             - name: config
               persistentVolumeClaim:
                 claimName: longhorn-kometa-config
             - configMap:
                 name: kometa-config
-                items:
-                  - key: config.yml
-                    path: config.yml
               name: kometa-config
           restartPolicy: OnFailure
