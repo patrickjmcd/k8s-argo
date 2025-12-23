@@ -25,8 +25,8 @@ spec:
                 - name: config
                   mountPath: /config
                 - name: kometa-config
-                  mountPath: /config/config.yaml
-                  subPath: config.yaml
+                  mountPath: /config/config.yml
+                  subPath: config.yml
           volumes:
             - name: config
               persistentVolumeClaim:
@@ -34,7 +34,7 @@ spec:
             - configMap:
                 name: kometa-config
                 items:
-                  - key: config.yaml
-                    path: config.yaml
+                  - key: config.yml
+                    path: config.yml
               name: kometa-config
           restartPolicy: OnFailure

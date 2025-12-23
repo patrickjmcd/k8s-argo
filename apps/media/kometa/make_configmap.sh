@@ -1,4 +1,4 @@
-envsubst < config.template.yaml > config.yaml
+envsubst < config.template.yml > config.yml
 kubectl delete configmap kometa-config -n media --ignore-not-found
-kubectl create configmap kometa-config --from-file=config.yaml -n media
-rm config.yaml
+kubectl create configmap kometa-config --from-file=config.yml -n media
+rm config.yml
