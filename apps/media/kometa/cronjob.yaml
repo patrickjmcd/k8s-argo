@@ -25,7 +25,8 @@ spec:
                 - name: config
                   mountPath: /config
                 - name: kometa-config
-                  mountPath: /config/config.yml
+                  mountPath: /config/config.yaml
+                  subPath: config.yaml
           volumes:
             - name: config
               persistentVolumeClaim:
