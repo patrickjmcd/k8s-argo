@@ -1,0 +1,181 @@
+libraries:
+  Movies:                                           # Must match a library name in your Plex
+    report_path: config/missing/Movies_missing.yml
+    template_variables:
+      sep_style: purple                               # use the purple separators globally for this library
+      collection_mode: hide                         # hide the collections within the "library" tab in Plex.
+      placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators, avoids a plex bug.
+    collection_files:
+      - default: separator_chart                            # An "index card"
+      - default: basic                                      # Some basic chart collections
+        template_variables:
+          style: standards
+      - default: seasonal                                   # Christmas, Halloween, etc.
+        template_variables:                             # Disable any US-specific seasonal collections
+          schedule_independence: never
+          schedule_memorial: never
+          schedule_labor: never
+    remove_overlays: false                          # Set to true if you want to remove overlays
+    reapply_overlays: false                         # Set to true if you want to force-reapply overlays to everything
+      # THERE IS RARELY IF EVER A REASON TO DO THIS AS IT WILL EXTEND RUN TIMES ANS CAUSE IMAGE BLOAT
+    # IF YOU THINK YOU WANT TO DO THIS YOU ARE ALMOST CERTAINLY MISTAKEN
+    #reset_overlays: tmdb                           # if you want to reset the poster to default poster from tmdb - can cause image bloat
+
+    overlay_files:
+      - default: content_rating_us_movie
+      - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
+      - default: resolution                                 # 4K HDR, 1080P FHD, etc.
+      - default: ribbon                                     # Used for ribbon in bottom right
+      - default: streaming                                  # Streaming on Disney+, Netflix, etc.
+      - default: video_format                               # Remux, DVD, Blu-Ray, etc. in bottom left
+    settings:
+      asset_directory:
+        - config/assets
+
+    operations:
+      split_duplicates: false
+      assets_for_all: false
+      mass_content_rating_update:
+        - mdb_commonsense        # try Common Sense via MDBList first
+        - mdb_age_rating         # fall back to MDB age rating
+        - NR                     # final fallback string if none found
+
+  TV Shows:                                           # Must match a library name in your Plex
+    report_path: config/missing/TV_missing.yml
+    template_variables:
+      sep_style: plum                               # use the plum separators globally for this library
+      collection_mode: hide                         # hide the collections within the "library" tab in Plex.
+      placeholder_imdb_id: tt1190634                # The Boys (2019) placeholder id for the separators, avoids a plex bug.
+    collection_files:
+    remove_overlays: false                          # Set to true if you want to remove overlays
+    reapply_overlays: false                         # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
+    #reset_overlays: tmdb                           # if you want to reset the poster to default poster from tmdb - can cause image bloat
+    overlay_files:
+      - default: content_rating_us_show
+      - default: content_rating_us_show
+        template_variables:
+          builder_level: season
+      - default: content_rating_us_show
+        template_variables:
+          builder_level: episode
+      - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. on show and episode
+      - default: audio_codec
+        template_variables:
+          builder_level: episode
+      - default: episode_info                               # S##E## information in bottom right on episode
+        template_variables:
+          builder_level: episode
+      - default: resolution                                 # 4K HDR, 1080P FHD, etc. on show, episode, and season
+      - default: resolution
+        template_variables:
+          builder_level: episode
+      - default: resolution
+        template_variables:
+          builder_level: season
+      - default: ribbon                                     # Used for ribbon in bottom right on show
+      - default: status                                     # Airing, Returning, Ended, Canceled on show
+      - default: versions                                   # Will show duplicates for that media item on show and episode
+      - default: versions
+        template_variables:
+          builder_level: episode
+      - default: video_format                               # Remux, DVD, Blu-Ray, etc. in bottom left on show, episode, and season
+      - default: video_format
+        template_variables:
+          builder_level: episode
+    settings:
+      asset_directory:
+        - config/assets
+
+    operations:
+      split_duplicates: false
+      assets_for_all: false
+      mass_content_rating_update:
+        - mdb_commonsense
+        - mdb_age_rating
+        - NR
+playlist_files:
+  - default: playlist
+    template_variables:
+      libraries: Movies, TV Shows                         # Must match the names of your libraries in Plex.
+    # see the wiki for how to use local files, folders, URLs, or files from git
+settings:
+  run_order:
+    - operations
+    - metadata
+    - collections
+    - overlays
+  cache: true
+  cache_expiration: 60
+  asset_directory: config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: false
+  prioritize_assets: false
+  dimensional_asset_rename: false
+  download_url_assets: false
+  show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: true
+  sync_mode: append
+  minimum_items: 1
+  default_collection_order:
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_unconfigured: true
+  show_filtered: false
+  show_options: true
+  show_missing: true
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
+  item_refresh_delay: 0
+  playlist_sync_to_users: all
+  playlist_exclude_users:
+  playlist_report: false
+  verify_ssl: true
+  custom_repo:
+  overlay_artwork_filetype: jpg
+  overlay_artwork_quality: 75
+webhooks:                            # Can be individually specified per library as well
+  error: notifiarr
+  version: notifiarr
+  run_start:
+  run_end:
+  changes: notifiarr
+  delete: notifiarr
+plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.1.210:32400
+  token: ${PLEX_TOKEN}
+  timeout: 60
+  db_cache:
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+  verify_ssl:
+tmdb:                                # REQUIRED for the script to run
+  apikey: ${TMDB_APIKEY}
+  language: en
+  cache_expiration: 60
+  region:
+notifiarr:
+  apikey: ${NOTIFIARR_APIKEY}
+trakt:
+  client_id: ${TRAKT_CLIENT_ID}
+  client_secret: ${TRAKT_CLIENT_SECRET}
+  pin:
+  authorization:
+    access_token:
+    token_type:
+    expires_in:
+    refresh_token:
+    scope:
+    created_at:
+mdblist:
+  apikey: ${MDBLIST_APIKEY}
+  cache_expiration: 60

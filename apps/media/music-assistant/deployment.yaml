@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: music-assistant
+    app.kubernetes.io/name: music-assistant
+  name: music-assistant
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: music-assistant
+      app.kubernetes.io/name: music-assistant
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: music-assistant
+        app.kubernetes.io/name: music-assistant
+    spec:
+      containers:
+        - name: music-assistant
+          env:
+            - name: TZ
+              value: America/Chicago
+
+          image: music-assistant
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8095
+              name: http
+              protocol: TCP
+
+          readinessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          livenessProbe:
+            tcpSocket:
+              port: http
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+
+          startupProbe:
+            failureThreshold: 30
+            periodSeconds: 5
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+          volumeMounts:
+            - mountPath: /media
+              name: media
+            - mountPath: /app/config
+              name: config
+
+      restartPolicy: Always
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: smb-media-claim
+        - name: config
+          persistentVolumeClaim:
+            claimName: longhorn-music-assistant-config
+

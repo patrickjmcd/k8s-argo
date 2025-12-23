@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kometa
+  namespace: media
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          containers:
+            - name: kometa
+              image: kometa
+              imagePullPolicy: IfNotPresent
+              args: [ "--run", "--read-only-config" ]
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 125Mi
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: kometa-config
+                  mountPath: /config/config.yml
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: longhorn-kometa-config
+            - configMap:
+                name: kometa-config
+              name: kometa-config
+          restartPolicy: OnFailure
