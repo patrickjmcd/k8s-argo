@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kubewall-assets
+  name: prometheus-assets
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -15,6 +15,6 @@ spec:
   syncPolicy:
     automated: { }
   source:
-    path: core/kubewall-assets
+    path: core/prometheus-assets
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main
