@@ -19,7 +19,6 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - pi-worker-1
                 - pi-worker-3
 ---
 apiVersion: v1
