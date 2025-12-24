@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: grafana
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated: { }
+  source:
+    chart: grafana
+    targetRevision: 0.44.2
+    repoURL: https://grafana.github.io/helm-charts
+    helm:
+      releaseName: grafana
