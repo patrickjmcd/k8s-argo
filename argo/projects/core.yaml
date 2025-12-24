@@ -15,6 +15,7 @@ spec:
     - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
     - https://traefik.github.io/charts
     - oci://ghcr.io/kubewall/charts/kubewall
+    - https://prometheus-community.github.io/helm-charts
   destinations:
     - namespace: "*"
       name: in-cluster

@@ -1,6 +1,5 @@
 libraries:
   Movies:                                           # Must match a library name in your Plex
-    report_path: config/missing/Movies_missing.yml
     template_variables:
       sep_style: purple                               # use the purple separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
@@ -41,12 +40,13 @@ libraries:
         - NR                     # final fallback string if none found
 
   TV Shows:                                           # Must match a library name in your Plex
-    report_path: config/missing/TV_missing.yml
     template_variables:
       sep_style: plum                               # use the plum separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
       placeholder_imdb_id: tt1190634                # The Boys (2019) placeholder id for the separators, avoids a plex bug.
     collection_files:
+      - default: separator_chart                            # An "index card"
+      - default: basic                                      # Some basic chart collections
     remove_overlays: false                          # Set to true if you want to remove overlays
     reapply_overlays: false                         # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
     #reset_overlays: tmdb                           # if you want to reset the poster to default poster from tmdb - can cause image bloat
@@ -168,14 +168,14 @@ notifiarr:
 trakt:
   client_id: ${TRAKT_CLIENT_ID}
   client_secret: ${TRAKT_CLIENT_SECRET}
-  pin:
   authorization:
-    access_token:
-    token_type:
-    expires_in:
-    refresh_token:
-    scope:
-    created_at:
+    access_token: ${TRAKT_ACCESS_TOKEN}
+    token_type: Bearer
+    expires_in: 604800
+    refresh_token: ${TRAKT_REFRESH_TOKEN}
+    scope: public
+    created_at: 1766604223
+  pin:
 mdblist:
   apikey: ${MDBLIST_APIKEY}
   cache_expiration: 60
