@@ -9,7 +9,7 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
-    namespace: default
+    namespace: prometheus
     name: in-cluster
   project: core-components
   syncPolicy:
