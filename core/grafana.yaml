@@ -16,7 +16,7 @@ spec:
     automated: { }
   source:
     chart: grafana
-    targetRevision: 0.44.2
+    targetRevision: 10.4.0
     repoURL: https://grafana.github.io/helm-charts
     helm:
       releaseName: grafana
