@@ -20,7 +20,3 @@ spec:
     repoURL: https://prometheus-community.github.io/helm-charts
     helm:
       releaseName: prometheus
-      values: |
-        server:
-          persistentVolume:
-            existingClaim: longhorn-prometheus-data
