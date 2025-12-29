@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dozzle
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`logs.x.pmcd.io`)
+      kind: Rule
+      services:
+        - name: dozzle
+          port: 8080
+  tls:
+    certResolver: pmcdio

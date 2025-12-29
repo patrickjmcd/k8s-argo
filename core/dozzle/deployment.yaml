@@ -1,0 +1,25 @@
+---
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dozzle
+spec:
+  selector:
+    matchLabels:
+      app: dozzle
+  template:
+    metadata:
+      labels:
+        app: dozzle
+    spec:
+      serviceAccountName: pod-viewer
+      containers:
+        - name: dozzle
+          image: dozzle
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DOZZLE_MODE
+              value: "k8s"
