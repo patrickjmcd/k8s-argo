@@ -9,7 +9,7 @@ spec:
     - match: Host(`logs.x.pmcd.io`)
       kind: Rule
       services:
-        - name: dozzle
+        - name: dozzle-service
           port: 8080
   tls:
     certResolver: pmcdio
