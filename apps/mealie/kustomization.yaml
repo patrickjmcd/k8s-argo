@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+- ingressroute.yaml
+- service.yaml
+- storage.yaml
+
+images:
+- name: mealie
+  newName:  ghcr.io/mealie-recipes/mealie
+  newTag: 3.9.1
+
+
