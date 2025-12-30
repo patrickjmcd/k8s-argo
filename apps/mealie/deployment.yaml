@@ -28,7 +28,7 @@ spec:
             - configMapRef:
                 name: mealie-config
           ports:
-            - containerPort: 9925
+            - containerPort: 9000
               name: http
               protocol: TCP
           resources:
