@@ -9,6 +9,6 @@ resources:
 images:
 - name: mealie
   newName:  ghcr.io/mealie-recipes/mealie
-  newTag: v3.9.1
+  newTag: v3.9.2
 
 
