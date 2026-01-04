@@ -17,11 +17,11 @@ spec:
               args: [ "--run", "--read-only-config" ]
               resources:
                 limits:
-                  cpu: 100m
-                  memory: 512Mi
+                  cpu: 500m
+                  memory: 1Gi
                 requests:
-                  cpu: 100m
-                  memory: 256Mi
+                  cpu: 250m
+                  memory: 500Mi
               volumeMounts:
                 - name: config
                   mountPath: /config
