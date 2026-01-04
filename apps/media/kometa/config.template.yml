@@ -25,7 +25,6 @@ libraries:
       - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
       - default: resolution                                 # 4K HDR, 1080P FHD, etc.
       - default: ribbon                                     # Used for ribbon in bottom right
-      - default: streaming                                  # Streaming on Disney+, Netflix, etc.
       - default: video_format                               # Remux, DVD, Blu-Ray, etc. in bottom left
     settings:
       asset_directory:
@@ -165,17 +164,6 @@ tmdb:                                # REQUIRED for the script to run
   region:
 notifiarr:
   apikey: ${NOTIFIARR_APIKEY}
-trakt:
-  client_id: ${TRAKT_CLIENT_ID}
-  client_secret: ${TRAKT_CLIENT_SECRET}
-  authorization:
-    access_token: ${TRAKT_ACCESS_TOKEN}
-    token_type: Bearer
-    expires_in: 604800
-    refresh_token: ${TRAKT_REFRESH_TOKEN}
-    scope: public
-    created_at: 1766604223
-  pin:
 mdblist:
   apikey: ${MDBLIST_APIKEY}
   cache_expiration: 60
