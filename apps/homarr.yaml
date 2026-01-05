@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homarr
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+  project: apps
+  syncPolicy:
+    automated: { }
+  source:
+    chart: homarr
+    targetRevision: 8.8.1
+    repoURL: oci://ghcr.io/homarr-labs/charts/homarr
+    helm:
+      releaseName: homarr
+      valuesObject:
+        env:
+          TZ: "America/Chicago"
+        database:
+          type: postgresql
+

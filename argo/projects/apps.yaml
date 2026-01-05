@@ -13,7 +13,7 @@ spec:
     - https://github.com/patrickjmcd/k8s-argo
     - https://k8s-at-home.com/charts/
     - https://helm.runix.net
-    - registry-1.docker.io/bitnamicharts/minio
+    - oci://ghcr.io/homarr-labs/charts/homarr
   destinations:
     - namespace: "*"
       name: in-cluster
