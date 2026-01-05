@@ -25,4 +25,5 @@ spec:
           TZ: "America/Chicago"
         database:
           type: postgresql
+          migrationEnabled: true
 
