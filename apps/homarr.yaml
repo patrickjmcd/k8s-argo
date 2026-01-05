@@ -26,4 +26,6 @@ spec:
         database:
           type: postgresql
           migrationEnabled: true
+        rbac:
+          enabled: true
 
