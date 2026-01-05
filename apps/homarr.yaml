@@ -10,6 +10,7 @@ metadata:
 spec:
   destination:
     name: in-cluster
+    namespace: homarr
   project: apps
   syncPolicy:
     automated: { }
