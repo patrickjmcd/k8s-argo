@@ -19,6 +19,7 @@ spec:
         app.kubernetes.io/instance: notifiarr
         app.kubernetes.io/name: notifiarr
     spec:
+      hostname: notifiarr-kube
       initContainers:
         - args:
             - " echo 'Setting configmap'  && cp /tmp/config/notifiarr.conf /etc/notifiarr/notifiarr.conf"
