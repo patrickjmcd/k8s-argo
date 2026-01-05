@@ -28,4 +28,14 @@ spec:
           migrationEnabled: true
         rbac:
           enabled: true
+        persistence:
+          homarrTrustedCerts:
+            enabled: true
+            type: existingSecret
+            existingSecretName: "trusted-certs"
+            existingSecretKeys:
+              - pi-root-ca.pem
+              - pi-ssl.pem
+              - pve-ca-cert.pem
+              - pve-ssl.pem
 
