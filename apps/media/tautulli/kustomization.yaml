@@ -9,4 +9,4 @@ resources:
 images:
   - name: tautulli
     newName: tautulli/tautulli
-    newTag: 2.0.0
+    newTag: v2.16.0
