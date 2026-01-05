@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: notifiarr
+    app.kubernetes.io/name: notifiarr
+  name: notifiarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: notifiarr
+      app.kubernetes.io/name: notifiarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: notifiarr
+        app.kubernetes.io/name: notifiarr
+    spec:
+      initContainers:
+        - args:
+            - " echo 'Setting configmap'  && cp /tmp/config/notifiarr.conf /etc/notifiarr/notifiarr.conf"
+          command:
+            - sh
+            - -c
+          image: busybox:latest
+          imagePullPolicy: Always
+          name: setup-config
+          volumeMounts:
+            - mountPath: /tmp/config
+              name: config
+            - mountPath: /etc/notifiarr
+              name: config-empty
+      containers:
+        - name: notifiarr
+          env:
+            - name: TZ
+              value: America/Chicago
+
+          image: notifiarr
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 5454
+              name: http
+              protocol: TCP
+
+          readinessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          livenessProbe:
+            tcpSocket:
+              port: http
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+
+          startupProbe:
+            failureThreshold: 30
+            periodSeconds: 5
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 6000Mi
+            requests:
+              cpu: 1000m
+              memory: 2000Mi
+
+          volumeMounts:
+            - mountPath: /etc/notifiarr
+              name: config-empty
+
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: notifiarr-config
+            items:
+              - key: notifiarr.conf
+                path: notifiarr.conf
+        - name: config-empty
+          emptyDir: {}
