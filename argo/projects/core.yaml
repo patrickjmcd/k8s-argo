@@ -17,6 +17,7 @@ spec:
     - oci://ghcr.io/kubewall/charts/kubewall
     - https://prometheus-community.github.io/helm-charts
     - https://grafana.github.io/helm-charts
+    - https://kubernetes-sigs.github.io/headlamp/
   destinations:
     - namespace: "*"
       name: in-cluster

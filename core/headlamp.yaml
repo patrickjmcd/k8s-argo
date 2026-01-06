@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: headlamp
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: kube-system
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated: { }
+  source:
+    chart: headlamp
+    targetRevision: 0.0.14
+    repoURL: https://kubernetes-sigs.github.io/headlamp/
+    helm:
+      releaseName: headlamp
+      valuesObject:
+        extraManifests:
+          - apiVersion: traefik.io/v1alpha1
+            kind: IngressRoute
+            metadata:
+              name: headlamp
+            spec:
+              entryPoints:
+                - websecure
+              routes:
+                - match: Host(`headlamp.x.pmcd.io`)
+                  kind: Rule
+                  services:
+                    - name: headlamp
+                      port: 80
+              tls:
+                certResolver: pmcdio
