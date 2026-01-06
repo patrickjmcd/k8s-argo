@@ -11,6 +11,7 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
     - https://github.com/patrickjmcd/k8s-argo
+    - https://kyverno.github.io/kyverno/
     - https://charts.external-secrets.io
     - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
     - https://traefik.github.io/charts

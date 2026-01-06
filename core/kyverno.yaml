@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+    argocd.argoproj.io/tracking-method: annotation
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  project: core-components
+  destination:
+    name: in-cluster
+    namespace: kyverno
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - chart: kyverno
+      repoURL: https://kyverno.github.io/kyverno/
+      targetRevision: 3.3.4
+      helm:
+        releaseName: kyverno
+        values: |
+          config:
+            preserve: false
+          webhookLabels:
+            app.kubernetes.io/managed-by: argocd
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      path: core/kyverno

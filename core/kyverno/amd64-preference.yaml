@@ -1,0 +1,36 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: prefer-amd64-nodes
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: prefer-amd64-if-no-scheduling-constraints
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      # Don't stomp on pods that already declare scheduling intent.
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.nodeSelector || '' }}"
+            operator: Equals
+            value: ""
+          - key: "{{ request.object.spec.affinity || '' }}"
+            operator: Equals
+            value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            affinity:
+              nodeAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 80
+                    preference:
+                      matchExpressions:
+                        - key: kubernetes.io/arch
+                          operator: In
+                          values:
+                            - amd64
