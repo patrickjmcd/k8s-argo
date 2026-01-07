@@ -20,6 +20,15 @@ spec:
       repoURL: https://grafana.github.io/helm-charts
       helm:
         releaseName: grafana
+        valuesObject:
+          persistence:
+            type: pvc
+            enabled: true
+            storageClassName: longhorn
+            accessModes:
+              - ReadWriteOnce
+            size: 5Gi
+
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
       path: core/grafana-assets
