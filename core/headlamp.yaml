@@ -24,7 +24,7 @@ spec:
           config:
             oidc:
               secret:
-                create: true
+                create: false
                 name: headlamp-oidc-secret
           extraManifests:
             - |
