@@ -43,3 +43,23 @@ spec:
                         port: 80
                 tls:
                   certResolver: pmcdio
+            - |
+              apiVersion: external-secrets.io/v1beta1
+              kind: ExternalSecret
+              metadata:
+                name: headlamp-oidc-secret
+                namespace: kube-system
+              spec:
+                target:
+                  template:
+                    metadata:
+                      labels: {}
+                dataFrom:
+                  - extract:
+                      key: headlamp-oidc-secret
+              
+                refreshInterval: 24h
+                secretStoreRef:
+                  kind: ClusterSecretStore
+                  name: secretstore
+
