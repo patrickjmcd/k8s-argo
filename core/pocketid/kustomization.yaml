@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pocketid
+resources:
+  - deployment.yaml
+  - ingressroute.yaml
+  - namespace.yaml
+  - service.yaml
+
+images:
+  - name: pocketid
+    newName: ghcr.io/pocket-id/pocket-id
+    newTag: latest

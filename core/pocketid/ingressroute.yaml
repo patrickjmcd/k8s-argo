@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pocketid
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`pocketid.x.pmcd.io`)
+      kind: Rule
+      services:
+        - name: pocketid
+          port: 80
+  tls:
+    certResolver: pmcdio
