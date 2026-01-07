@@ -38,10 +38,3 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          readinessProbe:
-            httpGet:
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 90
-            timeoutSeconds: 10
-            failureThreshold: 3
