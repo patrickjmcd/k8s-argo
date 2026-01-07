@@ -5,7 +5,8 @@ metadata:
   namespace: pocketid
 spec:
   selector:
-    app: pocketid
+    app.kubernetes.io/instance: pocketid
+    app.kubernetes.io/name: pocketid
   ports:
     - name: http
       port: 80
