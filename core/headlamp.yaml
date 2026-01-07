@@ -14,37 +14,32 @@ spec:
   project: core-components
   syncPolicy:
     automated: { }
-  source:
-    chart: headlamp
-    targetRevision: 0.39.0
-    repoURL: https://kubernetes-sigs.github.io/headlamp
-    helm:
-      releaseName: headlamp
-      valuesObject:
-        config:
-          oidc:
-            clientID: headlamp
-            issuerURL: https://pocketid.x.pmcd.io
-            redirectURL: https://headlamp.x.pmcd.io/oidc-callback
-            scopes:
-              - openid
-              - profile
-              - email
-              - groups
-        extraManifests:
-          - |
-            apiVersion: traefik.io/v1alpha1
-            kind: IngressRoute
-            metadata:
-              name: headlamp
-            spec:
-              entryPoints:
-                - websecure
-              routes:
-                - match: Host(`headlamp.x.pmcd.io`)
-                  kind: Rule
-                  services:
-                    - name: headlamp
-                      port: 80
-              tls:
-                certResolver: pmcdio
+  sources:
+    - chart: headlamp
+      targetRevision: 0.39.0
+      repoURL: https://kubernetes-sigs.github.io/headlamp
+      helm:
+        releaseName: headlamp
+        valuesObject:
+          config:
+            oidc:
+              secret:
+                create: true
+                name: headlamp-oidc-secret
+          extraManifests:
+            - |
+              apiVersion: traefik.io/v1alpha1
+              kind: IngressRoute
+              metadata:
+                name: headlamp
+              spec:
+                entryPoints:
+                  - websecure
+                routes:
+                  - match: Host(`headlamp.x.pmcd.io`)
+                    kind: Rule
+                    services:
+                      - name: headlamp
+                        port: 80
+                tls:
+                  certResolver: pmcdio
