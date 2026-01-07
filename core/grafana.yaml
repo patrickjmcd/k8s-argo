@@ -14,9 +14,12 @@ spec:
   project: core-components
   syncPolicy:
     automated: { }
-  source:
-    chart: grafana
-    targetRevision: 10.4.0
-    repoURL: https://grafana.github.io/helm-charts
-    helm:
-      releaseName: grafana
+  sources:
+    - chart: grafana
+      targetRevision: 10.4.0
+      repoURL: https://grafana.github.io/helm-charts
+      helm:
+        releaseName: grafana
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      path: core/grafana-assets
