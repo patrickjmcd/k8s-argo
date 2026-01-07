@@ -28,7 +28,7 @@ spec:
             - configMapRef:
                 name: pocketid-config
           ports:
-            - containerPort: 8080
+            - containerPort: 1411
               name: http
               protocol: TCP
           resources:
@@ -38,3 +38,10 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+          readinessProbe:
+            httpGet:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 90
+            timeoutSeconds: 10
+            failureThreshold: 3
