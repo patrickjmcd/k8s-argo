@@ -1,21 +1,47 @@
----
-# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app.kubernetes.io/instance: pocketid
+    app.kubernetes.io/name: pocketid
   name: pocketid
+  namespace: pocketid
 spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: pocketid
+      app.kubernetes.io/instance: pocketid
+      app.kubernetes.io/name: pocketid
   template:
     metadata:
       labels:
-        app: pocketid
+        app.kubernetes.io/instance: pocketid
+        app.kubernetes.io/name: pocketid
     spec:
       containers:
         - name: pocketid
           image: pocketid
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: pocketid-config
           ports:
-            - name: http
-              containerPort: 8080
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 90
+            timeoutSeconds: 10
+            failureThreshold: 3
