@@ -24,7 +24,6 @@ libraries:
       - default: content_rating_us_movie
       - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
       - default: resolution                                 # 4K HDR, 1080P FHD, etc.
-      - default: ribbon                                     # Used for ribbon in bottom right
       - default: video_format                               # Remux, DVD, Blu-Ray, etc. in bottom left
     settings:
       asset_directory:
@@ -71,7 +70,6 @@ libraries:
       - default: resolution
         template_variables:
           builder_level: season
-      - default: ribbon                                     # Used for ribbon in bottom right on show
       - default: status                                     # Airing, Returning, Ended, Canceled on show
       - default: versions                                   # Will show duplicates for that media item on show and episode
       - default: versions

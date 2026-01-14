@@ -14,12 +14,27 @@ spec:
   project: core-components
   syncPolicy:
     automated: { }
-  source:
-    chart: prometheus
-    targetRevision: 27.52.0
-    repoURL: https://prometheus-community.github.io/helm-charts
-    helm:
-      releaseName: prometheus
-      values: |
-        server:
-          retentionSize: 7500MB
+  sources:
+    - path: core/prometheus-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      path: core/grafana-assets
+    - chart: prometheus
+      targetRevision: 27.52.0
+      repoURL: https://prometheus-community.github.io/helm-charts
+      helm:
+        releaseName: kube-prometheus-stack
+        valuesObject:
+          prometheus:
+            prometheusSpec:
+              retentionSize: 8GiB
+          grafana:
+            persistence:
+              type: pvc
+              enabled: true
+              storageClassName: longhorn
+              accessModes:
+                - ReadWriteOnce
+              size: 5Gi
