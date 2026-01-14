@@ -38,6 +38,9 @@ spec:
             prometheusSpec:
               retentionSize: 8GiB
           grafana:
+            grafana.ini:
+              server:
+                root_url: https://grafana.x.pmcd.io
             persistence:
               type: pvc
               enabled: true
