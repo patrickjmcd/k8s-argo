@@ -10,7 +10,7 @@ spec:
     - match: Host(`prometheus.x.pmcd.io`)
       kind: Rule
       services:
-        - name: prometheus-server
+        - name: kube-prometheus-stack-server
           port: 80
   tls:
     certResolver: pmcdio
