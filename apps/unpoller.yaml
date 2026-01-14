@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: unpoller
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+    namespace: unpoller
+  project: apps
+  syncPolicy:
+    automated: { }
+  source:
+    path: apps/unpoller
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
+
