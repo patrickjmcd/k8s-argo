@@ -37,6 +37,9 @@ spec:
           prometheus:
             prometheusSpec:
               retentionSize: 8GiB
+              serviceMonitorNamespaceSelector:
+                matchLabels:
+                  prometheus: enabled
           grafana:
             grafana.ini:
               server:
