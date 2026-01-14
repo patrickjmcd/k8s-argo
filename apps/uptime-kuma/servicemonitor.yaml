@@ -11,9 +11,6 @@ spec:
         password:
           name: uptime-kuma-api-key
           key: password
-        username:
-          name: uptime-kuma-api-key
-          key: user
       port: http
       path: /metrics
   selector:
