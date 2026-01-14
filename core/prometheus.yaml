@@ -27,6 +27,9 @@ spec:
       helm:
         releaseName: kube-prometheus-stack
         valuesObject:
+          crds:
+            updateJob:
+              enabled: true
           prometheus:
             prometheusSpec:
               retentionSize: 8GiB
