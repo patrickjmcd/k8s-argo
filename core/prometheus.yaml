@@ -13,7 +13,11 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated: { }
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
   sources:
     - path: core/prometheus-assets
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
