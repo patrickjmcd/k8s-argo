@@ -1,5 +1,5 @@
 apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
+kind: ServiceMonitor
 metadata:
   name: unifi-poller
   namespace: default
@@ -11,5 +11,5 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: unpoller
       app.kubernetes.io/name: unpoller
-  podMetricsEndpoints:
+  endpoints:
     - port: tcp
