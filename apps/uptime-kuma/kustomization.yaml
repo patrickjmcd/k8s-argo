@@ -5,6 +5,7 @@ resources:
 - ingressroute.yaml
 - service.yaml
 - storage.yaml
+- servicemonitor.yaml
 
 images:
 - name: uptime-kuma

@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: uptime-kuma
+    app.kubernetes.io/name: uptime-kuma
+  name: uptime-kuma
+spec:
+  endpoints:
+    - basicAuth:
+        password:
+          name: uptime-kuma-api-key
+          key: password
+        username:
+          name: uptime-kuma-api-key
+          key: user
+      port: http
+      path: /metrics
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: uptime-kuma
+      app.kubernetes.io/name: uptime-kuma
