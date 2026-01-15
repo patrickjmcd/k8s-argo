@@ -27,6 +27,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: mealie-config
+            - secretRef:
+                name: mealie-1pw
           ports:
             - containerPort: 9000
               name: http

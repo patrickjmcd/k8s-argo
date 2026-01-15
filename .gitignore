@@ -1,3 +1,4 @@
 .idea/
 dockerconfigjson.yaml
 secrets.env.json
+1password-credentials.json

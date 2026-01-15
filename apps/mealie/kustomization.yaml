@@ -5,10 +5,16 @@ resources:
 - httproute.yaml
 - service.yaml
 - storage.yaml
+- 1password.secret.yaml
 
 images:
 - name: mealie
   newName:  ghcr.io/mealie-recipes/mealie
   newTag: v3.9.1
+
+configMapGenerator:
+  - name: mealie-config
+    files:
+      - .env
 
 
