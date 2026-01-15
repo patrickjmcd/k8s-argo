@@ -7,6 +7,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   destination:
     namespace: prometheus

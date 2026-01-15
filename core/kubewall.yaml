@@ -13,7 +13,9 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated: { }
+    automated:
+      prune: true
+      selfHeal: true
   sources:
     - path: core/kubewall-assets
       repoURL: https://github.com/patrickjmcd/k8s-argo.git

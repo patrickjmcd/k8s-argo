@@ -7,12 +7,16 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   destination:
     namespace: kube-system
     name: in-cluster
   project: core-components
-
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
   source:
     chart: csi-driver-nfs
     repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts

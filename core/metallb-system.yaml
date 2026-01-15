@@ -7,13 +7,16 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   destination:
     namespace: default
     name: in-cluster
   project: core-components
-  #  syncPolicy:
-  #    automated: { }
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
   source:
     path: core/metallb-system
     repoURL: https://github.com/patrickjmcd/k8s-argo.git

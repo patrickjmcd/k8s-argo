@@ -9,6 +9,7 @@ metadata:
     argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
     argocd.argoproj.io/tracking-method: annotation
     argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   project: core-components
   destination:

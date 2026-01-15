@@ -13,7 +13,9 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated: { }
+    automated:
+      prune: true
+      selfHeal: true
   sources:
     - chart: headlamp
       targetRevision: 0.39.0
