@@ -4,12 +4,12 @@ resources:
 - deployment.yaml
 - service.yaml
 - httproute.yaml
-- external-secret.yaml
+- 1password.secret.yaml
 
 images:
 - name: glance
   newName: glanceapp/glance
-  newTag: latest
+  newTag: v0.8.4
 
 configMapGenerator:
   - name: glance-config
