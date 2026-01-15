@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: media-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: radarr
+          - name: sonarr
+          - name: lidarr
+          - name: prowlarr
+          - name: calibre
+          - name: agregarr
+          - name: tautulli
+          - name: notifiarr
+          - name: sabnzbd
+          - name: kometa
+  template:
+    metadata:
+      name: '{{name}}'
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: .
+    spec:
+      project: apps
+      source:
+        repoURL: https://github.com/patrickjmcd/k8s-argo.git
+        targetRevision: main
+        path: 'apps/media/{{name}}'
+      destination:
+        name: in-cluster
+        namespace: media
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
