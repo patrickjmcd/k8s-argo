@@ -19,6 +19,8 @@ pages:
               - url: https://awesomekling.github.io/feed.xml
               - url: https://ishadeed.com/feed.xml
                 title: Ahmad Shadeed
+              - url: ${RSS_404MEDIA}
+                title: 404 Media
 
           - type: monitor
             cache: 1m

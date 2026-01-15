@@ -4,6 +4,7 @@ resources:
 - deployment.yaml
 - service.yaml
 - httproute.yaml
+- external-secret.yaml
 
 images:
 - name: glance

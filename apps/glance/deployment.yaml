@@ -24,6 +24,9 @@ spec:
         - name: glance
           image: glance
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: glance
           command:
             - "/app/glance"
             - "-config"
