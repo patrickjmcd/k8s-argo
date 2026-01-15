@@ -79,6 +79,7 @@ spec:
             kubernetesGateway:
               enabled: true
           gateway:
+            namespacePolicy: All
             listeners:
               web: # HTTP listener that matches entryPoint `web`
                 port: 80
