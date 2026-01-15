@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    email: patrickjmcd@gmail.com
+    server: https://acme-v02-staging.api.letsencrypt.org/directory # Replace with the production server in production
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-pmcdio-credentials
+              key: CLOUDFLARE_TOKEN

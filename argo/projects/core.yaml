@@ -19,6 +19,7 @@ spec:
     - https://prometheus-community.github.io/helm-charts
     - https://grafana.github.io/helm-charts
     - https://kubernetes-sigs.github.io/headlamp
+    - oci://quay.io/jetstack/charts/cert-manager
   destinations:
     - namespace: "*"
       name: in-cluster
