@@ -26,7 +26,8 @@ spec:
         valuesObject:
           ports:
             metrics:
-              expose: true
+              expose:
+                default: true
               port: 9100
               protocol: TCP
             web:
