@@ -1,8 +1,7 @@
-# HTTPRoute
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: grafana-httproute
+  name: prometheus-httproute
   namespace: prometheus
 spec:
   parentRefs:
@@ -11,14 +10,14 @@ spec:
       name: traefik-gateway
       namespace: default
   hostnames:
-    - grafana.x.pmcd.io
+    - prometheus.x.pmcd.io
   rules:
     - matches:
         - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: kube-prometheus-stack-grafana
+        - name: kube-prometheus-stack-prometheus
           kind: Service
           namespace: prometheus
-          port: 80
+          port: 9090

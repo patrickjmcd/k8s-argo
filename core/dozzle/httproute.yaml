@@ -1,9 +1,8 @@
-# HTTPRoute
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: grafana-httproute
-  namespace: prometheus
+  name: dozzle-httproute
+  namespace: default
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -11,14 +10,15 @@ spec:
       name: traefik-gateway
       namespace: default
   hostnames:
-    - grafana.x.pmcd.io
+    - logs.x.pmcd.io
+    - dozzle.x.pmcd.io
   rules:
     - matches:
         - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: kube-prometheus-stack-grafana
+        - name: dozzle-service
           kind: Service
-          namespace: prometheus
-          port: 80
+          namespace: default
+          port: 8080

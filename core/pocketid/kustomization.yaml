@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: pocketid
 resources:
   - deployment.yaml
-  - ingressroute.yaml
   - namespace.yaml
   - service.yaml
 
