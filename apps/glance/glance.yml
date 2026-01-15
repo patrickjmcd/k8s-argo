@@ -33,7 +33,7 @@ pages:
             limit: 10
             collapse-after: 3
             cache: 3h
-            style: horizontal-cards-2
+            style: horizontal-cards
             feeds:
               - url: ${RSS_404MEDIA}
                 title: 404 Media
