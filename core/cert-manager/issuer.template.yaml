@@ -13,8 +13,8 @@ spec:
           cloudflare:
             email: "${SECRET_CLOUDFLARE_EMAIL}"
             apiTokenSecretRef:
-              name: cloudflare-token-secret
-              key: cloudflare-token
+              name: cloudflare-pmcdio-credentials
+              key: CLOUDFLARE_TOKEN
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -31,5 +31,5 @@ spec:
           cloudflare:
             email: "${SECRET_CLOUDFLARE_EMAIL}"
             apiTokenSecretRef:
-              name: cloudflare-token-secret
-              key: cloudflare-token
+              name: cloudflare-pmcdio-credentials
+              key: CLOUDFLARE_TOKEN
