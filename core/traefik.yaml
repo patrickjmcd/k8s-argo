@@ -86,12 +86,13 @@ spec:
                 protocol: HTTP
                 namespacePolicy:
                   from: All
-
-  #            websecure: # HTTPS listener that matches entryPoint `websecure`
-  #              port: 443
-  #              protocol: HTTPS  # TLS terminates inside Traefik
-  #              namespacePolicy:
-  #                from: All
+              websecure: # HTTPS listener that matches entryPoint `websecure`
+                port: 443
+                protocol: HTTPS  # TLS terminates inside Traefik
+                namespacePolicy:
+                  from: All
+                certificateRefs:
+                  - name: pmcdio-tls-le
           # Enable Observability
           logs:
             general:
