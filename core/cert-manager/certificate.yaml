@@ -11,5 +11,5 @@ spec:
     - "*.x.pmcd.io"
     - "*.pmcd.io"
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-prod
     kind: ClusterIssuer
