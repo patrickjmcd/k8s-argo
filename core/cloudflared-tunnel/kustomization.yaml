@@ -4,6 +4,7 @@ resources:
 #  - configmap.yaml
   - deployment.yaml
   - external-secret.yaml
+  - podmonitor.yaml
 
 images:
   - name: cloudflared

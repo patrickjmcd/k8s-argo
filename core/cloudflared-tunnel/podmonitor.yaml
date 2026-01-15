@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cloudflared
+  labels:
+    app: cloudflared
+spec:
+  selector:
+    matchLabels:
+      app: cloudflared
+  podMetricsEndpoints:
+    - port: metrics
+      endpoint: /metrics

@@ -29,6 +29,10 @@ spec:
             - --metrics
             - 0.0.0.0:2000
             - run
+          ports:
+            - containerPort: 2000
+              name: metrics
+              protocol: TCP
           livenessProbe:
             httpGet:
               # Cloudflared has a /ready endpoint which returns 200 if and only if
