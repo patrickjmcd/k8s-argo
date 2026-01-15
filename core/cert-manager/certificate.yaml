@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: pmcdio-tls-le        # Name of the Certificate resource
+  namespace: default
+spec:
+  secretName: pmcdio-tls-le        # Name of secret where the generated certificate will be stored.
+  dnsNames:
+    - "pmcd.io"
+    - "*.x.pmcd.io"
+    - "*.pmcd.io"
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
