@@ -4,7 +4,7 @@ resources:
   #  - helm-release.yaml
   - deployment.yaml
   - service.yaml
-  - ingressroute.yaml
+  - httproute.yaml
 
 images:
   - name: prowlarr

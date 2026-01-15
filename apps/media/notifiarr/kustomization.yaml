@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-  - ingressroute.yaml
+  - httproute.yaml
 
 images:
   - name: notifiarr
