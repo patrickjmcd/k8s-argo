@@ -14,93 +14,96 @@ spec:
   project: core-components
   syncPolicy:
     automated: { }
-  source:
-    chart: traefik
-    targetRevision: 37.2.0
-    repoURL: https://traefik.github.io/charts
-    helm:
-      releaseName: traefik
-      valuesObject:
-        ports:
-          web:
-            port: 80
-            http:
-              redirections:
-                entryPoint:
-                  to: websecure
-                  scheme: https
-                  permanent: true
-          websecure:
-            port: 443
-        certificatesResolvers:
-          pmcdio:
-            acme:
-              email: "patrickjmcd@gmail.com"
-              storage: "/data/acme.json"       # Path to store the certificate information.
-              dnsChallenge:
-                provider: cloudflare
-                delayBeforeCheck: 0
-        env:
-          - name: CF_DNS_API_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: cloudflare-pmcdio-credentials
-                key: CLOUDFLARE_TOKEN
-        service:
-          spec:
-            loadBalancerIP: 192.168.8.200
-#        deployment:
-#          initContainers:
-#            - name: volume-permissions
-#              image: busybox:latest
-#              command: [ "sh", "-c", "touch /data/acme.json; chmod -v 600 /data/acme.json" ]
-#              volumeMounts:
-#                - mountPath: /data
-#                  name: data
-#        podSecurityContext:
-#          fsGroup: 65532
-#          runAsGroup: 65532
-#          runAsNonRoot: true
-#          runAsUser: 65532
-#          fsGroupChangePolicy: "OnRootMismatch"
-        ingressRoute:
-          dashboard:
-            enabled: true
-            matchRule: Host(`traefic.x.pmcd.io`)
-            entryPoints:
-              - web
-              - websecure
-            tls:
-              certResolver: pmcdio
-        providers:
-          kubernetesGateway:
-            enabled: true
-        gateway:
-          listeners:
-            web: # HTTP listener that matches entryPoint `web`
+  sources:
+    - path: core/traefik-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - chart: traefik
+      targetRevision: 37.2.0
+      repoURL: https://traefik.github.io/charts
+      helm:
+        releaseName: traefik
+        valuesObject:
+          ports:
+            web:
               port: 80
-              protocol: HTTP
-              namespacePolicy:
-                from: All
+              http:
+                redirections:
+                  entryPoint:
+                    to: websecure
+                    scheme: https
+                    permanent: true
+            websecure:
+              port: 443
+          certificatesResolvers:
+            pmcdio:
+              acme:
+                email: "patrickjmcd@gmail.com"
+                storage: "/data/acme.json"       # Path to store the certificate information.
+                dnsChallenge:
+                  provider: cloudflare
+                  delayBeforeCheck: 0
+          env:
+            - name: CF_DNS_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-pmcdio-credentials
+                  key: CLOUDFLARE_TOKEN
+          service:
+            spec:
+              loadBalancerIP: 192.168.8.200
+  #        deployment:
+  #          initContainers:
+  #            - name: volume-permissions
+  #              image: busybox:latest
+  #              command: [ "sh", "-c", "touch /data/acme.json; chmod -v 600 /data/acme.json" ]
+  #              volumeMounts:
+  #                - mountPath: /data
+  #                  name: data
+  #        podSecurityContext:
+  #          fsGroup: 65532
+  #          runAsGroup: 65532
+  #          runAsNonRoot: true
+  #          runAsUser: 65532
+  #          fsGroupChangePolicy: "OnRootMismatch"
+          ingressRoute:
+            dashboard:
+              enabled: true
+              matchRule: Host(`traefic.x.pmcd.io`)
+              entryPoints:
+                - web
+                - websecure
+              tls:
+                certResolver: pmcdio
+          providers:
+            kubernetesGateway:
+              enabled: true
+          gateway:
+            listeners:
+              web: # HTTP listener that matches entryPoint `web`
+                port: 80
+                protocol: HTTP
+                namespacePolicy:
+                  from: All
 
-#            websecure: # HTTPS listener that matches entryPoint `websecure`
-#              port: 443
-#              protocol: HTTPS  # TLS terminates inside Traefik
-#              namespacePolicy:
-#                from: All
-        # Enable Observability
-        logs:
-          general:
-            level: INFO
-          # This enables access logs, outputting them to Traefik's standard output by default. The [Access Logs Documentation](https://doc.traefik.io/traefik/observability/access-logs/) covers for[...]
-          access:
-            enabled: true
+  #            websecure: # HTTPS listener that matches entryPoint `websecure`
+  #              port: 443
+  #              protocol: HTTPS  # TLS terminates inside Traefik
+  #              namespacePolicy:
+  #                from: All
+          # Enable Observability
+          logs:
+            general:
+              level: INFO
+            # This enables access logs, outputting them to Traefik's standard output by default. The [Access Logs Documentation](https://doc.traefik.io/traefik/observability/access-logs/) covers for[...]
+            access:
+              enabled: true
 
-        # Enables Prometheus for Metrics
-        metrics:
-          prometheus:
-            enabled: true
+          # Enables Prometheus for Metrics
+          metrics:
+            prometheus:
+              enabled: true
 
-#        persistence:
-#          enabled: true
-#          existingClaim: smb-appconfig-traefik-claim
+  #        persistence:
+  #          enabled: true
+  #          existingClaim: smb-appconfig-traefik-claim
