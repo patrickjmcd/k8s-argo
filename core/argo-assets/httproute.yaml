@@ -21,3 +21,5 @@ spec:
           kind: Service
           namespace: argocd
           port: 80
+          group: ''
+          weight: 1
