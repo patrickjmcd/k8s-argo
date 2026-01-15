@@ -23,7 +23,7 @@ spec:
       containers:
         - envFrom:
             - secretRef:
-                name: mongo-secret
+                name: tablerock-1pw
           image: table-rock-lake-level
           imagePullPolicy: IfNotPresent
 
