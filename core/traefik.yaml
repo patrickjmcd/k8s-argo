@@ -25,6 +25,10 @@ spec:
         releaseName: traefik
         valuesObject:
           ports:
+            metrics:
+              expose: true
+              port: 9100
+              protocol: TCP
             web:
               port: 80
               http:
@@ -77,6 +81,8 @@ spec:
           metrics:
             prometheus:
               enabled: true
+              serviceMonitor:
+                enabled: true
 
   #        persistence:
   #          enabled: true

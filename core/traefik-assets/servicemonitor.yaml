@@ -11,4 +11,3 @@ spec:
       app.kubernetes.io/name: traefik
   endpoints:
     - port: metrics
-      path: /metrics
