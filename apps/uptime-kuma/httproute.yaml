@@ -21,4 +21,4 @@ spec:
         - name: uptime-kuma
           kind: Service
           namespace: default
-          port: 3000
+          port: 3001
