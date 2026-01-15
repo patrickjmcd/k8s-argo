@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
 #  - configmap.yaml
   - deployment.yaml
-  - external-secret.yaml
+  - 1password.secret.yaml
   - podmonitor.yaml
 
 images:
