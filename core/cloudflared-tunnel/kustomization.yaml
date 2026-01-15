@@ -5,6 +5,11 @@ resources:
   - deployment.yaml
   - external-secret.yaml
 
+images:
+  - name: cloudflared
+    newName: cloudflare/cloudflared
+    newTag: 2025.11.1
+
 configMapGenerator:
   - name: cloudflared
     namespace: default
