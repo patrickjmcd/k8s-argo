@@ -19,5 +19,5 @@ spec:
       backendRefs:
         - name: sabnzbd
           kind: Service
-          namespace: default
+          namespace: media
           port: 80

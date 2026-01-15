@@ -19,5 +19,5 @@ spec:
       backendRefs:
         - name: tautulli
           kind: Service
-          namespace: default
+          namespace: media
           port: 80

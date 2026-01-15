@@ -20,5 +20,5 @@ spec:
       backendRefs:
         - name: overseerr
           kind: Service
-          namespace: default
+          namespace: media
           port: 5055

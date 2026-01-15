@@ -19,5 +19,5 @@ spec:
       backendRefs:
         - name: sonarr
           kind: Service
-          namespace: default
+          namespace: media
           port: 80
