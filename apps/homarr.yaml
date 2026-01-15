@@ -14,28 +14,31 @@ spec:
   project: apps
   syncPolicy:
     automated: { }
-  source:
-    chart: homarr
-    targetRevision: 8.8.1
-    repoURL: oci://ghcr.io/homarr-labs/charts/homarr
-    helm:
-      releaseName: homarr
-      valuesObject:
-        env:
-          TZ: "America/Chicago"
-        database:
-          type: postgresql
-          migrationEnabled: true
-        rbac:
-          enabled: true
-        persistence:
-          homarrTrustedCerts:
+  sources:
+    - path: apps/homarr-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - chart: homarr
+      targetRevision: 8.8.1
+      repoURL: oci://ghcr.io/homarr-labs/charts/homarr
+      helm:
+        releaseName: homarr
+        valuesObject:
+          env:
+            TZ: "America/Chicago"
+          database:
+            type: postgresql
+            migrationEnabled: true
+          rbac:
             enabled: true
-            type: existingSecret
-            existingSecretName: "trusted-certs"
-            existingSecretKeys:
-              - pi-root-ca.pem
-              - pi-ssl.pem
-              - pve-ca-cert.pem
-              - pve-ssl.pem
+          persistence:
+            homarrTrustedCerts:
+              enabled: true
+              type: existingSecret
+              existingSecretName: "trusted-certs"
+              existingSecretKeys:
+                - pi-root-ca.pem
+                - pi-ssl.pem
+                - pve-ca-cert.pem
+                - pve-ssl.pem
 
