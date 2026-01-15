@@ -36,7 +36,7 @@ spec:
               kind: HTTPRoute
               metadata:
                 name: headlamp-httproute
-                namespace: default
+                namespace: kube-system
               spec:
                 parentRefs:
                   - group: gateway.networking.k8s.io
