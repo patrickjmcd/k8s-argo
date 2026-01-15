@@ -20,5 +20,6 @@ spec:
       backendRefs:
         - name: kube-prometheus-stack-grafana
           kind: Service
+          group: ''
           namespace: prometheus
           port: 80
