@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: cert-manager
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated: { }
+    syncOptions:
+      - CreateNamespace=true
+  source:
+    chart: cert-manager
+    targetRevision: v1.19.2
+    repoURL: oci://quay.io/jetstack/charts/cert-manager
+    helm:
+      valuesObject:
+        crds:
+          enabled: true
