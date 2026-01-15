@@ -24,8 +24,51 @@ pages:
             cache: 1m
             title: Services
             sites:
+              - title: Home Assistant
+                url: https://ha.pmcd.dev
+              - title: PocketID
+                url: https://auth.pmcd.dev
+              - title: Mealie
+                url: https://mealie.x.pmcd.io
               - title: ArgoCD
-                url: https://argo.pmcd.dev
+                url: https://argo.x.pmcd.io
+              - title: Traefik
+                url: https://traefik.x.pmcd.io
+              - title: Tronbyt
+                url: https://tronbyt.x.pmcd.io
+              - title: Uptime Kuma
+                url: https://status.x.pmcd.io
+              - title: Longhorn
+                url: https://longhorn.x.pmcd.io
+              - title: Logs
+                url: https://logs.x.pmcd.io
+              - title: Grafana
+                url: https://grafana.x.pmcd.io
+              - title: Prometheus
+                url: https://prometheus.x.pmcd.io
+
+
+          - type: monitor
+            cache: 1m
+            title: Media Services
+            sites:
+              - title: Overseerr
+                url: https://overseerr.x.pmcd.io
+              - title: Sonarr
+                url: https://sonarr.x.pmcd.io
+              - title: Radarr
+                url: https://radarr.x.pmcd.io
+              - title: Lidarr
+                url: https://lidarr.x.pmcd.io
+              - title: Prowlarr
+                url: https://prowlarr.x.pmcd.io
+              - title: Agregarr
+                url: https://agregarr.x.pmcd.io
+              - title: Tautulli
+                url: https://tautulli.x.pmcd.io
+              - title: Youtube-DL
+                url: https://youtubedl.x.pmcd.io
+
 
       - size: full
         widgets:
