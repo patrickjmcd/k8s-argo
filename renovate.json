@@ -26,11 +26,6 @@
       "automerge": false
     },
     {
-      "matchPackagePatterns": ["^gha-runner"],
-      "groupName": "GitHub Actions Runners",
-      "automerge": false
-    },
-    {
       "matchPackagePatterns": ["^kube-prometheus", "^prometheus", "^grafana"],
       "groupName": "Monitoring Stack",
       "automerge": false

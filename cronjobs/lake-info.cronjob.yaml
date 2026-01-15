@@ -20,7 +20,7 @@ spec:
                 - name: ATLAS_CONNECTION_URI
                   valueFrom:
                     secretKeyRef:
-                      name: mongo-secret
+                      name: tablerock-1pw
                       key: MONGODB_URI
               envFrom:
                 - secretRef:
