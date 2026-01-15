@@ -44,6 +44,6 @@ spec:
             httpGet:
               port: http
             initialDelaySeconds: 10
-            periodSeconds: 60
+            periodSeconds: 10
             timeoutSeconds: 10
             failureThreshold: 3

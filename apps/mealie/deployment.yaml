@@ -42,7 +42,7 @@ spec:
             httpGet:
               port: http
             initialDelaySeconds: 10
-            periodSeconds: 90
+            periodSeconds: 10
             timeoutSeconds: 10
             failureThreshold: 3
           volumeMounts:
