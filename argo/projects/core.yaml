@@ -20,6 +20,7 @@ spec:
     - https://grafana.github.io/helm-charts
     - https://kubernetes-sigs.github.io/headlamp
     - oci://quay.io/jetstack/charts/cert-manager
+    - https://metallb.github.io/metallb
   destinations:
     - namespace: "*"
       name: in-cluster
