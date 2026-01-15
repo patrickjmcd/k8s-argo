@@ -10,14 +10,22 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   destination:
-    namespace: default
+    namespace: metallb-system
     name: in-cluster
   project: core-components
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-  source:
-    path: core/metallb-system
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    targetRevision: main
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - path: core/metallb-system
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - chart: metallb
+      repoURL: https://metallb.github.io/metallb
+      targetRevision: 0.14.9
+      helm:
+        releaseName: metallb
