@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-dashboard
+  namespace: default
+  labels:
+    app.kubernetes.io/name: traefik
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: traefik
+  ports:
+    - name: dashboard
+      port: 8080
+      targetPort: traefik
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: traefik-dashboard-httproute
+  namespace: default
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: default
+  hostnames:
+    - traefik.x.pmcd.io
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: traefik-dashboard
+          kind: Service
+          namespace: default
+          port: 8080

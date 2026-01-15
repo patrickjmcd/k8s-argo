@@ -48,13 +48,7 @@ spec:
               loadBalancerIP: 192.168.8.200
           ingressRoute:
             dashboard:
-              enabled: true
-              matchRule: Host(`traefik.x.pmcd.io`)
-              entryPoints:
-                - web
-                - websecure
-              tls:
-                certResolver: pmcdio
+              enabled: false
           providers:
             kubernetesGateway:
               enabled: true
