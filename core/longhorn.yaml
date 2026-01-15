@@ -9,6 +9,9 @@ spec:
       - CreateNamespace=true
   project: default
   sources:
+    - path: core/longhorn-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
     - chart: longhorn
       repoURL: https://charts.longhorn.io/
       targetRevision: v1.10.1
