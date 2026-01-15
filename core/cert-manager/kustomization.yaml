@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - certificate.yaml
   - 1password.secret.yaml
-  - certificate.yaml
+  - issuer.yaml
 
 
