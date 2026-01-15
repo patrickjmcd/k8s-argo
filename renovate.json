@@ -7,7 +7,12 @@
     "fileMatch": ["\\.yaml$"]
   },
   "argocd": {
-    "fileMatch": ["apps/.+\\.yaml$", "core/.+\\.yaml$"]
+    "fileMatch": [
+      "apps/.+\\.yaml$",
+      "core/.+\\.yaml$",
+      "github-action-runner/.+\\.yaml$",
+      "cronjobs/.+\\.yaml$"
+    ]
   },
   "packageRules": [
     {
@@ -18,6 +23,16 @@
     {
       "matchPackagePatterns": ["^traefik", "^cert-manager", "^external-secrets"],
       "groupName": "Infrastructure Charts",
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["^gha-runner"],
+      "groupName": "GitHub Actions Runners",
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["^kube-prometheus", "^prometheus", "^grafana"],
+      "groupName": "Monitoring Stack",
       "automerge": false
     }
   ]
