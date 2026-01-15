@@ -29,7 +29,7 @@ spec:
                 create: false
               externalSecret:
                 enabled: true
-                name: headlamp-oidc-secret
+                name: headlamp-oidc-secret-1pw
           extraManifests:
             - |
               apiVersion: gateway.networking.k8s.io/v1
@@ -56,22 +56,11 @@ spec:
                         namespace: kube-system
                         port: 80
             - |
-              apiVersion: external-secrets.io/v1
-              kind: ExternalSecret
+              apiVersion: onepassword.com/v1
+              kind: OnePasswordItem
               metadata:
-                name: headlamp-oidc-secret
-                namespace: kube-system
+                name: headlamp-oidc-secret-1pw
+                namespace: cron
               spec:
-                target:
-                  template:
-                    metadata:
-                      labels: {}
-                dataFrom:
-                  - extract:
-                      key: headlamp-oidc-secret
-              
-                refreshInterval: 24h
-                secretStoreRef:
-                  kind: ClusterSecretStore
-                  name: secretstore
+                itemPath: "vaults/Kubernetes/items/headlamp"
 
