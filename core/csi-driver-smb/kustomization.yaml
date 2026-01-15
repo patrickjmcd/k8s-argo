@@ -5,5 +5,5 @@ resources:
 - controller.yaml
 - csi-driver.yaml
 - daemonset.yaml
-- external-secret.yaml
+- 1password.secret.yaml
 - rbac.yaml

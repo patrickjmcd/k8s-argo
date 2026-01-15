@@ -22,7 +22,7 @@ spec:
     volumeAttributes:
       source: '//192.168.1.253/Media'
     nodeStageSecretRef:
-      name: smb-creds
+      name: smb-creds-1pw
       namespace: csi-smb-provisioner
 ---
 apiVersion: v1
@@ -65,7 +65,7 @@ spec:
     volumeAttributes:
       source: '//192.168.1.253/AppConfig/youtubedl'
     nodeStageSecretRef:
-      name: smb-creds
+      name: smb-creds-1pw
       namespace: csi-smb-provisioner
 ---
 apiVersion: v1
