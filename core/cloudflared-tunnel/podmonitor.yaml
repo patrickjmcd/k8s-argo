@@ -10,4 +10,3 @@ spec:
       app: cloudflared
   podMetricsEndpoints:
     - port: metrics
-      endpoint: /metrics
