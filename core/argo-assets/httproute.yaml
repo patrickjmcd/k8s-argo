@@ -1,25 +1,23 @@
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: argo
+  name: argocd-httproute
   namespace: argocd
 spec:
-  entryPoints:
-    - websecure
-    - web
-  routes:
-    - kind: Rule
-      match: Host(`argo.x.pmcd.io`)
-      priority: 10
-      services:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: default
+  hostnames:
+    - argo.x.pmcd.io
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
         - name: argocd-server
+          kind: Service
+          namespace: argocd
           port: 8080
-    - kind: Rule
-      match: Host(`argo.x.pmcd.io`) && Header(`Content-Type`, `application/grpc`)
-      priority: 11
-      services:
-        - name: argocd-server
-          port: 8080
-          scheme: h2c
-  tls:
-    certResolver: pmcdio
