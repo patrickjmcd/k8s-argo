@@ -3,10 +3,12 @@ kind: PodMonitor
 metadata:
   name: cloudflared
   labels:
-    app: cloudflared
+    app.kubernetes.io/instance: cloudflared
+    app.kubernetes.io/name: cloudflared
 spec:
   selector:
     matchLabels:
-      app: cloudflared
+      app.kubernetes.io/instance: cloudflared
+      app.kubernetes.io/name: cloudflared
   podMetricsEndpoints:
     - port: metrics

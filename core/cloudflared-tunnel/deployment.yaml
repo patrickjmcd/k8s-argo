@@ -7,12 +7,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: cloudflared
+      app.kubernetes.io/instance: cloudflared
+      app.kubernetes.io/name: cloudflared
   replicas: 2 # You could also consider elastic scaling for this deployment
   template:
     metadata:
       labels:
-        app: cloudflared
+        app.kubernetes.io/instance: cloudflared
+        app.kubernetes.io/name: cloudflared
     spec:
       containers:
         - name: cloudflared
