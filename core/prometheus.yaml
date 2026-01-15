@@ -37,12 +37,12 @@ spec:
           prometheus:
             prometheusSpec:
               retentionSize: 8GiB
-              probeSelectorNilUsesHelmValues: false
-              ruleSelectorNilUsesHelmValues: false
+              podMonitorSelector: { }
               podMonitorSelectorNilUsesHelmValues: false
               podMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
+              serviceMonitorSelector: { }
               serviceMonitorSelectorNilUsesHelmValues: false
               serviceMonitorNamespaceSelector:
                 matchLabels:
