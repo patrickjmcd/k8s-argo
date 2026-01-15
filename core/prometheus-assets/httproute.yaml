@@ -18,7 +18,8 @@ spec:
             value: /
       backendRefs:
         - name: kube-prometheus-stack-prometheus
-          group: ''
           kind: Service
+          group: ''
+          weight: 1
           namespace: prometheus
           port: 9090

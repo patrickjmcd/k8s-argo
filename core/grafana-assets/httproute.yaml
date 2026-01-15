@@ -21,5 +21,6 @@ spec:
         - name: kube-prometheus-stack-grafana
           kind: Service
           group: ''
+          weight: 1
           namespace: prometheus
           port: 80
