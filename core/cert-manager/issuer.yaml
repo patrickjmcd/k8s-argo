@@ -5,16 +5,16 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: "${SECRET_CLOUDFLARE_EMAIL}"
+    email: patrickjmcd@gmail.com
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
       - dns01:
           cloudflare:
-            email: "${SECRET_CLOUDFLARE_EMAIL}"
+            email: patrickjmcd@gmail.com
             apiTokenSecretRef:
-              name: cloudflare-pmcdio-credentials
-              key: CLOUDFLARE_TOKEN
+              name: certmanager-1pw
+              key: token
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -23,13 +23,13 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: "${SECRET_CLOUDFLARE_EMAIL}"
+    email: patrickjmcd@gmail.com
     privateKeySecretRef:
       name: letsencrypt-staging
     solvers:
       - dns01:
           cloudflare:
-            email: "${SECRET_CLOUDFLARE_EMAIL}"
+            email: patrickjmcd@gmail.com
             apiTokenSecretRef:
-              name: cloudflare-pmcdio-credentials
-              key: CLOUDFLARE_TOKEN
+              name: certmanager-1pw
+              key: token
