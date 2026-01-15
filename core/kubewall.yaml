@@ -14,9 +14,12 @@ spec:
   project: core-components
   syncPolicy:
     automated: { }
-  source:
-    chart: kubewall
-    targetRevision: 0.0.14
-    repoURL: oci://ghcr.io/kubewall/charts/kubewall
-    helm:
-      releaseName: kubewall
+  sources:
+    - path: core/kubewall-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - chart: kubewall
+      targetRevision: 0.0.14
+      repoURL: oci://ghcr.io/kubewall/charts/kubewall
+      helm:
+        releaseName: kubewall
