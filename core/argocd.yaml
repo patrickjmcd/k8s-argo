@@ -1,0 +1,102 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  destination:
+    namespace: argocd
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - path: core/argo-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - chart: argo-cd
+      repoURL: https://argoproj.github.io/argo-helm
+      targetRevision: 7.8.14
+      helm:
+        releaseName: argocd
+        valuesObject:
+          # Keep existing secrets (OIDC client secret, admin password, etc.)
+          configs:
+            secret:
+              createSecret: false
+            cm:
+              url: https://argo.x.pmcd.io
+              oidc.config: |
+                name: PocketID
+                issuer: https://auth.pmcd.dev
+                clientID: a9bf2324-b65d-4bb2-8b11-5d7d7ddbf8db
+                clientSecret: $oidc.pocketID.clientSecret
+                enablePKCEAuthentication: true
+            params:
+              server.insecure: true
+
+          server:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+
+          controller:
+            resources:
+              requests:
+                cpu: 250m
+                memory: 512Mi
+              limits:
+                cpu: 1000m
+                memory: 1Gi
+
+          repoServer:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+
+          redis:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
+
+          applicationSet:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+
+          notifications:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+
+          dex:
+            enabled: false

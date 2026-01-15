@@ -2,5 +2,23 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "kubernetes": {
+    "fileMatch": ["\\.yaml$"]
+  },
+  "argocd": {
+    "fileMatch": ["apps/.+\\.yaml$", "core/.+\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": ["argo-cd"],
+      "groupName": "ArgoCD",
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["^traefik", "^cert-manager", "^external-secrets"],
+      "groupName": "Infrastructure Charts",
+      "automerge": false
+    }
   ]
 }

@@ -21,6 +21,7 @@ spec:
     - https://kubernetes-sigs.github.io/headlamp
     - oci://quay.io/jetstack/charts/cert-manager
     - https://metallb.github.io/metallb
+    - https://argoproj.github.io/argo-helm
   destinations:
     - namespace: "*"
       name: in-cluster
