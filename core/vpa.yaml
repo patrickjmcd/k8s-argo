@@ -22,7 +22,7 @@ spec:
   source:
     chart: vpa
     repoURL: https://charts.fairwinds.com/stable
-    targetRevision: 4.7.1
+    targetRevision: 4.10.1
     helm:
       releaseName: vpa
       valuesObject:
