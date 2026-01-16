@@ -22,6 +22,7 @@ spec:
     - oci://quay.io/jetstack/charts/cert-manager
     - https://metallb.github.io/metallb
     - https://argoproj.github.io/argo-helm
+    - https://charts.fairwinds.com/stable
   destinations:
     - namespace: "*"
       name: in-cluster

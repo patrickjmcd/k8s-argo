@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vpa
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  destination:
+    namespace: vpa
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    chart: vpa
+    repoURL: https://charts.fairwinds.com/stable
+    targetRevision: 4.7.1
+    helm:
+      releaseName: vpa
+      valuesObject:
+        recommender:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+        updater:
+          enabled: false
+        admissionController:
+          enabled: false
