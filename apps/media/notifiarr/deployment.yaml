@@ -75,11 +75,11 @@ spec:
 
           resources:
             limits:
-              cpu: 2000m
-              memory: 6000Mi
+              cpu: 100m
+              memory: 256Mi
             requests:
-              cpu: 1000m
-              memory: 2000Mi
+              cpu: 15m
+              memory: 100Mi
 
           volumeMounts:
             - mountPath: /etc/notifiarr
