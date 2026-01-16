@@ -8,5 +8,5 @@ resources:
 
 images:
   - name: ersatztv
-    newName: ghcr.io/ersatztv/ersatztv:latest
+    newName: ghcr.io/ersatztv/ersatztv
     newTag: v26.1.1
