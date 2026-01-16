@@ -86,7 +86,7 @@ ingress:
   - hostname: auth.pmcd.dev
     service: http://pocketid.pocketid:80
 
-  - hostname: tv.pmcd.dev
+  - hostname: tv.pmcd.io
     service: http://192.168.1.210:8409
 
   # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
