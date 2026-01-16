@@ -59,19 +59,27 @@ spec:
 
           resources:
             limits:
-              cpu: 2000m
-              memory: 2048Mi
+              cpu: 4000m
+              memory: 4096Mi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 500m
+              memory: 512Mi
 
           volumeMounts:
             - mountPath: /config
               name: config
             - mountPath: /mnt/media
               name: media
+            - mountPath: /transcode
+              name: transcode-cache
+              subPath: ersatztv/transcode
 
       restartPolicy: Always
+      tolerations:
+        - key: nvme-storage-available
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -79,3 +87,6 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
+        - name: transcode-cache
+          persistentVolumeClaim:
+            claimName: rpi51-nvme-pvc
