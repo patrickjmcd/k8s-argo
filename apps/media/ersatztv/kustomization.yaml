@@ -9,4 +9,4 @@ resources:
 images:
   - name: ersatztv
     newName: jasongdove/ersatztv
-    newTag: v0.8.9-vaapi
+    newTag: v25.2.0-vaapi
