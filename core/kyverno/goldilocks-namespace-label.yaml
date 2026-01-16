@@ -1,0 +1,34 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-goldilocks-label
+  annotations:
+    policies.kyverno.io/title: Add Goldilocks Label to Namespaces
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/description: >-
+      Automatically adds the goldilocks.fairwinds.com/enabled=true label
+      to all namespaces except system namespaces, enabling resource
+      recommendations via Goldilocks.
+spec:
+  rules:
+    - name: add-goldilocks-label
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+      exclude:
+        any:
+          - resources:
+              names:
+                - kube-system
+                - kube-public
+                - kube-node-lease
+                - longhorn-system
+                - vpa
+                - goldilocks
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              goldilocks.fairwinds.com/enabled: "true"
