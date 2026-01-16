@@ -17,7 +17,6 @@ spec:
           - name: notifiarr
           - name: sabnzbd
           - name: kometa
-          - name: ersatztv
   template:
     metadata:
       name: '{{name}}'
