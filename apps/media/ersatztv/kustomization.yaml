@@ -8,5 +8,5 @@ resources:
 
 images:
   - name: ersatztv
-    newName: jasongdove/ersatztv
-    newTag: v0.8.9-vaapi
+    newName: ghcr.io/ersatztv/ersatztv:latest
+    newTag: v26.1.1
