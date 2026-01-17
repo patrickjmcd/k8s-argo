@@ -14,7 +14,7 @@ images:
 
 configMapGenerator:
   - name: mealie-config
-    files:
+    envs:
       - .env
 
 
