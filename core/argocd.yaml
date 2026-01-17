@@ -41,6 +41,14 @@ spec:
                 clientID: a9bf2324-b65d-4bb2-8b11-5d7d7ddbf8db
                 clientSecret: $oidc.pocketID.clientSecret
                 enablePKCEAuthentication: true
+                scopes:
+                  - openid
+                  - profile
+                  - email
+                  - groups
+            rbac:
+              policy.csv: |
+                g, argocd_admin, role:admin
             params:
               server.insecure: true
 
