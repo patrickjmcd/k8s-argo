@@ -24,7 +24,7 @@ spec:
                       key: MONGODB_URI
               envFrom:
                 - secretRef:
-                    name: lake-info-secret
+                    name: tablerock-1pw
 
 
           restartPolicy: OnFailure
