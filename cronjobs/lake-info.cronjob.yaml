@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: table-rock-lake-info
-              image: ghcr.io/patrickjmcd/lake-info:v1.6.1
+              image: ghcr.io/patrickjmcd/lake-info:v1.6.2
               command: ["/ko-app/main.go", "scrape", "tablerock"]
               env:
                 - name: ATLAS_CONNECTION_URI
