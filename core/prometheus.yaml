@@ -48,6 +48,8 @@ spec:
               serviceMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
+          prometheus-node-exporter:
+            affinity: {}
           grafana:
             grafana.ini:
               server:
