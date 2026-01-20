@@ -69,20 +69,20 @@ spec:
             timeoutSeconds: 10
 
           startupProbe:
-            failureThreshold: 30
-            periodSeconds: 5
+            failureThreshold: 60
+            periodSeconds: 10
             successThreshold: 1
             tcpSocket:
               port: http
-            timeoutSeconds: 1
+            timeoutSeconds: 5
 
           resources:
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 2000m
+              memory: 2048Mi
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 100m
+              memory: 256Mi
 
           volumeMounts:
             - mountPath: /config
