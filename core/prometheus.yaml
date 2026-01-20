@@ -38,6 +38,8 @@ spec:
           prometheus:
             prometheusSpec:
               retentionSize: 8GiB
+              nodeSelector:
+                kubernetes.io/arch: amd64
               podMonitorSelector: { }
               podMonitorSelectorNilUsesHelmValues: false
               podMonitorNamespaceSelector:
@@ -48,6 +50,10 @@ spec:
               serviceMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
+          alertmanager:
+            alertmanagerSpec:
+              nodeSelector:
+                kubernetes.io/arch: amd64
           prometheus-node-exporter:
             affinity: {}
           grafana:
