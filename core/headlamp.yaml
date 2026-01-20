@@ -60,7 +60,7 @@ spec:
               kind: OnePasswordItem
               metadata:
                 name: headlamp-oidc-secret-1pw
-                namespace: cron
+                namespace: kube-system
               spec:
                 itemPath: "vaults/Kubernetes/items/headlamp"
 
