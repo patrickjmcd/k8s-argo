@@ -54,7 +54,7 @@ ingress:
   - hostname: request.pmcd.dev
     service: http://overseerr.media:5055
   - hostname: youtubedl.pmcd.io
-    service: http://youtubedl-youtubedl-material.media:17442
+    service: http://youtubedl.media:80
   - hostname: tronbyt.pmcd.io
     service: http://tronbyt-server:8888
   - hostname: agregarr.pmcd.io

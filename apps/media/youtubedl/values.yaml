@@ -1,0 +1,28 @@
+image:
+  repository: tzahi12345/youtubedl-material
+  tag: "4.3.2"
+
+env:
+  TZ: America/Chicago
+  UID: "1000"
+  GID: "1000"
+
+persistence:
+  media:
+    enabled: true
+    existingClaim: smb-media-claim
+    subPath: video/youtube
+    mountPath: /app/video
+
+  config:
+    enabled: true
+    emptyDir: false
+    existingClaim: longhorn-youtubedl-config
+
+resources:
+  requests:
+    memory: 128Mi
+    cpu: 0.1
+  limits:
+    memory: 1Gi
+    cpu: 2

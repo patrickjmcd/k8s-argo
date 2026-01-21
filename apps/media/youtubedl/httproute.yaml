@@ -18,7 +18,7 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: youtubedl-youtubedl-material
+        - name: youtubedl
           kind: Service
           namespace: media
-          port: 17442
+          port: 80
