@@ -82,10 +82,14 @@ spec:
               value: "0.85"
             - name: CONF_REVIEW
               value: "0.70"
+            - name: ENABLE_EMBEDDINGS
+              value: "1"
+            - name: EMBEDDING_MODEL
+              value: "text-embedding-3-small"
           command: [ "sh","-lc" ]
           args:
             - >
-              pip install --no-cache-dir watchdog openai &&
+              pip install --no-cache-dir watchdog openai sqlite-vec &&
               python /app/watcher.py
           envFrom:
             - secretRef:

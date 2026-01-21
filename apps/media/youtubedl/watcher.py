@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+"""
+watcher.py
+
+Watches an INCOMING directory for youtube-dl / yt-dlp style downloads, then:
+- Infers PRIMARY ARTIST + SONG TITLE (rules first, OpenAI fallback)
+- Detects "full set" / concert-ish items
+- Moves (or copies) the media + sidecar files into ORGANIZED/<Artist>/
+- Writes a CLEANED + ENRICHED .info.json next to the moved media
+- Generates an embedding (trimmed metadata) and stores it in SQLite using sqlite-vec
+- Stores metadata in SQLite so you can join semantic results -> file paths
+
+Requires:
+  pip install watchdog openai sqlite-vec
+"""
+
 import os
 import re
 import time
@@ -6,334 +22,465 @@ import shutil
 import hashlib
 import sqlite3
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# ---------------------------
-# Paths / config
-# ---------------------------
+# ============================================================
+# Configuration (env vars)
+# ============================================================
 INCOMING = Path(os.getenv("INCOMING_DIR", "/incoming"))
 ORGANIZED = Path(os.getenv("ORGANIZED_DIR", "/organized"))
 NEEDS_REVIEW = Path(os.getenv("NEEDS_REVIEW_DIR", str(ORGANIZED / "Needs Review")))
 
 STABLE_SECONDS = int(os.getenv("STABLE_SECONDS", "15"))
-UNKNOWN_ARTIST = os.getenv("UNKNOWN_ARTIST", "Unknown Artist")
 COPY_MODE = os.getenv("COPY_MODE", "0") == "1"
 
-# OpenAI
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
-USE_OPENAI = os.getenv("USE_OPENAI", "1") == "1"
+UNKNOWN_ARTIST = os.getenv("UNKNOWN_ARTIST", "Unknown Artist")
+UNKNOWN_TITLE = os.getenv("UNKNOWN_TITLE", "Unknown Title")
 
-# Confidence thresholds
+MEDIA_EXTS = {".mp4", ".mkv", ".webm", ".mov", ".m4v"}
+SKIP_EXTS = {".part", ".tmp", ".ytdl", ".download", ".crdownload"}
+THUMB_EXTS = {".webp", ".jpg", ".jpeg", ".png"}
+
 CONF_AUTO = float(os.getenv("CONF_AUTO", "0.85"))
 CONF_REVIEW = float(os.getenv("CONF_REVIEW", "0.70"))
 
-# Cache
-CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/artist_cache.sqlite3"))
+CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/media.sqlite3"))
 
-SKIP_EXTS = {".part", ".tmp", ".ytdl", ".download", ".crdownload"}
-MEDIA_EXTS = {".mp4", ".mkv", ".webm", ".mov", ".m4v"}
-THUMB_EXTS = {".webp", ".jpg", ".jpeg", ".png"}
+# OpenAI inference
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+USE_OPENAI = (os.getenv("USE_OPENAI", "1") == "1") and bool(OPENAI_API_KEY)
 
-DEFAULT_PUBLISHERS = {
-    "mtv", "npr music", "tiny desk", "kexp", "austin city limits", "bbc radio",
-    "vevo", "the tonight show starring jimmy fallon", "the late late show",
-    "jimmy kimmel live", "siriusxm", "pitchfork", "colors", "triple j", "mix"
-}
-PUBLISHER_CHANNELS = {
-    s.strip().lower() for s in os.getenv("PUBLISHER_CHANNELS", "").split(",") if s.strip()
-} or DEFAULT_PUBLISHERS
+# Embeddings (SQLite-only via sqlite-vec)
+ENABLE_EMBEDDINGS = (os.getenv("ENABLE_EMBEDDINGS", "1") == "1") and bool(OPENAI_API_KEY)
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+# IMPORTANT: sqlite-vec requires a fixed dimension in the table schema.
+# Defaulting to 1536 works for many "small" embeddings; override if your model differs.
+EMBEDDING_DIMS = int(os.getenv("EMBEDDING_DIMS", "1536"))
+# TRIMMED embedding content:
+EMBED_TEXT_MAX_DESC = int(os.getenv("EMBED_TEXT_MAX_DESC", "1200"))
+EMBED_TEXT_MAX_TAGS = int(os.getenv("EMBED_TEXT_MAX_TAGS", "30"))
 
-try:
-    CHANNEL_ARTIST_OVERRIDES = json.loads(os.getenv("CHANNEL_ARTIST_OVERRIDES", "{}"))
-    if not isinstance(CHANNEL_ARTIST_OVERRIDES, dict):
-        CHANNEL_ARTIST_OVERRIDES = {}
-except Exception:
-    CHANNEL_ARTIST_OVERRIDES = {}
+# JSON cleaning
+JSON_TRIM_DESCRIPTION_TO = int(os.getenv("JSON_TRIM_DESCRIPTION_TO", "2000"))
 
-ARTIST_TITLE_SPLIT_RE = re.compile(r"^\s*(?P<artist>.+?)\s*[-–—:|]\s*(?P<title>.+?)\s*$")
+# ============================================================
+# Regex + heuristics
+# ============================================================
+# Common patterns:
+#  - "Artist - Song"
+#  - "'Song' Artist performance ..."
+#  - "Artist ft. X ..." (artist is main)
+ARTIST_TITLE_RE = re.compile(r"^\s*(?P<artist>.+?)\s*[-–—:|]\s*(?P<title>.+?)\s*$")
 
 PERFORMANCE_RE = re.compile(
-    r"^\s*['\"“”‘’]?(?P<song>.+?)['\"“”‘’]?\s+(?P<artist>[A-Za-z0-9 &.+/'’“-]+?)\s+"
+    r"^\s*['\"“”‘’]?(?P<song>.+?)['\"“”‘’]?\s+(?P<artist>[A-Za-z0-9 &.+/'’“”\-]+?)\s+"
     r"(performance|perform|performs|performed|plays|playing)\b",
     re.IGNORECASE,
 )
 
 FEAT_RE = re.compile(
-    r"^\s*(?P<artist>[A-Za-z0-9 &.+/'’“-]+?)\s+(ft\.?|feat\.?|featuring)\b",
+    r"^\s*(?P<artist>[A-Za-z0-9 &.+/'’“”\-]+?)\s+(ft\.?|feat\.?|featuring)\b",
     re.IGNORECASE,
 )
 
-# ---------------------------
-# OpenAI client (lazy import)
-# ---------------------------
+FULL_SET_HINTS = (
+    "full concert", "full set", "full show", "complete", "entire", "livestream",
+    "festival", "glastonbury", "lollapalooza", "outside lands", "acl",
+    "live at", "tiny desk concert", "session", "interview", "performance + interview"
+)
+
+# channels that are commonly publishers, not artists
+PUBLISHERS = {
+    "mtv", "npr music", "tiny desk", "kexp", "bbc", "vevo",
+    "the tonight show", "jimmy kimmel", "late late show",
+}
+
+# ============================================================
+# OpenAI client (lazy)
+# ============================================================
 _openai_client = None
 
-def get_openai_client():
+SYSTEM_PROMPT_ARTIST_TITLE = (
+    "You classify music performance videos.\n"
+    "Given metadata (title/channel/tags/description), infer:\n"
+    "1) primary_artist: the primary performing artist (ignore publishers like MTV/NPR/TV shows)\n"
+    "2) song_title: the song title if present; otherwise a short best title for the performance\n"
+    "3) is_full_set: true if it's a full concert/set/interview rather than one song\n"
+    "Return ONLY valid JSON:\n"
+    "{"
+    "\"primary_artist\":\"...\","
+    "\"artist_confidence\":0.0,"
+    "\"song_title\":\"...\","
+    "\"title_confidence\":0.0,"
+    "\"is_full_set\":false"
+    "}\n"
+)
+
+def get_openai():
     global _openai_client
-    if _openai_client is not None:
+    if _openai_client:
         return _openai_client
     if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is not set")
-    try:
-        from openai import OpenAI
-    except Exception as e:
-        raise RuntimeError("openai python package not installed. Add `pip install openai`") from e
+        raise RuntimeError("OPENAI_API_KEY not set")
+    from openai import OpenAI
     _openai_client = OpenAI(api_key=OPENAI_API_KEY)
     return _openai_client
 
-SYSTEM_PROMPT = (
-    "You are classifying music videos.\n"
-    "Identify the PRIMARY performing artist.\n"
-    "Ignore publishers (MTV, NPR, Tiny Desk, KEXP, etc).\n"
-    "If multiple artists appear, choose the main act.\n"
-    "Return ONLY valid JSON with keys: artist, confidence.\n"
-    "confidence is 0.0-1.0.\n"
-)
+# ============================================================
+# sqlite-vec helpers (lazy import)
+# ============================================================
+def _load_vec(conn: sqlite3.Connection) -> None:
+    # Only needed if ENABLE_EMBEDDINGS; we call conditionally.
+    import sqlite_vec  # type: ignore
+    conn.enable_load_extension(True)
+    sqlite_vec.load(conn)
 
-# ---------------------------
-# Cache helpers
-# ---------------------------
-def init_cache():
+# ============================================================
+# DB / cache
+# ============================================================
+def init_db():
     CACHE_DB.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(str(CACHE_DB)) as con:
-        con.execute(
-            """
-            CREATE TABLE IF NOT EXISTS artist_cache (
-              key TEXT PRIMARY KEY,
-              artist TEXT NOT NULL,
-              confidence REAL NOT NULL,
-              model TEXT,
-              created_at INTEGER NOT NULL
-            )
-            """
+    conn = sqlite3.connect(CACHE_DB)
+
+    # metadata table
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS media_cache (
+        key TEXT PRIMARY KEY,
+        path TEXT,
+        artist TEXT,
+        artist_conf REAL,
+        title TEXT,
+        title_conf REAL,
+        is_full_set INTEGER,
+        source TEXT,
+        created INTEGER
+    )
+    """)
+
+    if ENABLE_EMBEDDINGS:
+        _load_vec(conn)
+        # vec0 virtual table for embeddings
+        conn.execute(f"""
+        CREATE VIRTUAL TABLE IF NOT EXISTS media_vec USING vec0(
+            key TEXT PRIMARY KEY,
+            embedding FLOAT[{EMBEDDING_DIMS}] distance_metric=cosine
         )
-        con.commit()
+        """)
 
-def cache_get(key: str) -> Optional[Tuple[str, float]]:
-    with sqlite3.connect(str(CACHE_DB)) as con:
-        row = con.execute(
-            "SELECT artist, confidence FROM artist_cache WHERE key=?",
-            (key,),
-        ).fetchone()
-        if row:
-            return row[0], float(row[1])
-    return None
+    conn.commit()
+    conn.close()
 
-def cache_put(key: str, artist: str, confidence: float, model: str):
-    with sqlite3.connect(str(CACHE_DB)) as con:
-        con.execute(
-            "INSERT OR REPLACE INTO artist_cache(key, artist, confidence, model, created_at) VALUES(?,?,?,?,?)",
-            (key, artist, confidence, model, int(time.time())),
-        )
-        con.commit()
+def stable_key(info: dict, media: Path) -> str:
+    base = f"{info.get('id','')}|{info.get('title') or info.get('fulltitle') or media.stem}|{info.get('uploader') or info.get('channel') or ''}"
+    return hashlib.sha256(base.encode("utf-8", errors="ignore")).hexdigest()
 
-# ---------------------------
-# Utility
-# ---------------------------
-def sanitize(name: str) -> str:
-    name = (name or "").strip()
-    name = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", name)
-    name = re.sub(r"\s+", " ", name).rstrip(" .")
-    return name or UNKNOWN_ARTIST
+def cache_get(key: str):
+    conn = sqlite3.connect(CACHE_DB)
+    row = conn.execute(
+        "SELECT artist, artist_conf, title, title_conf, is_full_set, source, path FROM media_cache WHERE key=?",
+        (key,),
+    ).fetchone()
+    conn.close()
+    return row
+
+def cache_put(key: str, path: str, artist: str, artist_conf: float, title: str, title_conf: float, is_full_set: bool, source: str):
+    conn = sqlite3.connect(CACHE_DB)
+    conn.execute(
+        "INSERT OR REPLACE INTO media_cache VALUES (?,?,?,?,?,?,?,?,?)",
+        (key, path, artist, float(artist_conf), title, float(title_conf), 1 if is_full_set else 0, source, int(time.time())),
+    )
+    conn.commit()
+    conn.close()
+
+def vec_upsert(key: str, vec: List[float]) -> None:
+    if len(vec) != EMBEDDING_DIMS:
+        raise ValueError(f"Embedding dims mismatch: got {len(vec)} expected {EMBEDDING_DIMS}. Set EMBEDDING_DIMS or change model.")
+    conn = sqlite3.connect(CACHE_DB)
+    _load_vec(conn)
+    conn.execute(
+        "INSERT OR REPLACE INTO media_vec(key, embedding) VALUES (?, ?)",
+        (key, json.dumps(vec)),
+    )
+    conn.commit()
+    conn.close()
+
+def vec_exists(key: str) -> bool:
+    conn = sqlite3.connect(CACHE_DB)
+    if ENABLE_EMBEDDINGS:
+        _load_vec(conn)
+        row = conn.execute("SELECT 1 FROM media_vec WHERE key=? LIMIT 1", (key,)).fetchone()
+        conn.close()
+        return row is not None
+    conn.close()
+    return False
+
+# ============================================================
+# Utilities
+# ============================================================
+def sanitize(s: str, fallback: str) -> str:
+    s = (s or "").strip()
+    s = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", s)
+    s = re.sub(r"\s+", " ", s).rstrip(" .")
+    return s or fallback
 
 def is_stable(path: Path) -> bool:
-    last_size = -1
-    stable_for = 0
-    while stable_for < STABLE_SECONDS:
+    last = -1
+    stable = 0
+    while stable < STABLE_SECONDS:
         try:
             size = path.stat().st_size
         except FileNotFoundError:
             return False
-        if size == last_size:
-            stable_for += 1
+        if size == last:
+            stable += 1
         else:
-            stable_for = 0
-            last_size = size
+            stable = 0
+            last = size
         time.sleep(1)
     return True
 
-def find_info_json(media_path: Path) -> Optional[Path]:
-    p = media_path.with_suffix(media_path.suffix + ".info.json")
-    return p if p.exists() else None
-
-def load_info(info_path: Optional[Path]) -> Optional[dict]:
-    if not info_path or not info_path.exists():
-        return None
+def load_info(p: Path) -> Optional[dict]:
     try:
-        with info_path.open("r", encoding="utf-8") as f:
+        with p.open(encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return None
 
-def title_from_info(info: dict, media_path: Path) -> str:
-    for key in ("track", "title", "fulltitle"):
-        v = info.get(key)
+def channel_from_info(info: dict) -> str:
+    for k in ("channel", "uploader", "creator"):
+        v = info.get(k)
         if isinstance(v, str) and v.strip():
             return v.strip()
-    return media_path.stem
+    return ""
 
-def channel_from_info(info: dict) -> Optional[str]:
-    for key in ("channel", "uploader", "creator"):
-        v = info.get(key)
+def title_from_info(info: dict, media: Path) -> str:
+    for k in ("track", "title", "fulltitle"):
+        v = info.get(k)
         if isinstance(v, str) and v.strip():
             return v.strip()
-    return None
+    return media.stem
 
-def best_music_artist(info: dict) -> Optional[str]:
-    for key in ("artist", "album_artist"):
-        v = info.get(key)
-        if isinstance(v, str) and v.strip():
-            return v.strip()
-    return None
+def looks_like_full_set(title: str, desc: str) -> bool:
+    t = (title or "").lower()
+    d = (desc or "").lower()
+    return any(h in t for h in FULL_SET_HINTS) or any(h in d for h in FULL_SET_HINTS)
 
-def artist_from_title_heuristics(title: str, channel: Optional[str]) -> Optional[str]:
-    t = (title or "").strip()
-    m = ARTIST_TITLE_SPLIT_RE.match(t)
-    if m:
-        artist = m.group("artist").strip()
-        if channel and artist.lower() == channel.strip().lower():
-            return None
-        return artist
-
-    m = PERFORMANCE_RE.match(t)
-    if m:
-        return m.group("artist").strip()
-
-    m = FEAT_RE.match(t)
-    if m:
-        return m.group("artist").strip()
-
-    return None
-
-def choose_artist_rules(info: Optional[dict], media_path: Path) -> Tuple[str, float, str]:
+# ============================================================
+# Heuristic inference (artist + title)
+# ============================================================
+def heuristic_infer(info: Optional[dict], media: Path) -> Tuple[str, float, str, float, bool, str]:
     """
-    Returns: (artist, confidence, source)
-    confidence here is "rule-confidence", not OpenAI.
+    Returns (artist, artist_conf, song_title, title_conf, is_full_set, source)
     """
     if not info:
-        m = ARTIST_TITLE_SPLIT_RE.match(media_path.stem)
+        m = ARTIST_TITLE_RE.match(media.stem)
         if m:
-            return sanitize(m.group("artist")), 0.75, "filename-split"
-        return UNKNOWN_ARTIST, 0.30, "no-info"
+            artist = sanitize(m.group("artist"), UNKNOWN_ARTIST)
+            song = sanitize(m.group("title"), UNKNOWN_TITLE)
+            return artist, 0.75, song, 0.70, looks_like_full_set(song, ""), "filename-split"
+        return UNKNOWN_ARTIST, 0.30, sanitize(media.stem, UNKNOWN_TITLE), 0.30, False, "no-info"
 
-    channel = channel_from_info(info)
-    channel_lc = channel.lower().strip() if channel else ""
-
-    if channel and channel in CHANNEL_ARTIST_OVERRIDES:
-        return sanitize(CHANNEL_ARTIST_OVERRIDES[channel]), 0.95, "channel-override"
-
-    a = best_music_artist(info)
-    if a:
-        return sanitize(a), 0.95, "music-metadata"
-
-    title = title_from_info(info, media_path)
-
-    if channel_lc in PUBLISHER_CHANNELS:
-        inferred = artist_from_title_heuristics(title, channel)
-        if inferred:
-            return sanitize(inferred), 0.85, "title-heuristic(publisher)"
-
-        tags = info.get("tags")
-        if isinstance(tags, list):
-            for tag in tags:
-                if not isinstance(tag, str):
-                    continue
-                tl = tag.strip().lower()
-                if tl and tl != channel_lc and tl not in PUBLISHER_CHANNELS and len(tag.strip()) >= 3:
-                    return sanitize(tag), 0.65, "tag-fallback(publisher)"
-
-        return UNKNOWN_ARTIST, 0.20, "publisher-unknown"
-
-    if channel:
-        return sanitize(channel), 0.70, "channel-as-artist"
-
-    return UNKNOWN_ARTIST, 0.20, "unknown"
-
-# ---------------------------
-# OpenAI inference
-# ---------------------------
-def build_metadata_text(info: dict, media_path: Path) -> str:
-    """
-    Keep it compact and avoid sending URLs / giant fields.
-    """
-    title = title_from_info(info, media_path)
+    title = title_from_info(info, media)
     desc = info.get("description") if isinstance(info.get("description"), str) else ""
-    tags = info.get("tags") if isinstance(info.get("tags"), list) else []
-    playlist = info.get("playlist_title") or info.get("playlist") or ""
+    channel = channel_from_info(info)
+    channel_lc = channel.lower().strip()
+    publisherish = (channel_lc in PUBLISHERS)
 
-    # trim description to keep token costs sane
+    # Strong: explicit music metadata (rare for YouTube, but sometimes present)
+    for k in ("artist", "album_artist"):
+        v = info.get(k)
+        if isinstance(v, str) and v.strip():
+            artist = sanitize(v, UNKNOWN_ARTIST)
+            song = sanitize(info.get("track") if isinstance(info.get("track"), str) else title, UNKNOWN_TITLE)
+            return artist, 0.95, song, 0.85, looks_like_full_set(title, desc), "music-metadata"
+
+    # "Artist - Song"
+    m = ARTIST_TITLE_RE.match(title)
+    if m:
+        artist = sanitize(m.group("artist"), UNKNOWN_ARTIST)
+        song = sanitize(m.group("title"), UNKNOWN_TITLE)
+        if publisherish and artist.lower() == channel_lc:
+            return UNKNOWN_ARTIST, 0.35, song, 0.75, looks_like_full_set(title, desc), "title-split(publisher-bad-artist)"
+        return artist, 0.85, song, 0.80, looks_like_full_set(title, desc), "title-split"
+
+    # "'Song' Artist performance ..."
+    m = PERFORMANCE_RE.match(title)
+    if m:
+        song = sanitize(m.group("song"), UNKNOWN_TITLE)
+        artist = sanitize(m.group("artist"), UNKNOWN_ARTIST)
+        return artist, 0.85, song, 0.80, looks_like_full_set(title, desc), "performance-pattern"
+
+    # "Artist feat ..."
+    m = FEAT_RE.match(title)
+    if m:
+        artist = sanitize(m.group("artist"), UNKNOWN_ARTIST)
+        # title might still include the song name, but it's messy; keep as-is
+        song = sanitize(title, UNKNOWN_TITLE)
+        return artist, 0.75, song, 0.55, looks_like_full_set(title, desc), "feat-pattern"
+
+    # publisher channels: pick an artist-like tag (weak)
+    if publisherish:
+        tags = info.get("tags") if isinstance(info.get("tags"), list) else []
+        tags = [t for t in tags if isinstance(t, str) and t.strip()]
+        for t in tags:
+            tl = t.strip().lower()
+            if tl and tl != channel_lc and tl not in PUBLISHERS and len(t.strip()) >= 3:
+                return sanitize(t, UNKNOWN_ARTIST), 0.60, sanitize(title, UNKNOWN_TITLE), 0.60, looks_like_full_set(title, desc), "tags-fallback(publisher)"
+        return UNKNOWN_ARTIST, 0.25, sanitize(title, UNKNOWN_TITLE), 0.55, looks_like_full_set(title, desc), "publisher-unknown"
+
+    # non-publisher: channel is often the artist
+    if channel:
+        return sanitize(channel, UNKNOWN_ARTIST), 0.70, sanitize(title, UNKNOWN_TITLE), 0.60, looks_like_full_set(title, desc), "channel-as-artist"
+
+    return UNKNOWN_ARTIST, 0.25, sanitize(title, UNKNOWN_TITLE), 0.40, looks_like_full_set(title, desc), "unknown"
+
+# ============================================================
+# OpenAI inference (artist + title + full_set)
+# ============================================================
+def openai_infer(info: dict, media: Path) -> Tuple[str, float, str, float, bool]:
+    title = title_from_info(info, media)
+    channel = channel_from_info(info)
+    tags = info.get("tags") if isinstance(info.get("tags"), list) else []
+    tags = [t for t in tags if isinstance(t, str)][:40]
+    desc = info.get("description") if isinstance(info.get("description"), str) else ""
     desc = desc.strip()
     if len(desc) > 2000:
         desc = desc[:2000] + "…"
 
-    # limit tags
-    tags = [t for t in tags if isinstance(t, str)]
-    tags = tags[:40]
-
-    channel = channel_from_info(info) or ""
-
-    return (
+    payload = (
         f"TITLE:\n{title}\n\n"
         f"CHANNEL/UPLOADER:\n{channel}\n\n"
-        f"PLAYLIST:\n{playlist}\n\n"
         f"TAGS:\n{', '.join(tags)}\n\n"
         f"DESCRIPTION:\n{desc}\n"
     )
 
-def cache_key(info: dict, media_path: Path) -> str:
-    """
-    Stable key for caching. Prefer YouTube id when present.
-    """
-    vid = info.get("id") if isinstance(info.get("id"), str) else ""
-    title = info.get("title") if isinstance(info.get("title"), str) else media_path.stem
-    uploader = info.get("uploader") if isinstance(info.get("uploader"), str) else ""
-    base = f"{vid}|{title}|{uploader}"
-    return hashlib.sha256(base.encode("utf-8", errors="ignore")).hexdigest()
-
-def infer_artist_openai(info: dict, media_path: Path) -> Tuple[str, float]:
-    txt = build_metadata_text(info, media_path)
-
-    client = get_openai_client()
-    user_prompt = (
-        "Metadata:\n"
-        f"{txt}\n\n"
-        "Return format:\n"
-        '{"artist":"<name>","confidence":0.0}\n'
-    )
-
-    resp = client.responses.create(
+    resp = get_openai().responses.create(
         model=OPENAI_MODEL,
         input=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
+            {"role": "system", "content": SYSTEM_PROMPT_ARTIST_TITLE},
+            {"role": "user", "content": payload},
         ],
         temperature=0,
-        max_output_tokens=120,
+        max_output_tokens=220,
     )
 
-    out = (resp.output_text or "").strip()
-    result = json.loads(out)
+    data = json.loads((resp.output_text or "").strip())
 
-    artist = sanitize(str(result.get("artist", UNKNOWN_ARTIST)))
-    conf = float(result.get("confidence", 0.75))
-    if conf < 0.0:
-        conf = 0.0
-    if conf > 1.0:
-        conf = 1.0
-    return artist, conf
+    artist = sanitize(str(data.get("primary_artist", UNKNOWN_ARTIST)), UNKNOWN_ARTIST)
+    artist_conf = float(data.get("artist_confidence", 0.75))
 
-# ---------------------------
-# Moving / bundling
-# ---------------------------
+    song = sanitize(str(data.get("song_title", title)), UNKNOWN_TITLE)
+    title_conf = float(data.get("title_confidence", 0.75))
+
+    is_full_set = bool(data.get("is_full_set", False))
+
+    # clamp
+    artist_conf = min(max(artist_conf, 0.0), 1.0)
+    title_conf = min(max(title_conf, 0.0), 1.0)
+    return artist, artist_conf, song, title_conf, is_full_set
+
+# ============================================================
+# Embeddings (TRIMMED text)
+# ============================================================
+def build_embedding_text(info: Optional[dict], media: Path, artist: str, song: str, is_full_set: bool) -> str:
+    if not info:
+        return (
+            f"primary_artist: {artist}\n"
+            f"song_title: {song}\n"
+            f"is_full_set: {is_full_set}\n"
+            f"filename: {media.name}\n"
+        )
+
+    original_title = title_from_info(info, media)
+    channel = channel_from_info(info)
+
+    tags = info.get("tags") if isinstance(info.get("tags"), list) else []
+    tags = [t.strip() for t in tags if isinstance(t, str) and t.strip()][:EMBED_TEXT_MAX_TAGS]
+    tags_str = ", ".join(tags)
+
+    desc = info.get("description") if isinstance(info.get("description"), str) else ""
+    desc = (desc or "").strip()
+    if len(desc) > EMBED_TEXT_MAX_DESC:
+        desc = desc[:EMBED_TEXT_MAX_DESC] + "…"
+
+    # Trimmed canonical text: enough for semantic search, not huge
+    return (
+        f"primary_artist: {artist}\n"
+        f"song_title: {song}\n"
+        f"is_full_set: {is_full_set}\n"
+        f"original_title: {original_title}\n"
+        f"channel: {channel}\n"
+        f"tags: {tags_str}\n"
+        f"description: {desc}\n"
+    )
+
+def embed_text(text: str) -> List[float]:
+    resp = get_openai().embeddings.create(
+        model=EMBEDDING_MODEL,
+        input=text,
+    )
+    return resp.data[0].embedding
+
+# ============================================================
+# JSON cleaning / enrichment
+# ============================================================
+JSON_KEEP_KEYS = {
+    "id", "title", "fulltitle", "track",
+    "uploader", "uploader_id", "channel", "channel_id",
+    "upload_date", "duration", "categories", "tags",
+    "playlist", "playlist_id", "playlist_title", "playlist_uploader",
+    "ext", "width", "height", "fps", "vcodec", "acodec",
+    "webpage_url", "thumbnail",
+}
+
+def cleaned_info_json(info: dict, inferred_artist: str, artist_conf: float, inferred_title: str, title_conf: float,
+                      is_full_set: bool, source: str, embed_meta: Optional[dict]) -> dict:
+    out = {}
+    for k in JSON_KEEP_KEYS:
+        if k in info:
+            out[k] = info[k]
+
+    desc = info.get("description")
+    if isinstance(desc, str) and desc.strip():
+        desc = desc.strip()
+        if len(desc) > JSON_TRIM_DESCRIPTION_TO:
+            desc = desc[:JSON_TRIM_DESCRIPTION_TO] + "…"
+        out["description"] = desc
+
+    out["inferred_artist"] = inferred_artist
+    out["inferred_artist_confidence"] = round(float(artist_conf), 4)
+
+    out["inferred_title"] = inferred_title
+    out["inferred_title_confidence"] = round(float(title_conf), 4)
+
+    out["inferred_is_full_set"] = bool(is_full_set)
+    out["inferred_source"] = source
+
+    if embed_meta:
+        out["embedding"] = embed_meta
+
+    return out
+
+def write_json_atomic(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write("\n")
+    tmp.replace(path)
+
+# ============================================================
+# File moving / bundling helpers
+# ============================================================
 def resolve_collision(dst: Path) -> Path:
     if not dst.exists():
         return dst
     base, ext, parent = dst.stem, dst.suffix, dst.parent
-    for i in range(2, 9999):
+    for i in range(2, 10000):
         c = parent / f"{base} ({i}){ext}"
         if not c.exists():
             return c
@@ -346,7 +493,11 @@ def move_or_copy(src: Path, dst: Path) -> None:
     else:
         shutil.move(str(src), str(dst))
 
-def bundle_paths(media_path: Path) -> list[Path]:
+def find_info_json(media_path: Path) -> Optional[Path]:
+    p = media_path.with_suffix(media_path.suffix + ".info.json")
+    return p if p.exists() else None
+
+def bundle_paths(media_path: Path) -> List[Path]:
     bundle = [media_path]
     info = find_info_json(media_path)
     if info and info.exists():
@@ -357,101 +508,147 @@ def bundle_paths(media_path: Path) -> list[Path]:
             bundle.append(p)
     return bundle
 
-def decide_artist(info: Optional[dict], media_path: Path) -> Tuple[str, float, str]:
+# ============================================================
+# Decision logic (rules -> openai; caching; embeddings)
+# ============================================================
+def decide(info: Optional[dict], media_path: Path) -> Tuple[str, float, str, float, bool, str, str]:
     """
-    Decide artist using:
-    - cache
-    - rules
-    - OpenAI fallback
+    Returns:
+      artist, artist_conf, song, title_conf, is_full_set, source, key
     """
     if not info:
-        artist, conf, src = choose_artist_rules(info, media_path)
-        return artist, conf, src
+        artist, aconf, song, tconf, is_full_set, src = heuristic_infer(None, media_path)
+        return artist, aconf, song, tconf, is_full_set, src, ""
 
-    # cache
-    key = cache_key(info, media_path)
+    key = stable_key(info, media_path)
     cached = cache_get(key)
     if cached:
-        return cached[0], cached[1], "cache"
+        artist, aconf, song, tconf, is_full_set, src, _path = cached
+        return str(artist), float(aconf), str(song), float(tconf), bool(is_full_set), str(src), key
 
-    # rules first
-    artist_r, conf_r, src_r = choose_artist_rules(info, media_path)
+    artist, aconf, song, tconf, is_full_set, src = heuristic_infer(info, media_path)
 
-    # If rules are confident enough, accept and cache
-    if conf_r >= CONF_AUTO or not USE_OPENAI or not OPENAI_API_KEY:
-        cache_put(key, artist_r, conf_r, f"rules:{src_r}")
-        return artist_r, conf_r, f"rules:{src_r}"
+    # OpenAI fallback if either confidence is weak
+    if USE_OPENAI and (aconf < CONF_AUTO or tconf < CONF_AUTO):
+        try:
+            oa_artist, oa_aconf, oa_song, oa_tconf, oa_full = openai_infer(info, media_path)
+            artist, aconf, song, tconf, is_full_set = oa_artist, oa_aconf, oa_song, oa_tconf, oa_full
+            src = f"openai:{OPENAI_MODEL}"
+        except Exception as e:
+            src = f"{src} (openai-failed: {e})"
 
-    # If rules are weak, ask OpenAI
-    try:
-        artist_ai, conf_ai = infer_artist_openai(info, media_path)
-        cache_put(key, artist_ai, conf_ai, f"openai:{OPENAI_MODEL}")
-        return artist_ai, conf_ai, f"openai:{OPENAI_MODEL}"
-    except Exception as e:
-        # fall back to rules if OpenAI fails
-        cache_put(key, artist_r, conf_r, f"rules-fallback:{src_r} ({e})")
-        return artist_r, conf_r, f"rules-fallback:{src_r}"
+    # path unknown until we move; store blank for now (we'll update after move)
+    cache_put(key, "", artist, aconf, song, tconf, is_full_set, src)
+    return artist, aconf, song, tconf, is_full_set, src, key
 
+# ============================================================
+# Main processing
+# ============================================================
 def process_media(media_path: Path) -> None:
     if not media_path.exists() or media_path.is_dir():
         return
+
     ext = media_path.suffix.lower()
-    if ext in SKIP_EXTS or ext not in MEDIA_EXTS:
+    if ext not in MEDIA_EXTS or ext in SKIP_EXTS:
         return
+
+    # only handle things under INCOMING
     try:
         media_path.relative_to(INCOMING)
     except ValueError:
         return
+
     if not is_stable(media_path):
         return
 
     info_path = find_info_json(media_path)
-    info = load_info(info_path)
+    info = load_info(info_path) if info_path else None
 
-    title = sanitize(title_from_info(info, media_path) if info else media_path.stem)
-    artist, conf, src = decide_artist(info, media_path)
+    artist, aconf, song, tconf, is_full_set, src, key = decide(info, media_path)
 
-    # confidence gating
-    if conf < CONF_REVIEW:
-        target_root = NEEDS_REVIEW / artist
-    else:
-        target_root = ORGANIZED / artist
+    # Destination root: review if either confidence is low
+    target_root = NEEDS_REVIEW if min(aconf, tconf) < CONF_REVIEW else ORGANIZED
+    artist_dir = target_root / sanitize(artist, UNKNOWN_ARTIST)
+    artist_dir.mkdir(parents=True, exist_ok=True)
 
-    dst_media = resolve_collision(target_root / f"{title}{ext}")
+    # Use inferred song title for filename base
+    base_title = sanitize(song, UNKNOWN_TITLE)
+    dst_media = resolve_collision(artist_dir / f"{base_title}{ext}")
     dst_dir = dst_media.parent
     dst_stem = dst_media.stem
 
-    b = bundle_paths(media_path)
+    # Generate/store embedding (TRIMMED) *before* move (uses info + inferred fields)
+    embed_meta = None
+    if ENABLE_EMBEDDINGS and info and key:
+        if not vec_exists(key):
+            try:
+                emb_text = build_embedding_text(info, media_path, artist, song, is_full_set)
+                vec = embed_text(emb_text)
+                vec_upsert(key, vec)
+            except Exception as e:
+                print(f"[WARN] embeddings failed for {media_path.name}: {e}", flush=True)
+
+        embed_meta = {
+            "model": EMBEDDING_MODEL,
+            "dims": EMBEDDING_DIMS,
+            "cache_key": key,
+        }
+
+    bundle = bundle_paths(media_path)
 
     try:
         move_or_copy(media_path, dst_media)
-        for p in b:
+
+        # Now that we know final path, update cache row path (if we have a key)
+        if key:
+            cache_put(key, str(dst_media), artist, aconf, song, tconf, is_full_set, src)
+
+        # Move/copy companions; rewrite cleaned .info.json
+        for p in bundle:
             if p == media_path:
                 continue
             if not p.exists():
                 continue
-            if p.name.endswith(".info.json"):
-                dst = dst_dir / f"{dst_stem}.info.json"
-            else:
-                dst = dst_dir / f"{dst_stem}{p.suffix.lower()}"
-            dst = resolve_collision(dst)
-            move_or_copy(p, dst)
 
-        print(f"[OK] artist={artist} conf={conf:.2f} src={src} -> {dst_media}", flush=True)
+            if p.name.endswith(".info.json"):
+                dst_json = resolve_collision(dst_dir / f"{dst_stem}.info.json")
+
+                original_info = load_info(p)
+                if original_info:
+                    cleaned = cleaned_info_json(
+                        original_info,
+                        inferred_artist=artist,
+                        artist_conf=aconf,
+                        inferred_title=song,
+                        title_conf=tconf,
+                        is_full_set=is_full_set,
+                        source=src,
+                        embed_meta=embed_meta,
+                    )
+                    write_json_atomic(dst_json, cleaned)
+
+                    if not COPY_MODE:
+                        try:
+                            p.unlink(missing_ok=True)
+                        except TypeError:
+                            if p.exists():
+                                p.unlink()
+                else:
+                    move_or_copy(p, dst_json)
+            else:
+                dst = resolve_collision(dst_dir / f"{dst_stem}{p.suffix.lower()}")
+                move_or_copy(p, dst)
+
+        print(
+            f"[OK] artist={artist} ({aconf:.2f}) title={song} ({tconf:.2f}) full_set={is_full_set} src={src} -> {dst_media}",
+            flush=True,
+        )
     except Exception as e:
         print(f"[ERR] Failed {media_path}: {e}", flush=True)
 
-def initial_sweep() -> None:
-    print(f"Initial sweep of {INCOMING} ...", flush=True)
-    n = 0
-    for p in sorted(INCOMING.rglob("*"), key=lambda x: str(x)):
-        if p.is_file() and p.suffix.lower() in MEDIA_EXTS:
-            before = p.exists()
-            process_media(p)
-            if before and not p.exists():
-                n += 1
-    print(f"Initial sweep complete. Processed {n} media file(s).", flush=True)
-
+# ============================================================
+# Watchdog
+# ============================================================
 class Handler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
@@ -471,12 +668,23 @@ class Handler(FileSystemEventHandler):
             if p.suffix.lower() in MEDIA_EXTS:
                 process_media(p)
 
+def initial_sweep() -> None:
+    print(f"Initial sweep of {INCOMING} ...", flush=True)
+    processed = 0
+    for p in sorted(INCOMING.rglob("*"), key=lambda x: str(x)):
+        if p.is_file() and p.suffix.lower() in MEDIA_EXTS:
+            before = p.exists()
+            process_media(p)
+            if before and not p.exists():
+                processed += 1
+    print(f"Initial sweep complete. Processed {processed} media file(s).", flush=True)
+
 def main():
     INCOMING.mkdir(parents=True, exist_ok=True)
     ORGANIZED.mkdir(parents=True, exist_ok=True)
     NEEDS_REVIEW.mkdir(parents=True, exist_ok=True)
 
-    init_cache()
+    init_db()
     initial_sweep()
 
     observer = Observer()
@@ -484,7 +692,9 @@ def main():
     observer.start()
     print(
         f"Watching {INCOMING} -> {ORGANIZED} (review->{NEEDS_REVIEW}) "
-        f"stable={STABLE_SECONDS}s openai={USE_OPENAI and bool(OPENAI_API_KEY)} model={OPENAI_MODEL}",
+        f"stable={STABLE_SECONDS}s copy={COPY_MODE} "
+        f"openai={USE_OPENAI} model={OPENAI_MODEL} "
+        f"embeddings={ENABLE_EMBEDDINGS} embed_model={EMBEDDING_MODEL} dims={EMBEDDING_DIMS}",
         flush=True,
     )
 
