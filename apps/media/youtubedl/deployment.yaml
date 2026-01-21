@@ -36,7 +36,7 @@ spec:
               mountPath: /app/appdata
             - name: media
               mountPath: /app/video
-              subPath: video/youtube
+              subPath: video/youtube/Incoming
           livenessProbe:
             tcpSocket:
               port: http
