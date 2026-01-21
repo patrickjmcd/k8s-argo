@@ -17,6 +17,7 @@ spec:
           - name: notifiarr
           - name: sabnzbd
           - name: kometa
+          - name: youtubedl
   template:
     metadata:
       name: '{{name}}'
