@@ -74,11 +74,22 @@ spec:
               value: "Unknown Artist"
             - name: COPY_MODE
               value: "0"
+            - name: OPENAI_MODEL
+              value: "gpt-4.1-mini"
+            - name: USE_OPENAI
+              value: "1"
+            - name: CONF_AUTO
+              value: "0.85"
+            - name: CONF_REVIEW
+              value: "0.70"
           command: [ "sh","-lc" ]
           args:
             - >
-              pip install --no-cache-dir watchdog &&
+              pip install --no-cache-dir watchdog openai &&
               python /app/watcher.py
+          envFrom:
+            - secretRef:
+                name: youtubedl-1pw
           volumeMounts:
             - name: media
               mountPath: /incoming
@@ -90,6 +101,8 @@ spec:
               mountPath: /app/watcher.py
               subPath: watcher.py
               readOnly: true
+            - name: cache
+              mountPath: /cache
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -100,3 +113,5 @@ spec:
         - name: script
           configMap:
             name: ytdl-postprocessor-script
+        - name: cache
+          emptyDir: { }

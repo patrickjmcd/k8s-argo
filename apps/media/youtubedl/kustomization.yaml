@@ -6,6 +6,7 @@ resources:
   - storage.yaml
   - deployment.yaml
   - service.yaml
+  - 1password.secret.yaml
 
 images:
   - name: youtubedl
