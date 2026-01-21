@@ -16,3 +16,6 @@ configMapGenerator:
   - name: youtubedl-config
     envs:
       - .env
+  - name: ytdl-postprocessor-script
+    files:
+      - watcher.py
