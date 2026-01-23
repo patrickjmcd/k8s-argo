@@ -49,10 +49,10 @@ spec:
 #                    kind: Service
 #                    namespace: kube-system
 #                    port: 80
-          extraVolumes:
+          volumes:
             - name: headlamp-config
               emptyDir: { }
-          extraVolumeMounts:
+          volumeMounts:
             - name: headlamp-config
               mountPath: /home/headlamp/.config/Headlamp
           extraManifests:
