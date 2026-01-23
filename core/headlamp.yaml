@@ -49,6 +49,12 @@ spec:
 #                    kind: Service
 #                    namespace: kube-system
 #                    port: 80
+          extraVolumes:
+            - name: headlamp-config
+              emptyDir: { }
+          extraVolumeMounts:
+            - name: headlamp-config
+              mountPath: /home/headlamp/.config/Headlamp
           extraManifests:
             - |
               apiVersion: gateway.networking.k8s.io/v1
