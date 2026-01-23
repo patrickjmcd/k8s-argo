@@ -24,38 +24,32 @@ spec:
         releaseName: headlamp
         valuesObject:
           config:
-            baseURL: "https://headlamp.x.pmcd.io"
             oidc:
               secret:
                 create: false
               externalSecret:
                 enabled: true
                 name: headlamp-oidc-secret-1pw
+          httpRoute:
+            enabled: true
+            parentRefs:
+              - group: gateway.networking.k8s.io
+                kind: Gateway
+                name: traefik-gateway
+                namespace: default
+            hostnames:
+              - headlamp.x.pmcd.io
+            rules:
+              - matches:
+                  - path:
+                      type: PathPrefix
+                      value: /
+                backendRefs:
+                  - name: headlamp
+                    kind: Service
+                    namespace: kube-system
+                    port: 80
           extraManifests:
-            - |
-              apiVersion: gateway.networking.k8s.io/v1
-              kind: HTTPRoute
-              metadata:
-                name: headlamp-httproute
-                namespace: kube-system
-              spec:
-                parentRefs:
-                  - group: gateway.networking.k8s.io
-                    kind: Gateway
-                    name: traefik-gateway
-                    namespace: default
-                hostnames:
-                  - headlamp.x.pmcd.io
-                rules:
-                  - matches:
-                      - path:
-                          type: PathPrefix
-                          value: /
-                    backendRefs:
-                      - name: headlamp
-                        kind: Service
-                        namespace: kube-system
-                        port: 80
             - |
               apiVersion: onepassword.com/v1
               kind: OnePasswordItem
