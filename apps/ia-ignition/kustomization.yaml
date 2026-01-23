@@ -4,6 +4,8 @@ resources:
 - deployment.yaml
 - httproute.yaml
 - service.yaml
+- storage.yaml
+- 1password.secret.yaml
 
 images:
 - name: ia-ignition
@@ -12,5 +14,5 @@ images:
 
 configMapGenerator:
   - name: ia-ignition-config
-    files:
+    envs:
       - .env

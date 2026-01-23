@@ -27,6 +27,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: ia-ignition-config
+            - secretRef:
+                name: ia-ignition-1pw
           ports:
             - containerPort: 8088
               name: http
@@ -45,14 +47,10 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
             failureThreshold: 3
-#          volumeMounts:
-#            - mountPath: /app/users
-#              name: appconfig
-#              subPath: users
-#            - mountPath: /app/data
-#              name: appconfig
-#              subPath: data
-#      volumes:
-#        - name: appconfig
-#          persistentVolumeClaim:
-#            claimName: longhorn-ia-ignition-config
+          volumeMounts:
+            - mountPath: /usr/local/bin/ignition/data
+              name: appconfig
+      volumes:
+        - name: appconfig
+          persistentVolumeClaim:
+            claimName: longhorn-ia-ignition-config
