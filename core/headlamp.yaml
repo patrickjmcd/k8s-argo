@@ -26,6 +26,7 @@ spec:
           config:
             oidc:
               callbackURL: "https://headlamp.x.pmcd.io/oidc-callback"
+              usePKCE: true
               secret:
                 create: false
               externalSecret:
