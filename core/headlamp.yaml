@@ -24,6 +24,7 @@ spec:
         releaseName: headlamp
         valuesObject:
           config:
+            baseURL: "https://headlamp.x.pmcd.io"
             oidc:
               secret:
                 create: false
