@@ -24,8 +24,8 @@ spec:
         releaseName: headlamp
         valuesObject:
           config:
-            baseURL: ""
             oidc:
+              callbackURL: "https://headlamp.x.pmcd.io/oidc-callback"
               secret:
                 create: false
               externalSecret:
