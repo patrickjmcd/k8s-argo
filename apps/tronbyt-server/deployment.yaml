@@ -34,11 +34,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              cpu: 1000m
-              memory: 1024Mi
+              cpu: 500m
+              memory: 768Mi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 35m
+              memory: 550Mi
           readinessProbe:
             httpGet:
               port: http

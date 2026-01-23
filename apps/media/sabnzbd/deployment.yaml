@@ -78,11 +78,11 @@ spec:
 
           resources:
             limits:
-              cpu: 2000m
-              memory: 2048Mi
+              cpu: 1000m
+              memory: 2Gi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 15m
+              memory: 1850Mi
 
           volumeMounts:
             - mountPath: /config

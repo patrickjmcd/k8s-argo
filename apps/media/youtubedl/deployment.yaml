@@ -60,11 +60,11 @@ spec:
             periodSeconds: 5
           resources:
             limits:
-              cpu: 2
-              memory: 1Gi
+              cpu: 1
+              memory: 512Mi
             requests:
-              cpu: 0.1
-              memory: 128Mi
+              cpu: 35m
+              memory: 400Mi
         - name: postprocessor
           image: python:3.14-slim
           env:

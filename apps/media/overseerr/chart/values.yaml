@@ -11,6 +11,14 @@ overseerr:
     port:
       port: 5055
 
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 15m
+      memory: 350Mi
+
   persistence:
     config:
       enabled: true
