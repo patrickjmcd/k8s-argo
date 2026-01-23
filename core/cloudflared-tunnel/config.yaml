@@ -75,11 +75,6 @@ ingress:
     service: http://argocd-server.argocd:8080
 
 
-  - hostname: kubewall.pmcd.io
-    service: https://kubewall.kubewall:8443
-    originRequest:
-      noTLSVerify: true
-
   - hostname: mealie.pmcd.dev
     service: http://mealie:9000
 
