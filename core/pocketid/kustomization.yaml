@@ -5,6 +5,7 @@ resources:
   - deployment.yaml
   - namespace.yaml
   - service.yaml
+  - clusterrolebinding.yaml
 
 images:
   - name: pocketid
