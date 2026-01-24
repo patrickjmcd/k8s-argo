@@ -2,34 +2,34 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: readarr
-    app.kubernetes.io/name: readarr
-  name: readarr
+    app.kubernetes.io/instance: lazylibrarian
+    app.kubernetes.io/name: lazylibrarian
+  name: lazylibrarian
   namespace: media
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/instance: readarr
-      app.kubernetes.io/name: readarr
+      app.kubernetes.io/instance: lazylibrarian
+      app.kubernetes.io/name: lazylibrarian
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: readarr
-        app.kubernetes.io/name: readarr
+        app.kubernetes.io/instance: lazylibrarian
+        app.kubernetes.io/name: lazylibrarian
     spec:
       containers:
-        - name: readarr
+        - name: lazylibrarian
           env:
             - name: TZ
               value: America/Chicago
 
-          image: readarr
+          image: lazylibrarian
           imagePullPolicy: IfNotPresent
 
           ports:
-            - containerPort: 8787
+            - containerPort: 5299
               name: http
               protocol: TCP
 
@@ -80,7 +80,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: readarr-config
+            name: lazylibrarian-config
             items:
               - key: config.xml
                 path: config.xml

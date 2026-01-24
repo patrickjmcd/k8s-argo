@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: lazylibrarian
+    app.kubernetes.io/name: lazylibrarian
+  name: lazylibrarian
+  namespace: media
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: lazylibrarian
+    app.kubernetes.io/name: lazylibrarian
+  type: ClusterIP

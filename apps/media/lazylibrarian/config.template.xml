@@ -3,21 +3,21 @@
   <UrlBase></UrlBase>
   <UpdateMechanism>Docker</UpdateMechanism>
   <BindAddress>*</BindAddress>
-  <Port>8787</Port>
-  <SslPort>7878</SslPort>
+  <Port>5299</Port>
+  <SslPort>5300</SslPort>
   <EnableSsl>False</EnableSsl>
   <LaunchBrowser>True</LaunchBrowser>
-  <ApiKey>${READARR_API_KEY}</ApiKey>
+  <ApiKey>${LAZYLIBRARIAN_API_KEY}</ApiKey>
   <AuthenticationMethod>External</AuthenticationMethod>
   <Branch>master</Branch>
   <SslCertPath></SslCertPath>
   <SslCertPassword></SslCertPassword>
   <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>
-  <InstanceName>readarr</InstanceName>
-  <PostgresUser>readarr</PostgresUser>
-  <PostgresPassword>readarr</PostgresPassword>
+  <InstanceName>lazylibrarian</InstanceName>
+  <PostgresUser>lazylibrarian</PostgresUser>
+  <PostgresPassword>lazylibrarian</PostgresPassword>
   <PostgresPort>5432</PostgresPort>
   <PostgresHost>192.168.1.11</PostgresHost>
-  <PostgresMainDb>readarr-main</PostgresMainDb>
-  <PostgresLogDb>readarr-logs</PostgresLogDb>
+  <PostgresMainDb>lazylibrarian-main</PostgresMainDb>
+  <PostgresLogDb>lazylibrarian-logs</PostgresLogDb>
 </Config>

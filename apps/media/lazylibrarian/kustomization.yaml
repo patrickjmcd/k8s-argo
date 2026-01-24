@@ -6,6 +6,6 @@ resources:
   - service.yaml
 
 images:
-  - name: readarr
-    newName: linuxserver/readarr
-    newTag: 0.4.18-develop
+  - name: lazylibrarian
+    newName: linuxserver/lazylibrarian
+    newTag: latest
