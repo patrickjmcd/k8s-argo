@@ -4,6 +4,7 @@ resources:
   #  - helm-release.yaml
   - deployment.yaml
   - service.yaml
+  - httproute.yaml
 
 images:
   - name: readarr
