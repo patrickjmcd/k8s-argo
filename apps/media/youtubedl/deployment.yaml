@@ -67,6 +67,13 @@ spec:
               memory: 400Mi
         - name: postprocessor
           image: python:3.14-slim
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
           env:
             - name: STABLE_SECONDS
               value: "15"

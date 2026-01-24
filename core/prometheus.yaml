@@ -40,6 +40,13 @@ spec:
               retentionSize: 8GiB
               nodeSelector:
                 kubernetes.io/arch: amd64
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 768Mi
               podMonitorSelector: { }
               podMonitorSelectorNilUsesHelmValues: false
               podMonitorNamespaceSelector:
@@ -50,13 +57,50 @@ spec:
               serviceMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
+          prometheusOperator:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
           alertmanager:
             alertmanagerSpec:
               nodeSelector:
                 kubernetes.io/arch: amd64
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
           prometheus-node-exporter:
             affinity: {}
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                cpu: 100m
+                memory: 64Mi
+          kube-state-metrics:
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
           grafana:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io

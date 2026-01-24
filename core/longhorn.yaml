@@ -26,6 +26,22 @@ spec:
         values: |
           preUpgradeChecker:
             jobEnabled: false
+          longhornManager:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 300m
+                memory: 300Mi
+          longhornDriver:
+            resources:
+              requests:
+                cpu: 25m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
   destination:
     namespace: longhorn-system
     name: in-cluster
