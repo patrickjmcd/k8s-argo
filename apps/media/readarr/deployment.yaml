@@ -71,7 +71,7 @@ spec:
               name: config
               readOnly: true
               subPath: config.xml
-            - mountPath: /media
+            - mountPath: /mnt/media
               name: media
             - mountPath: /mnt/downloads
               name: downloads
