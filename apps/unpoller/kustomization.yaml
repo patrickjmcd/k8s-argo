@@ -8,5 +8,5 @@ resources:
 images:
   - name: unpoller
     newName: ghcr.io/unpoller/unpoller
-    newTag: v2.21.0
+    newTag: v2.22.0
 
