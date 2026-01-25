@@ -9,4 +9,4 @@ resources:
 images:
   - name: readarr
     newName: ghcr.io/pennydreadful/bookshelf
-    newTag: hardcover-v0.4.20.107
+    newTag: softcover-v0.4.20.107
