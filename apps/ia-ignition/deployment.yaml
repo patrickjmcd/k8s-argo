@@ -28,7 +28,6 @@ spec:
           args:
             - /config/scripts/seed-data-volume.sh
             - /config/scripts/seed-redundancy.sh
-            - /config/scripts/prepare-gan-certificates.sh
             - cp /config/files/logback.xml /data/logback.xml
           volumeMounts:
             - mountPath: /data
@@ -37,11 +36,6 @@ spec:
               name: ignition-config-files
             - mountPath: /config/scripts
               name: ignition-config-scripts
-            - mountPath: /run/secrets/gan-tls
-              name: gan-tls
-            - mountPath: /run/secrets/ignition-gan-ca
-              name: ignition-gan-ca
-              readOnly: true
       containers:
         - name: ia-ignition
           image: ia-ignition
