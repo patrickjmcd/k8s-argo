@@ -4,7 +4,7 @@ metadata:
   name: longhorn-ia-ignition-config
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   storageClassName: longhorn
   resources:
     requests:
