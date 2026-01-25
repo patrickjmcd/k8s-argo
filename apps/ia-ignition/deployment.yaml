@@ -20,6 +20,28 @@ spec:
         app.kubernetes.io/instance: ia-ignition
         app.kubernetes.io/name: ia-ignition
     spec:
+      initContainers:
+        - name: preconfigure
+          image: inductiveautomation/ignition:latest
+          command:
+            - /config/scripts/invoke-args.sh
+          args:
+            - /config/scripts/seed-data-volume.sh
+            - /config/scripts/seed-redundancy.sh
+            - /config/scripts/prepare-gan-certificates.sh
+            - cp /config/files/logback.xml /data/logback.xml
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /config/files
+              name: ignition-config-files
+            - mountPath: /config/scripts
+              name: ignition-config-scripts
+            - mountPath: /run/secrets/gan-tls
+              name: gan-tls
+            - mountPath: /run/secrets/ignition-gan-ca
+              name: ignition-gan-ca
+              readOnly: true
       containers:
         - name: ia-ignition
           image: ia-ignition
@@ -54,3 +76,17 @@ spec:
         - name: appconfig
           persistentVolumeClaim:
             claimName: longhorn-ia-ignition-config
+        - name: ignition-config-scripts
+          configMap:
+            name: ignition-config-scripts
+            defaultMode: 0755
+        - name: ignition-config-files
+          configMap:
+            name: ignition-config-files
+            defaultMode: 0644
+        - name: ignition-gan-ca
+          secret:
+            secretName: ignition-gan-ca
+        - name: gan-tls
+          secret:
+            secretName: backend-gan-tls
