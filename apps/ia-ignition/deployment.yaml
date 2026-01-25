@@ -32,7 +32,7 @@ spec:
             - cp /config/files/logback.xml /data/logback.xml
           volumeMounts:
             - mountPath: /data
-              name: data
+              name: appconfig
             - mountPath: /config/files
               name: ignition-config-files
             - mountPath: /config/scripts
