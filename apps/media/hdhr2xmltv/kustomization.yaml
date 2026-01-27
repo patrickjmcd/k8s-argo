@@ -10,4 +10,4 @@ resources:
 images:
   - name: hdhr2xmltv
     newName: ghcr.io/patrickjmcd/hdhr2xmltv
-    newTag: 1.0.2
+    newTag: 1.1.0
