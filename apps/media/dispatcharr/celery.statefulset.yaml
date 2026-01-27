@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
         - name: celery
-          command:
-            - bash -c "cd /app && nice -n 5 celery -A dispatcharr worker -l info"
+          workingDir: /app
+          command: [ "nice","-n","5","celery","-A","dispatcharr","worker","-l","info" ]
           env:
             - name: TZ
               value: America/Chicago
