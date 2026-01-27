@@ -19,6 +19,7 @@ spec:
           - name: kometa
           - name: youtubedl
           - name: readarr
+          - name: dispatcharr
   template:
     metadata:
       name: '{{name}}'
