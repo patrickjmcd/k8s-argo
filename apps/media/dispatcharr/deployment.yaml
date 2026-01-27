@@ -23,6 +23,9 @@ spec:
           env:
             - name: TZ
               value: America/Chicago
+          envFrom:
+            - secretRef:
+                name: dispatcharr-1pw
 
           image: dispatcharr
           imagePullPolicy: IfNotPresent
@@ -68,9 +71,14 @@ spec:
           volumeMounts:
             - mountPath: /mnt/media
               name: media
+            - mountPath: /data
+              name: data
 
       restartPolicy: Always
       volumes:
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim
+        - name: data
+          emptyDir:
+            sizeLimit: 500Mi
