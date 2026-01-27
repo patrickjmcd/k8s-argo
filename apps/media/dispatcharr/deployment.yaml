@@ -69,16 +69,11 @@ spec:
               memory: 256Mi
 
           volumeMounts:
-            - mountPath: /mnt/media
-              name: media
             - mountPath: /data
               name: data
 
       restartPolicy: Always
       volumes:
-        - name: media
-          persistentVolumeClaim:
-            claimName: smb-media-claim
         - name: data
-          emptyDir:
-            sizeLimit: 500Mi
+          persistentVolumeClaim:
+            claimName: longhorn-dispatcharr-config

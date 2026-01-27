@@ -6,6 +6,7 @@ resources:
   - service.yaml
   - httproute.yaml
   - 1password.secret.yaml
+  - storage.yaml
 
 images:
   - name: dispatcharr
