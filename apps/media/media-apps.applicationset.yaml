@@ -20,6 +20,7 @@ spec:
           - name: youtubedl
           - name: readarr
           - name: dispatcharr
+          - name: hdhr2xmltv
   template:
     metadata:
       name: '{{name}}'
