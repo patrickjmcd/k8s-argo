@@ -72,7 +72,7 @@ spec:
               cpu: 10m
               memory: 20Mi
         - name: smb
-          image: registry.k8s.io/sig-storage/smbplugin:v1.19.1
+          image: registry.k8s.io/sig-storage/smbplugin:v1.20.0
           imagePullPolicy: IfNotPresent
           args:
             - "--v=5"
