@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://raw.githubusercontent.com/flannel-io/flannel/v0.26.5/Documentation/kube-flannel.yml
+patches:
+  - target:
+      kind: ConfigMap
+      name: kube-flannel-cfg
+      namespace: kube-flannel
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: kube-flannel-cfg
+        namespace: kube-flannel
+      data:
+        cni-conf.json: |
+          {
+            "name": "cbr0",
+            "cniVersion": "1.0.0",
+            "plugins": [
+              {
+                "type": "flannel",
+                "delegate": {
+                  "hairpinMode": true,
+                  "isDefaultGateway": true
+                }
+              },
+              {
+                "type": "portmap",
+                "capabilities": {"portMappings": true}
+              }
+            ]
+          }
+        net-conf.json: |
+          {
+            "Network": "10.42.0.0/16",
+            "EnableIPv6": false,
+            "Backend": {
+              "Type": "vxlan"
+            }
+          }
