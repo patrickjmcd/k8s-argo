@@ -10,7 +10,7 @@ resources:
 images:
 - name: mealie
   newName:  ghcr.io/mealie-recipes/mealie
-  newTag: v3.10.1
+  newTag: v3.10.2
 
 configMapGenerator:
   - name: mealie-config
