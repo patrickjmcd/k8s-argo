@@ -29,6 +29,11 @@
       "matchPackagePatterns": ["^kube-prometheus", "^prometheus", "^grafana"],
       "groupName": "Monitoring Stack",
       "automerge": false
+    },
+    {
+      "matchPackageNames": ["longhorn"],
+      "groupName": "Longhorn",
+      "automerge": false
     }
   ]
 }

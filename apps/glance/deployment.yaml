@@ -43,7 +43,6 @@ spec:
             timeoutSeconds: 1
           ports:
             - containerPort: 8080
-              hostPort: 8080
               name: http
               protocol: TCP
           readinessProbe:

@@ -31,7 +31,6 @@ spec:
                 name: tronbyt-server-config
           ports:
             - containerPort: 8000
-              hostPort: 8000
               name: http
               protocol: TCP
           resources:

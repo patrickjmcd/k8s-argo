@@ -37,7 +37,6 @@ spec:
           name: table-rock-lake-level
           ports:
             - containerPort: 3000
-              hostPort: 3000
               name: http
               protocol: TCP
           readinessProbe:
