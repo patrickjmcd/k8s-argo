@@ -20,6 +20,6 @@ spec:
   source:
     chart: csi-driver-nfs
     repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-    targetRevision: v4.12.1
+    targetRevision: 4.13.0
     helm:
       releaseName: csi-driver-nfs
