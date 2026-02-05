@@ -18,7 +18,7 @@ spec:
       selfHeal: true
   sources:
     - chart: headlamp
-      targetRevision: 0.39.0
+      targetRevision: 0.40.0
       repoURL: https://kubernetes-sigs.github.io/headlamp
       helm:
         releaseName: headlamp
