@@ -22,6 +22,7 @@ spec:
     - https://metallb.github.io/metallb
     - https://argoproj.github.io/argo-helm
     - https://charts.fairwinds.com/stable
+    - https://flannel-io.github.io/flannel/
   destinations:
     - namespace: "*"
       name: in-cluster
