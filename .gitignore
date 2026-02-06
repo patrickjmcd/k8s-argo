@@ -2,3 +2,8 @@
 dockerconfigjson.yaml
 secrets.env.json
 1password-credentials.json
+.terraform/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars

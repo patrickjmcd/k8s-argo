@@ -34,6 +34,11 @@
       "matchPackageNames": ["longhorn"],
       "groupName": "Longhorn",
       "automerge": false
+    },
+    {
+      "matchPackageNames": ["flannel-io/flannel"],
+      "groupName": "Flannel",
+      "automerge": false
     }
   ]
 }

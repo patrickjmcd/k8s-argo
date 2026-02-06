@@ -222,6 +222,34 @@ kubectl get httproutes -A
 kubectl describe httproute <name> -n <namespace>
 ```
 
+### CNI Plugins Missing (Pods Stuck in ContainerCreating)
+
+If pods are stuck in `ContainerCreating` on a node, verify CNI plugins exist on that node.
+
+1. Check for CNI binaries and config:
+```bash
+ls -la /opt/cni/bin
+ls -la /etc/cni/net.d
+```
+
+2. If missing, install plugins and copy into place (Debian/Ubuntu):
+```bash
+sudo apt-get update
+sudo apt-get install -y containernetworking-plugins
+sudo mkdir -p /opt/cni/bin
+sudo cp -a /usr/lib/cni/* /opt/cni/bin/
+```
+
+3. Restart k3s on the node (if needed):
+```bash
+sudo systemctl restart k3s
+```
+
+4. Verify:
+```bash
+kubectl get pods -A -o wide --field-selector spec.nodeName=<node-name>
+```
+
 ## Backup and Restore
 
 ### What to Backup
@@ -251,6 +279,7 @@ This repository uses Renovate for automated dependency updates. Configuration is
 Package rules:
 - ArgoCD updates are grouped and require manual approval
 - Infrastructure charts (traefik, cert-manager, external-secrets) are grouped
+- Longhorn and Flannel updates are grouped
 
 ### Adding New Applications
 
