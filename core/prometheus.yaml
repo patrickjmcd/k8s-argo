@@ -77,7 +77,9 @@ spec:
                   cpu: 100m
                   memory: 128Mi
           prometheus-node-exporter:
-            affinity: {}
+            affinity: null
+            hostNetwork: false
+            hostPID: false
             resources:
               requests:
                 cpu: 10m
