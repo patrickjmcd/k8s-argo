@@ -9,14 +9,118 @@ metadata:
     argocd.argoproj.io/sync-wave: "-3"
 spec:
   destination:
-    namespace: kube-system
+    namespace: kube-flannel
     name: in-cluster
   project: core-components
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+  syncOptions:
+    - CreateNamespace=true
   source:
-    path: core/flannel-assets
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    targetRevision: main
+    chart: flannel
+    repoURL: https://flannel-io.github.io/flannel/
+    targetRevision: v0.28.1
+    helm:
+      releaseName: flannel
+      valuesObject:
+        # The IPv4 cidr pool to create on startup if none exists. Pod IPs will be
+        # chosen from this range.
+        podCidr: "10.42.0.0/16"
+        podCidrv6: ""
+
+        flannel:
+          # kube-flannel image
+          image:
+            repository: ghcr.io/flannel-io/flannel
+            tag: v0.28.1
+          image_cni:
+            repository: ghcr.io/flannel-io/flannel-cni-plugin
+            tag: v1.9.0-flannel1
+          # cniBinDir is the directory to which the flannel CNI binary is installed.
+          cniBinDir: "/opt/cni/bin"
+          # cniConfDir is the directory where the CNI configuration is located.
+          cniConfDir: "/etc/cni/net.d"
+          # skipCNIConfigInstallation skips the installation of the flannel CNI config. This is useful when the CNI config is
+          # provided externally.
+          skipCNIConfigInstallation: false
+          # flannel command arguments
+          enableNFTables: false
+          args:
+            - "--ip-masq"
+            - "--kube-subnet-mgr"
+          # Backend for kube-flannel. Backend should not be changed
+          # at runtime. (vxlan, host-gw, wireguard, udp)
+          # Documentation at https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md
+          backend: "vxlan"
+          # Port used by the backend 0 means default value (VXLAN: 8472, Wireguard: 51821, UDP: 8285)
+          #backendPort: 0
+          # MTU to use for outgoing packets (VXLAN and Wiregurad) if not defined the MTU of the external interface is used.
+          # mtu: 1500
+          #
+          # VXLAN Configs:
+          #
+          # VXLAN Identifier to be used. On Linux default is 1.
+          #vni: 1
+          # Enable VXLAN Group Based Policy (Default false)
+          # GBP: false
+          # Enable direct routes (default is false)
+          # directRouting: false
+          # MAC prefix to be used on Windows. (Defaults is 0E-2A)
+          # macPrefix: "0E-2A"
+          #
+          # Wireguard Configs:
+          #
+          # UDP listen port used with IPv6
+          # backendPortv6: 51821
+          # Pre shared key to use
+          # psk: 0
+          # IP version to use on Wireguard
+          # tunnelMode: "separate"
+          # Persistent keep interval to use
+          # keepaliveInterval: 0
+          #
+          cniConf: |
+            {
+              "name": "cbr0",
+              "cniVersion": "0.3.1",
+              "plugins": [
+                {
+                  "type": "flannel",
+                  "delegate": {
+                    "hairpinMode": true,
+                    "isDefaultGateway": true
+                  }
+                },
+                {
+                  "type": "portmap",
+                  "capabilities": {
+                    "portMappings": true
+                  }
+                }
+              ]
+            }
+          #
+          # General daemonset configs
+          #
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          tolerations:
+            - effect: NoExecute
+              operator: Exists
+            - effect: NoSchedule
+              operator: Exists
+          nodeSelector: { }
+
+        netpol:
+          enabled: false
+          args:
+            - "--hostname-override=$(MY_NODE_NAME)"
+            - "--v=2"
+          image:
+            repository: registry.k8s.io/networking/kube-network-policies
+            tag: v1.0.0
+
