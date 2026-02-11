@@ -21,10 +21,19 @@ spec:
       containers:
         - name: celery
           workingDir: /app
-          command: [ "nice","-n","5","celery","-A","dispatcharr","worker","-l","info" ]
+          command:
+            - /app/docker/entrypoint.celery.sh
           env:
             - name: TZ
               value: America/Chicago
+            - name: DISPATCHARR_ENV
+              value: modular
+            - name: CELERY_NICE_LEVEL
+              value: "5"
+            - name: DJANGO_SETTINGS_MODULE
+              value: dispatcharr.settings
+            - name: PYTHONUNBUFFERED
+              value: "1"
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw

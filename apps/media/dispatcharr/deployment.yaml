@@ -24,7 +24,7 @@ spec:
             - name: TZ
               value: America/Chicago
             - name: DISPATCHARR_ENV
-              value: aio
+              value: modular
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw
