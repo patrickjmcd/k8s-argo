@@ -80,4 +80,4 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: nfs-dispatcharr-config
+            claimName: smb-dispatcharr-claim
