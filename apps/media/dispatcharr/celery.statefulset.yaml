@@ -77,14 +77,9 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data
-      restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        storageClassName: longhorn
-        resources:
-          requests:
-            storage: 10Gi
+
+          restartPolicy: Always
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: nfs-dispatcharr-config

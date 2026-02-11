@@ -80,4 +80,4 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: longhorn-dispatcharr-config
+            claimName: nfs-dispatcharr-config
