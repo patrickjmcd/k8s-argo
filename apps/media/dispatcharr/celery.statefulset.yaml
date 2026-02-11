@@ -34,6 +34,8 @@ spec:
               value: dispatcharr.settings
             - name: PYTHONUNBUFFERED
               value: "1"
+            - name: USE_LEGACY_NUMPY
+              value: "true"
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw

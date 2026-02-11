@@ -25,6 +25,8 @@ spec:
               value: America/Chicago
             - name: DISPATCHARR_ENV
               value: modular
+            - name: USE_LEGACY_NUMPY
+              value: "true"
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw
