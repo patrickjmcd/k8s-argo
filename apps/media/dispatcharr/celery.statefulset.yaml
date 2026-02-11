@@ -41,32 +41,7 @@ spec:
                 name: dispatcharr-1pw
           image: dispatcharr
           imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 9191
-              name: http
-              protocol: TCP
-          readinessProbe:
-            failureThreshold: 3
-            periodSeconds: 10
-            successThreshold: 1
-            tcpSocket:
-              port: http
-            timeoutSeconds: 1
-          livenessProbe:
-            tcpSocket:
-              port: http
-            failureThreshold: 5
-            initialDelaySeconds: 180
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 10
-          startupProbe:
-            failureThreshold: 30
-            periodSeconds: 5
-            successThreshold: 1
-            tcpSocket:
-              port: http
-            timeoutSeconds: 1
+
           resources:
             limits:
               cpu: 1000m
@@ -77,7 +52,6 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data
-
           restartPolicy: Always
       volumes:
         - name: data
