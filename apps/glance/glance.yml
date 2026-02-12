@@ -10,6 +10,8 @@ pages:
             collapse-after: 3
             cache: 3h
             feeds:
+              - url: https://openrss.org/www.axios.com/local/kansas-city
+                title: Axios Kansas City
               - url: https://www.kcur.org/podcast/kansas-city-today/rss.xml
                 title: KCUR
               - url: https://api.axios.com/feed/
