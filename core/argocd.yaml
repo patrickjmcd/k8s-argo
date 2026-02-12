@@ -64,10 +64,10 @@ spec:
           controller:
             resources:
               requests:
-                cpu: 500m
+                cpu: 200m
                 memory: 1280Mi
               limits:
-                cpu: 1000m
+                cpu: 500m
                 memory: 2Gi
 
           repoServer:

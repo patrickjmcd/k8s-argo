@@ -36,6 +36,29 @@ spec:
         valuesObject:
           crds:
             enabled: true
+          resources:
+            requests:
+              cpu: 15m
+              memory: 105Mi
+            limits:
+              cpu: 50m
+              memory: 128Mi
+          cainjector:
+            resources:
+              requests:
+                cpu: 15m
+                memory: 110Mi
+              limits:
+                cpu: 50m
+                memory: 160Mi
+          webhook:
+            resources:
+              requests:
+                cpu: 15m
+                memory: 105Mi
+              limits:
+                cpu: 50m
+                memory: 128Mi
     - path: core/cert-manager
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
