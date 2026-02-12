@@ -106,7 +106,7 @@ spec:
           emptyDir: {}
         - name: incomplete-storage
           persistentVolumeClaim:
-            claimName: rpi51-nvme-pvc
+            claimName: rpi-nvme-pvc
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim

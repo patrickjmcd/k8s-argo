@@ -222,6 +222,36 @@ kubectl get httproutes -A
 kubectl describe httproute <name> -n <namespace>
 ```
 
+### Node Prerequisites (Ubuntu/Debian)
+
+Before joining a new node to the cluster, install required packages:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y containernetworking-plugins nfs-common cifs-utils
+sudo mkdir -p /opt/cni/bin
+sudo cp -a /usr/lib/cni/* /opt/cni/bin/
+```
+
+- `containernetworking-plugins` - Required for pod networking (CNI)
+- `nfs-common` - Required for NFS CSI driver volumes
+- `cifs-utils` - Required for CIFS/SMB volumes (if used)
+
+#### Raspberry Pi: Enable cgroups
+
+For Raspberry Pi nodes, enable cgroups by adding to `/boot/firmware/cmdline.txt`:
+
+```bash
+sudo sed -i '$ s/$/ cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1/' /boot/firmware/cmdline.txt
+sudo reboot
+```
+
+After reboot, verify cgroups are enabled:
+
+```bash
+cat /proc/cgroups
+```
+
 ### CNI Plugins Missing (Pods Stuck in ContainerCreating)
 
 If pods are stuck in `ContainerCreating` on a node, verify CNI plugins exist on that node.
@@ -232,13 +262,7 @@ ls -la /opt/cni/bin
 ls -la /etc/cni/net.d
 ```
 
-2. If missing, install plugins and copy into place (Debian/Ubuntu):
-```bash
-sudo apt-get update
-sudo apt-get install -y containernetworking-plugins
-sudo mkdir -p /opt/cni/bin
-sudo cp -a /usr/lib/cni/* /opt/cni/bin/
-```
+2. If missing, follow the Node Prerequisites steps above.
 
 3. Restart k3s on the node (if needed):
 ```bash

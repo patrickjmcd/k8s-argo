@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: rpi51-nvme-pv
+  name: rpi-nvme-pv
 spec:
   capacity:
     storage: 2Ti
@@ -19,12 +19,12 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - pi-worker-3
+                - pi5-kube2
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: rpi51-nvme-pvc
+  name: rpi-nvme-pvc
 spec:
   accessModes:
     - ReadWriteMany
