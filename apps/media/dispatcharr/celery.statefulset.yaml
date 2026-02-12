@@ -52,7 +52,6 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data
-          restartPolicy: Always
       volumes:
         - name: data
           persistentVolumeClaim:
