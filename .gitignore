@@ -7,3 +7,4 @@ secrets.env.json
 *.tfstate
 *.tfstate.*
 terraform.tfvars
+/.claude
