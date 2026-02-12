@@ -23,7 +23,7 @@ spec:
           workingDir: /app
           command:
 #            - /app/docker/entrypoint.celery.sh
-            - bin/bash
+            - /bin/bash
             - -c
             - |
               #!/bin/bash
