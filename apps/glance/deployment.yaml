@@ -72,6 +72,10 @@ spec:
         - name: glance-config
           configMap:
               name: glance-config
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-registry-cred
