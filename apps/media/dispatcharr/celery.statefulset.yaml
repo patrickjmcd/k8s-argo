@@ -28,6 +28,11 @@ spec:
             - |
               #!/bin/bash
               set -e
+              
+              # Function to echo with timestamp
+                echo_with_timestamp() {
+                echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
+              }
 
               cd /app
               source /dispatcharrpy/bin/activate
