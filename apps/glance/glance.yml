@@ -10,15 +10,13 @@ pages:
             collapse-after: 3
             cache: 3h
             feeds:
+              - url: https://www.kcur.org/podcast/kansas-city-today/rss.xml
+                title: KCUR
+              - url: https://api.axios.com/feed/
+                title: Axios
               - url: https://technotim.live/feed.xml
                 title: Techno Tim
-              - url: https://ciechanow.ski/atom.xml
-              - url: https://www.joshwcomeau.com/rss.xml
-                title: Josh Comeau
-              - url: https://samwho.dev/rss.xml
-              - url: https://awesomekling.github.io/feed.xml
-              - url: https://ishadeed.com/feed.xml
-                title: Ahmad Shadeed
+
 
           - type: monitor
             cache: 1m
