@@ -9,4 +9,4 @@ resources:
 images:
   - name: agregarr
     newName: agregarr/agregarr
-    newTag: v2.3.0
+    newTag: v2.4.0
