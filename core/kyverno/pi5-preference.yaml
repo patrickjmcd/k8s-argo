@@ -1,12 +1,12 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: prefer-amd64-nodes
+  name: prefer-pi5-nodes
 spec:
   validationFailureAction: Audit
   background: false
   rules:
-    - name: prefer-amd64-if-no-scheduling-constraints
+    - name: prefer-pi5-if-no-scheduling-constraints
       match:
         any:
           - resources:
@@ -30,7 +30,7 @@ spec:
                   - weight: 80
                     preference:
                       matchExpressions:
-                        - key: kubernetes.io/arch
+                        - key: node.kubernetes.io/pi-model
                           operator: In
                           values:
-                            - amd64
+                            - "5"
