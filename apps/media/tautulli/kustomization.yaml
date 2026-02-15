@@ -9,4 +9,4 @@ resources:
 images:
   - name: tautulli
     newName: ghcr.io/tautulli/tautulli
-    newTag: v2.16.0
+    newTag: v2.16.1
