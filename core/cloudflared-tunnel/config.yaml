@@ -49,10 +49,10 @@ ingress:
   # MEDIA
   - hostname: bazarr.pmcd.io
     service: http://bazarr.media:6767
-  - hostname: overseerr.pmcd.io
-    service: http://overseerr.media:5055
+  - hostname: seerr.pmcd.io
+    service: http://seerr.media:80
   - hostname: request.pmcd.dev
-    service: http://overseerr.media:5055
+    service: http://seerr.media:80
   - hostname: youtubedl.pmcd.io
     service: http://youtubedl.media:80
   - hostname: tronbyt.pmcd.io

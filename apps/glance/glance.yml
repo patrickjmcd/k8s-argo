@@ -52,8 +52,8 @@ pages:
             cache: 1m
             title: Media Services
             sites:
-              - title: Overseerr
-                url: https://overseerr.x.pmcd.io
+              - title: Seerr
+                url: https://seerr.x.pmcd.io
               - title: Sonarr
                 url: https://sonarr.x.pmcd.io
               - title: Radarr

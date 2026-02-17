@@ -21,6 +21,7 @@ spec:
           - name: readarr
           - name: dispatcharr
           - name: hdhr2xmltv
+          - name: seerr
   template:
     metadata:
       name: '{{name}}'

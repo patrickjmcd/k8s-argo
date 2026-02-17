@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: media
+resources:
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+  - storage.yaml
+
+images:
+  - name: seerr
+    newName: ghcr.io/seerr-team/seerr
+    newTag: v3.0.1
