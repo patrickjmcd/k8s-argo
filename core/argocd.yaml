@@ -71,6 +71,10 @@ spec:
                 memory: 2Gi
 
           repoServer:
+            livenessProbe:
+              timeoutSeconds: 10
+            readinessProbe:
+              timeoutSeconds: 10
             resources:
               requests:
                 cpu: 35m
