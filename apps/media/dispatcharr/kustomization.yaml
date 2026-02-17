@@ -11,5 +11,7 @@ resources:
 
 images:
   - name: dispatcharr
-    newName: ghcr.io/dispatcharr/dispatcharr
-    newTag: 0.19.0
+    newName: patrickjmcd/dispatcharr
+    newTag: celery-numpy-test
+#    newName: ghcr.io/dispatcharr/dispatcharr
+#    newTag: 0.19.0
