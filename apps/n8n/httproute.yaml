@@ -18,5 +18,5 @@ spec:
       backendRefs:
         - name: n8n
           kind: Service
-          namespace: media
+          namespace: default
           port: 80
