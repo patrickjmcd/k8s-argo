@@ -63,8 +63,8 @@ spec:
               cpu: 500m
               memory: 384Mi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 15m
+              memory: 160Mi
 
           volumeMounts:
             - mountPath: /config/config.xml

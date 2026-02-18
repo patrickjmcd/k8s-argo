@@ -62,8 +62,8 @@ spec:
             - "--api.insecure=true"
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 25m
+              memory: 160Mi
             limits:
               cpu: 1000m
               memory: 512Mi

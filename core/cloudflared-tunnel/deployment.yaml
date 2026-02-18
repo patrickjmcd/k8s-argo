@@ -21,8 +21,8 @@ spec:
           image: cloudflared
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 15m
+              memory: 100Mi
             limits:
               cpu: 500m
               memory: 256Mi

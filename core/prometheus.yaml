@@ -60,8 +60,8 @@ spec:
           prometheusOperator:
             resources:
               requests:
-                cpu: 50m
-                memory: 128Mi
+                cpu: 15m
+                memory: 100Mi
               limits:
                 cpu: 200m
                 memory: 256Mi
@@ -82,11 +82,11 @@ spec:
             hostPID: false
             resources:
               requests:
-                cpu: 10m
-                memory: 32Mi
+                cpu: 25m
+                memory: 100Mi
               limits:
                 cpu: 100m
-                memory: 64Mi
+                memory: 200Mi
           kube-state-metrics:
             resources:
               requests:
@@ -98,11 +98,11 @@ spec:
           grafana:
             resources:
               requests:
-                cpu: 50m
-                memory: 128Mi
+                cpu: 25m
+                memory: 224Mi
               limits:
                 cpu: 200m
-                memory: 256Mi
+                memory: 512Mi
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io
