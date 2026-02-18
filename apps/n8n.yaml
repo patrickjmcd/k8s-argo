@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: n8n
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+    namespace: n8n
+  project: apps
+  syncPolicy:
+    automated: { }
+  source:
+    path: apps/n8n
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
+
