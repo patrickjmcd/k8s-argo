@@ -30,6 +30,8 @@ spec:
               value: "1"
             - name: OAUTH2_USER_CREATION
               value: "1"
+            - name: DISABLE_LOCAL_AUTH
+              value: "1"
           envFrom:
             - secretRef:
                 name: miniflux-1pw
