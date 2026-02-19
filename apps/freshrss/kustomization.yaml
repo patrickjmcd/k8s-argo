@@ -5,7 +5,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
-  - pvc.yaml
+  - storage.yaml
   - 1password.secret.yaml
 
 images:
