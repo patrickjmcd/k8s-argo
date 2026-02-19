@@ -67,12 +67,3 @@ spec:
               cpu: 25m
               memory: 864Mi
 
-          volumeMounts:
-            - mountPath: /data
-              name: data
-
-      restartPolicy: Always
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: smb-readflow-claim
