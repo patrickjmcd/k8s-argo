@@ -66,4 +66,5 @@ spec:
             requests:
               cpu: 25m
               memory: 864Mi
-
+      nodeSelector:
+        kubernetes.io/arch: arm64
