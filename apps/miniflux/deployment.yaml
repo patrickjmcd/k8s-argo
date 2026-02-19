@@ -26,6 +26,8 @@ spec:
           env:
             - name: TZ
               value: America/Chicago
+            - name: RUN_MIGRATIONS
+              value: "1"
           envFrom:
             - secretRef:
                 name: miniflux-1pw
