@@ -25,13 +25,16 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
-              value: America/Chicago
+              value: "America/Chicago"
             - name: RUN_MIGRATIONS
               value: "1"
             - name: OAUTH2_USER_CREATION
               value: "1"
             - name: DISABLE_LOCAL_AUTH
               value: "1"
+            - name: POLLING_FREQUENCY
+              value: "10"
+
           envFrom:
             - secretRef:
                 name: miniflux-1pw
