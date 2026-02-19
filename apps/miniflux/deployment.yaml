@@ -28,6 +28,8 @@ spec:
               value: America/Chicago
             - name: RUN_MIGRATIONS
               value: "1"
+            - name: OAUTH2_USER_CREATION
+              value: "1"
           envFrom:
             - secretRef:
                 name: miniflux-1pw
