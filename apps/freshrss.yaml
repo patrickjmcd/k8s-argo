@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: freshrss
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+    namespace: default
+  project: apps
+  syncPolicy:
+    automated: {}
+  source:
+    path: apps/freshrss
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
