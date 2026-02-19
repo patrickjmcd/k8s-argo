@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: miniflux
+    app.kubernetes.io/name: miniflux
+  name: miniflux
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: miniflux
+      app.kubernetes.io/name: miniflux
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: miniflux
+        app.kubernetes.io/name: miniflux
+    spec:
+      containers:
+        - name: miniflux
+          image: miniflux
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/Chicago
+          envFrom:
+            - secretRef:
+                name: miniflux-1pw
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              port: http
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 15m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+
