@@ -26,6 +26,8 @@ spec:
           env:
             - name: TZ
               value: "America/Chicago"
+            - name: FUSION_PORT
+              value: "8080"
 
           envFrom:
             - secretRef:
