@@ -70,6 +70,9 @@ ingress:
   - hostname: sabnzbd.pmcd.io
     service: http://sabnzbd.media:80
 
+  - hostname: n8n.pmcd.dev
+    service: http://n8n.default:80
+
   # ARGO
   - hostname: argo.pmcd.dev
     service: http://argocd-server.argocd:8080

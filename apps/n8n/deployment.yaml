@@ -27,6 +27,11 @@ spec:
               value: "true"
             - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
               value: "true"
+            - name: WEBHOOK_URL
+              value: https://n8n.pmcd.dev
+            - name: N8N_PROXY_HOPS
+              value: "1"
+
           envFrom:
             - secretRef:
                 name: n8n-1pw
