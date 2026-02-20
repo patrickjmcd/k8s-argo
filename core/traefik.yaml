@@ -22,7 +22,7 @@ spec:
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
     - chart: traefik
-      targetRevision: 39.0.1
+      targetRevision: 39.0.2
       repoURL: https://traefik.github.io/charts
       helm:
         releaseName: traefik
