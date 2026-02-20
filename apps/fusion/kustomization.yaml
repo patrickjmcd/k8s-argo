@@ -10,4 +10,4 @@ resources:
 images:
   - name: fusion
     newName: ghcr.io/patrickjmcd/fusion
-    newTag: test
+    newTag: 20260220.0
