@@ -10,4 +10,4 @@ resources:
 images:
   - name: reedme
     newName: ghcr.io/patrickjmcd/reedme
-    newTag: "1.1.2"
+    newTag: "1.2.0"
