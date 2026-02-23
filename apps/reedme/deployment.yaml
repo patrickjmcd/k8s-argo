@@ -2,36 +2,36 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: fusion
-    app.kubernetes.io/name: fusion
-  name: fusion
+    app.kubernetes.io/instance: reedme
+    app.kubernetes.io/name: reedme
+  name: reedme
   namespace: default
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/instance: fusion
-      app.kubernetes.io/name: fusion
+      app.kubernetes.io/instance: reedme
+      app.kubernetes.io/name: reedme
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: fusion
-        app.kubernetes.io/name: fusion
+        app.kubernetes.io/instance: reedme
+        app.kubernetes.io/name: reedme
     spec:
       containers:
-        - name: fusion
-          image: fusion
+        - name: reedme
+          image: reedme
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
               value: "America/Chicago"
-            - name: FUSION_PORT
+            - name: reedme_PORT
               value: "8080"
 
           envFrom:
             - secretRef:
-                name: fusion-1pw
+                name: reedme-1pw
           ports:
             - containerPort: 8080
               name: http

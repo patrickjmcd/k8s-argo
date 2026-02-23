@@ -8,6 +8,6 @@ resources:
   - 1password.secret.yaml
 
 images:
-  - name: fusion
-    newName: ghcr.io/patrickjmcd/fusion
-    newTag: "20260220.0"
+  - name: reedme
+    newName: ghcr.io/patrickjmcd/reedme
+    newTag: "1.1.2"

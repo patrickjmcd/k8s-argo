@@ -10,12 +10,12 @@ metadata:
 spec:
   destination:
     name: in-cluster
-    namespace: fusion
+    namespace: reedme
   project: apps
   syncPolicy:
     automated: { }
   source:
-    path: apps/fusion
+    path: apps/reedme
     repoURL: https://github.com/patrickjmcd/k8s-argo.git
     targetRevision: main
 
