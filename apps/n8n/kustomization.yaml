@@ -11,4 +11,4 @@ resources:
 images:
   - name: n8n
     newName: docker.n8n.io/n8nio/n8n
-    newTag: 2.9.2
+    newTag: 2.10.1
