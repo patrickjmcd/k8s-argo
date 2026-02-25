@@ -1,0 +1,192 @@
+image:
+  repository: glanceapp/glance
+  tag: "v0.8.4"
+
+service:
+  port: 80
+  containerPort: 8080
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 100Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 60
+    failureThreshold: 3
+    periodSeconds: 10
+    timeoutSeconds: 1
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - glance.x.pmcd.io
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/glance"
+
+envFrom:
+  - secretRef:
+      name: glance-1pw
+
+command:
+  - "/app/glance"
+  - "-config"
+  - "/config/glance.yml"
+
+configMap:
+  enabled: true
+  mountPath: /config
+  subPath: glance.yml
+  data:
+    glance.yml: |
+      pages:
+        - name: Home
+          columns:
+            - size: small
+              widgets:
+                - type: calendar
+
+                - type: rss
+                  limit: 10
+                  collapse-after: 3
+                  cache: 3h
+                  feeds:
+                    - url: https://kill-the-newsletter.com/feeds/8xoz2d7l650tjeu4j2xk.xml
+                      title: Kill The Newsletter KC
+                    - url: https://www.kcur.org/podcast/kansas-city-today/rss.xml
+                      title: KCUR
+                    - url: https://api.axios.com/feed/
+                      title: Axios
+                    - url: https://technotim.live/feed.xml
+                      title: Techno Tim
+
+
+                - type: monitor
+                  cache: 1m
+                  title: Services
+                  sites:
+                    - title: Home Assistant
+                      url: https://ha.pmcd.dev
+                    - title: PocketID
+                      url: https://auth.pmcd.dev
+                    - title: Mealie
+                      url: https://mealie.x.pmcd.io
+                    - title: ArgoCD
+                      url: https://argo.x.pmcd.io
+                    - title: Traefik
+                      url: https://traefik.x.pmcd.io
+                    - title: Tronbyt
+                      url: https://tronbyt.x.pmcd.io
+                    - title: Uptime Kuma
+                      url: https://status.x.pmcd.io
+                    - title: Longhorn
+                      url: https://longhorn.x.pmcd.io
+                    - title: Logs
+                      url: https://logs.x.pmcd.io
+                    - title: Grafana
+                      url: https://grafana.x.pmcd.io
+                    - title: Prometheus
+                      url: https://prometheus.x.pmcd.io
+
+
+                - type: monitor
+                  cache: 1m
+                  title: Media Services
+                  sites:
+                    - title: Seerr
+                      url: https://seerr.x.pmcd.io
+                    - title: Sonarr
+                      url: https://sonarr.x.pmcd.io
+                    - title: Radarr
+                      url: https://radarr.x.pmcd.io
+                    - title: Lidarr
+                      url: https://lidarr.x.pmcd.io
+                    - title: Prowlarr
+                      url: https://prowlarr.x.pmcd.io
+                    - title: Agregarr
+                      url: https://agregarr.x.pmcd.io
+                    - title: Tautulli
+                      url: https://tautulli.x.pmcd.io
+                    - title: Youtube-DL
+                      url: https://youtubedl.x.pmcd.io
+
+
+            - size: full
+              widgets:
+                - type: rss
+                  limit: 10
+                  collapse-after: 3
+                  cache: 3h
+                  style: horizontal-cards
+                  feeds:
+                    - url: ${RSS_404MEDIA}
+                      title: 404 Media
+
+
+                - type: hacker-news
+
+                - type: videos
+                  channels:
+                    - UC4eYXhJI4-7wSWc8UNRwD4A # NPR Music
+                    - UCJquYOG5EL82sKTfH9aMA9Q # Rick Beato
+                    - UCR-DXc1voovS8nhAvccRZhg # Jeff Geerling
+                    - UCv6J_jJa8GJqFwQNgNrMuww # ServeTheHome
+                    - UCOk-gHyjcWZNj3Br4oxwh0A # Techno Tim
+
+                - type: reddit
+                  subreddit: kansascity
+
+                - type: reddit
+                  subreddit: selfhosted
+
+            - size: small
+              widgets:
+                - type: weather
+                  location: Kansas City, United States
+                  units: imperial
+
+                - type: stocks
+                  stocks:
+                    - symbol: SPY
+                      name: S&P 500
+                    - symbol: BTC-USD
+                      name: Bitcoin
+                    - symbol: NVDA
+                      name: NVIDIA
+                    - symbol: AAPL
+                      name: Apple
+                    - symbol: MSFT
+                      name: Microsoft
+                    - symbol: GOOGL
+                      name: Google
+                    - symbol: AMD
+                      name: AMD
+                    - symbol: RDDT
+                      name: Reddit
+
+imagePullSecrets:
+  - name: ghcr-registry-cred
+
+dnsConfig:
+  options:
+    - name: ndots
+      value: "2"

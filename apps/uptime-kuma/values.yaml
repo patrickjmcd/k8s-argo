@@ -1,0 +1,48 @@
+image:
+  repository: louislam/uptime-kuma
+  tag: "2.1.3"
+
+service:
+  port: 3001
+
+resources:
+  requests:
+    cpu: 35m
+    memory: 224Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  liveness:
+    enabled: false
+  startup:
+    enabled: false
+
+httproute:
+  enabled: true
+  hostnames:
+    - status.x.pmcd.io
+    - uptime-kuma.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 1Gi
+  mountPath: /app/data
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  basicAuth:
+    enabled: true
+    secretName: uptime-kuma-api-key
+    usernameKey: username
+    passwordKey: password

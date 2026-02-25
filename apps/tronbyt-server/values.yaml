@@ -1,0 +1,55 @@
+image:
+  repository: ghcr.io/tronbyt/server
+  tag: "latest"
+
+service:
+  port: 8888
+  containerPort: 8000
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 100Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 3
+  liveness:
+    enabled: false
+  startup:
+    enabled: false
+
+httproute:
+  enabled: true
+  hostnames:
+    - tronbyt.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 1Gi
+  mountPath: ""  # PVC created but not auto-mounted (subPath mounts used instead)
+
+env:
+  SERVER_HOSTNAME_OR_IP: tronbyt-server
+  SERVER_PORT: "8000"
+  SERVER_PROTOCOL: http
+  SYSTEM_APPS_REPO: https://github.com/tronbyt/apps.git
+  PRODUCTION: "1"
+  LOG_LEVEL: WARNING
+
+extraVolumeMounts:
+  - mountPath: /app/users
+    name: data
+    subPath: users
+  - mountPath: /app/data
+    name: data
+    subPath: data

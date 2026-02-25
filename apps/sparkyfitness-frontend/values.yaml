@@ -1,0 +1,36 @@
+image:
+  repository: codewithcj/sparkyfitness
+  tag: "latest"
+
+service:
+  port: 80
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: false
+  startup:
+    enabled: false
+
+httproute:
+  enabled: true
+  hostnames:
+    - sparkyfitness.x.pmcd.io
+
+env:
+  SPARKY_FITNESS_FRONTEND_URL: https://sparkyfitness.x.pmcd.io
+  SPARKY_FITNESS_SERVER_HOST: sparkyfitness-server  # k8s service name for the backend
+  SPARKY_FITNESS_SERVER_PORT: "3010"

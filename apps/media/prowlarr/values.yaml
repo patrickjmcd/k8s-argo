@@ -1,0 +1,62 @@
+image:
+  repository: linuxserver/prowlarr
+  tag: "2.3.0"
+
+service:
+  port: 80
+  containerPort: 9696
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 200Mi
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 60
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - prowlarr.x.pmcd.io
+
+env:
+  TZ: America/Chicago
+
+extraVolumes:
+  - name: config
+    configMap:
+      name: prowlarr-config
+      items:
+        - key: config.xml
+          path: config.xml
+  - name: media
+    persistentVolumeClaim:
+      claimName: smb-media-claim
+
+extraVolumeMounts:
+  - mountPath: /config/config.xml
+    name: config
+    readOnly: true
+    subPath: config.xml
+  - mountPath: /media
+    name: media

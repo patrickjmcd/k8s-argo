@@ -1,0 +1,54 @@
+image:
+  repository: ghcr.io/unpoller/unpoller
+  tag: "latest"
+
+service:
+  port: 9130
+  portName: tcp
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 100Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    port: tcp
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /
+    port: tcp
+    initialDelaySeconds: 60
+    failureThreshold: 3
+    periodSeconds: 10
+    timeoutSeconds: 1
+  startup:
+    enabled: false
+
+httproute:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  port: tcp
+
+extraVolumes:
+  - name: config-volume
+    configMap:
+      name: unpoller-config
+
+extraVolumeMounts:
+  - name: config-volume
+    mountPath: /etc/unpoller/up.conf
+    subPath: up.conf

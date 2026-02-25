@@ -9,19 +9,56 @@ spec:
         elements:
           - name: radarr
           - name: sonarr
-          - name: lidarr
           - name: prowlarr
-
+          - name: readarr
           - name: agregarr
           - name: tautulli
+          - name: hdhr2xmltv
+          - name: seerr
+  template:
+    metadata:
+      name: '{{name}}'
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: .
+    spec:
+      project: apps
+      sources:
+        - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+          targetRevision: main
+          ref: values
+        - path: charts/homelab-app
+          repoURL: https://github.com/patrickjmcd/k8s-argo.git
+          targetRevision: main
+          helm:
+            releaseName: '{{name}}'
+            valueFiles:
+              - $values/apps/media/{{name}}/values.yaml
+      destination:
+        name: in-cluster
+        namespace: media
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: media-apps-kustomize
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: lidarr
           - name: notifiarr
           - name: sabnzbd
           - name: kometa
           - name: youtubedl
-          - name: readarr
           - name: dispatcharr
-          - name: hdhr2xmltv
-          - name: seerr
   template:
     metadata:
       name: '{{name}}'

@@ -1,0 +1,24 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "homelab-app.fullname" . }}
+  labels:
+    {{- include "homelab-app.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "homelab-app.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: {{ .Values.serviceMonitor.port | default .Values.service.portName }}
+      path: {{ .Values.serviceMonitor.path }}
+      {{- if .Values.serviceMonitor.basicAuth.enabled }}
+      basicAuth:
+        username:
+          name: {{ .Values.serviceMonitor.basicAuth.secretName }}
+          key: {{ .Values.serviceMonitor.basicAuth.usernameKey }}
+        password:
+          name: {{ .Values.serviceMonitor.basicAuth.secretName }}
+          key: {{ .Values.serviceMonitor.basicAuth.passwordKey }}
+      {{- end }}
+{{- end }}

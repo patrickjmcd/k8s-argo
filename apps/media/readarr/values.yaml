@@ -1,0 +1,67 @@
+image:
+  repository: ghcr.io/pennydreadful/bookshelf
+  tag: "softcover-v0.4.20.107"
+
+service:
+  port: 80
+  containerPort: 8787
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 160Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 60
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - readarr.x.pmcd.io
+
+env:
+  TZ: America/Chicago
+
+extraVolumes:
+  - name: config
+    configMap:
+      name: readarr-config
+      items:
+        - key: config.xml
+          path: config.xml
+  - name: media
+    persistentVolumeClaim:
+      claimName: smb-media-claim
+  - name: downloads
+    persistentVolumeClaim:
+      claimName: sab-downloads-pvc
+
+extraVolumeMounts:
+  - mountPath: /config/config.xml
+    name: config
+    readOnly: true
+    subPath: config.xml
+  - mountPath: /mnt/media
+    name: media
+  - mountPath: /mnt/downloads
+    name: downloads

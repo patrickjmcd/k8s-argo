@@ -1,0 +1,65 @@
+image:
+  repository: docker.n8n.io/n8nio/n8n
+  tag: "2.10.1"
+
+service:
+  port: 80
+  containerPort: 5678
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 864Mi
+  limits:
+    cpu: 1000m
+    memory: 1700Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 180
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - n8n.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: smb
+  size: 500Mi
+  mountPath: /data
+  accessMode: ReadWriteMany
+  smb:
+    source: "//192.168.1.253/AppConfig/n8n"
+    volumeHandle: media-smb-n8n-volume-id
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/n8n"
+
+env:
+  GENERIC_TIMEZONE: America/Chicago
+  N8N_RUNNERS_ENABLED: "true"
+  N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+  WEBHOOK_URL: https://n8n.pmcd.dev
+  N8N_PROXY_HOPS: "1"
+
+envFrom:
+  - secretRef:
+      name: n8n-1pw

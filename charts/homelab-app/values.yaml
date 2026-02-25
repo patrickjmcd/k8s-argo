@@ -1,0 +1,101 @@
+image:
+  repository: ""
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+  portName: http
+  containerPort: 0  # 0 = same as service.port
+  extraPorts: []
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Probes: type = httpGet | tcpSocket | exec | disabled
+probes:
+  readiness:
+    type: tcpSocket
+    port: ""        # defaults to service.portName
+    path: /         # for httpGet
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: false
+    type: tcpSocket
+    port: ""        # defaults to service.portName
+    path: /         # for httpGet
+    initialDelaySeconds: 60
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+    command: []     # for exec type
+  startup:
+    enabled: true
+    type: tcpSocket
+    port: ""        # defaults to service.portName
+    path: /         # for httpGet
+    failureThreshold: 30
+    periodSeconds: 5
+    command: []     # for exec type
+
+httproute:
+  enabled: true
+  gateway:
+    name: traefik-gateway
+    namespace: default
+  hostnames: []
+
+persistence:
+  enabled: false
+  type: longhorn    # or smb
+  size: 1Gi
+  mountPath: /data  # if empty, PVC volume is created but not auto-mounted
+  accessMode: ReadWriteOnce
+  smb:
+    source: ""
+    volumeHandle: ""
+    credentialsSecret: smb-creds-1pw
+    credentialsNamespace: csi-smb-provisioner
+
+onePassword:
+  enabled: false
+  itemPath: ""
+  secretName: ""  # defaults to <release>-1pw
+
+serviceMonitor:
+  enabled: false
+  path: /metrics
+  port: ""  # defaults to service.portName
+  basicAuth:
+    enabled: false
+    secretName: ""
+    usernameKey: username
+    passwordKey: password
+
+configMap:
+  enabled: false
+  mountPath: /config
+  subPath: ""
+  data: {}
+
+strategy:
+  type: Recreate
+
+env: {}
+envFrom: []
+command: []
+args: []
+imagePullSecrets: []
+dnsConfig: {}
+podAnnotations: {}
+
+extraVolumes: []
+extraVolumeMounts: []

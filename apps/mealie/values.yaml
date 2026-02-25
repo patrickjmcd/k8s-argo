@@ -1,0 +1,57 @@
+image:
+  repository: ghcr.io/mealie-recipes/mealie
+  tag: "v3.11.0"
+
+service:
+  port: 9000
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 450Mi
+  limits:
+    cpu: 500m
+    memory: 600Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 3
+  liveness:
+    enabled: false
+  startup:
+    enabled: false
+
+httproute:
+  enabled: true
+  hostnames:
+    - mealie.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 500Mi
+  mountPath: /app/data
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/mealie"
+
+env:
+  ALLOW_SIGNUP: "false"
+  TZ: America/Chicago
+  DB_ENGINE: postgres
+  BASE_URL: https://mealie.pmcd.dev
+  POSTGRES_USER: mealie
+  POSTGRES_DB: mealie
+  OIDC_AUTH_ENABLED: "True"
+  OIDC_SIGNUP_ENABLED: "False"
+  OIDC_CONFIGURATION_URL: https://auth.pmcd.dev/.well-known/openid-configuration
+
+envFrom:
+  - secretRef:
+      name: mealie-1pw

@@ -1,0 +1,65 @@
+image:
+  repository: codewithcj/sparkyfitness_server
+  tag: "latest"
+
+service:
+  port: 3010
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 60
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: false  # server is internal; expose only if needed
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 5Gi
+  mountPath: ""  # PVC created but mounted via subPath mounts below
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/sparkyfitness"
+
+env:
+  SPARKY_FITNESS_LOG_LEVEL: info
+  ALLOW_PRIVATE_NETWORK_CORS: "false"
+  SPARKY_FITNESS_FRONTEND_URL: https://sparkyfitness.x.pmcd.io
+  SPARKY_FITNESS_DISABLE_SIGNUP: "false"
+
+envFrom:
+  - secretRef:
+      name: sparkyfitness-1pw
+
+extraVolumeMounts:
+  - mountPath: /app/SparkyFitnessServer/backup
+    name: data
+    subPath: backup
+  - mountPath: /app/SparkyFitnessServer/uploads
+    name: data
+    subPath: uploads

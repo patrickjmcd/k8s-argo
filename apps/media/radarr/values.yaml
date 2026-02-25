@@ -1,0 +1,72 @@
+image:
+  repository: linuxserver/radarr
+  tag: "6.0.4"
+
+service:
+  port: 80
+  containerPort: 7878
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: exec
+    command:
+      - /usr/bin/env
+      - bash
+      - -c
+      - "curl --fail localhost:7878/api/v3/system/status?apiKey=`IFS=\\> && while read -d \\< E C; do if [[ $E = \"ApiKey\" ]]; then echo $C; fi; done < /config/config.xml`"
+    initialDelaySeconds: 60
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - radarr.x.pmcd.io
+
+env:
+  TZ: America/Chicago
+
+extraVolumes:
+  - name: config
+    configMap:
+      name: radarr-config
+      items:
+        - key: config.xml
+          path: config.xml
+  - name: media
+    persistentVolumeClaim:
+      claimName: smb-media-claim
+  - name: downloads
+    persistentVolumeClaim:
+      claimName: sab-downloads-pvc
+
+extraVolumeMounts:
+  - mountPath: /config/config.xml
+    name: config
+    readOnly: true
+    subPath: config.xml
+  - mountPath: /mnt/media
+    name: media
+  - mountPath: /mnt/downloads
+    name: downloads

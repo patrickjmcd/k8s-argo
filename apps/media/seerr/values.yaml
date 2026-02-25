@@ -1,0 +1,57 @@
+image:
+  repository: ghcr.io/seerr-team/seerr
+  tag: "v3.0.1"
+
+service:
+  port: 80
+  containerPort: 5055
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 350Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /api/v1/status
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 3
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /api/v1/status
+    initialDelaySeconds: 60
+    failureThreshold: 3
+    periodSeconds: 15
+    timeoutSeconds: 3
+  startup:
+    enabled: true
+    type: httpGet
+    path: /api/v1/status
+    failureThreshold: 10
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - requests.x.pmcd.io
+    - seerr.x.pmcd.io
+
+env:
+  TZ: America/Chicago
+
+persistence:
+  enabled: true
+  type: smb
+  size: 200Mi
+  mountPath: /app/config
+  accessMode: ReadWriteMany
+  smb:
+    source: "//192.168.1.253/AppConfig/overseerr"
+    volumeHandle: media-smb-overseerr-volume-id

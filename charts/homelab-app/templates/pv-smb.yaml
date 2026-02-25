@@ -1,0 +1,26 @@
+{{- if and .Values.persistence.enabled (eq .Values.persistence.type "smb") }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-{{ .Release.Name }}
+spec:
+  storageClassName: ""
+  capacity:
+    storage: {{ .Values.persistence.size }}
+  accessModes:
+    - {{ .Values.persistence.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: {{ .Values.persistence.smb.volumeHandle }}
+    volumeAttributes:
+      source: {{ .Values.persistence.smb.source | quote }}
+    nodeStageSecretRef:
+      name: {{ .Values.persistence.smb.credentialsSecret }}
+      namespace: {{ .Values.persistence.smb.credentialsNamespace }}
+{{- end }}

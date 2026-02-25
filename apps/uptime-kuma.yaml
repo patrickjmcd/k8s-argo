@@ -14,7 +14,14 @@ spec:
   project: apps
   #  syncPolicy:
   #    automated: { }
-  source:
-    path: apps/uptime-kuma
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
-    targetRevision: main
+  sources:
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      ref: values
+    - path: charts/homelab-app
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      helm:
+        releaseName: uptime-kuma
+        valueFiles:
+          - $values/apps/uptime-kuma/values.yaml
