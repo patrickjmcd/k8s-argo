@@ -54,7 +54,7 @@ env:
 
 envFrom:
   - secretRef:
-      name: sparkyfitness-1pw
+      name: sparkyfitness-server-1pw
 
 extraVolumeMounts:
   - mountPath: /app/SparkyFitnessServer/backup
