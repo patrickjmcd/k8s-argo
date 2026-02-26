@@ -40,7 +40,14 @@ httproute:
     - homebox.x.pmcd.io
 
 persistence:
-  enabled: false
+  enabled: true
+  type: smb
+  size: 500Mi
+  mountPath: /data
+  accessMode: ReadWriteMany
+  smb:
+    source: "//192.168.1.253/AppConfig/homebox"
+    volumeHandle: media-smb-homebox-volume-id
 
 onePassword:
   enabled: true
