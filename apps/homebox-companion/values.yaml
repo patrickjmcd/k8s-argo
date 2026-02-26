@@ -1,0 +1,51 @@
+image:
+  repository: ghcr.io/duelion/homebox-companion
+  tag: "2.5.0"
+
+service:
+  port: 80
+  containerPort: 8000
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 864Mi
+  limits:
+    cpu: 1000m
+    memory: 1700Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 180
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - homebox-companion.x.pmcd.io
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/homebox-companion"
+
+env:
+  TZ: America/Chicago
+
+envFrom:
+  - secretRef:
+      name: homebox-companion-1pw

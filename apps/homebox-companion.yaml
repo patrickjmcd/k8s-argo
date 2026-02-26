@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homebox-companion
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+    namespace: default
+  project: apps
+  syncPolicy:
+    automated: { }
+  sources:
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      ref: values
+    - path: charts/homelab-app
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      helm:
+        releaseName: homebox-companion
+        valueFiles:
+          - $values/apps/homebox-companion/values.yaml
