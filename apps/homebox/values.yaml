@@ -1,0 +1,56 @@
+image:
+  repository: ghcr.io/sysadminsmedia/homebox
+  tag: "0.23.1"
+
+service:
+  port: 80
+  containerPort: 7745
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 864Mi
+  limits:
+    cpu: 1000m
+    memory: 1700Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 180
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - homebox.x.pmcd.io
+
+persistence:
+  enabled: false
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/homebox"
+
+env:
+  TZ: America/Chicago
+
+
+
+envFrom:
+  - secretRef:
+      name: homebox-1pw
