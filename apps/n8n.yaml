@@ -10,7 +10,7 @@ metadata:
 spec:
   destination:
     name: in-cluster
-    namespace: n8n
+    namespace: default
   project: apps
   syncPolicy:
     automated: { }
