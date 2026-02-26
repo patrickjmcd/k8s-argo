@@ -10,7 +10,7 @@ metadata:
 spec:
   destination:
     name: in-cluster
-    namespace: unpoller
+    namespace: default
   project: apps
   syncPolicy:
     automated: { }
