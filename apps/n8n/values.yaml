@@ -1,6 +1,6 @@
 image:
   repository: docker.n8n.io/n8nio/n8n
-  tag: "2.10.1"
+  tag: "2.10.2"
 
 service:
   port: 80
