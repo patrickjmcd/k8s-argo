@@ -27,7 +27,7 @@ spec:
       targetRevision: main
       path: core/grafana-assets
     - chart: kube-prometheus-stack
-      targetRevision: 82.1.0
+      targetRevision: 82.4.3
       repoURL: https://prometheus-community.github.io/helm-charts
       helm:
         releaseName: kube-prometheus-stack
