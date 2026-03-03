@@ -70,8 +70,6 @@ spec:
               mountPath: /tmp/cache
             - name: dev-bus-usb
               mountPath: /dev/bus/usb
-            - name: dev-apex
-              mountPath: /dev/apex_0
 
           resources:
             requests:
@@ -111,7 +109,3 @@ spec:
           hostPath:
             path: /dev/bus/usb
             type: Directory
-        - name: dev-apex
-          hostPath:
-            path: /dev/apex_0
-            type: CharDevice
