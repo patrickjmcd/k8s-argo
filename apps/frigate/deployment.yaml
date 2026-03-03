@@ -19,8 +19,12 @@ spec:
         app: frigate
     spec:
       # Node selector to ensure pod runs on node with Coral TPU
-      # nodeSelector:
-      #   coral-tpu: "true"  # Add this label to your node with: kubectl label nodes <node-name> coral-tpu=true
+      # IMPORTANT: Label your node first with:
+      #   kubectl label nodes <node-name> coral-tpu=true
+      # To find which node has the Coral, SSH to each node and run:
+      #   lsusb | grep Google
+      nodeSelector:
+        coral-tpu: "true"
 
       # Host network mode for better camera access (optional)
       # hostNetwork: true
