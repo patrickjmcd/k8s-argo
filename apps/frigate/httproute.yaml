@@ -19,4 +19,4 @@ spec:
         - name: frigate
           kind: Service
           namespace: frigate
-          port: 8088
+          port: 5000
