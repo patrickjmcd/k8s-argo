@@ -1,5 +1,3 @@
----
-# Deployment for Frigate
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,7 +7,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate  # Important for device access
+    type: Recreate
   selector:
     matchLabels:
       app: frigate
@@ -18,26 +16,16 @@ spec:
       labels:
         app: frigate
     spec:
-      # Node selector to ensure pod runs on node with Coral TPU
-      # IMPORTANT: Label your node first with:
-      #   kubectl label nodes <node-name> coral-tpu=true
-      # To find which node has the Coral, SSH to each node and run:
-      #   lsusb | grep Google
       nodeSelector:
         coral-tpu: "true"
-
-      # Host network mode for better camera access (optional)
-      # hostNetwork: true
-      # dnsPolicy: ClusterFirstWithHostNet
-
+      
       containers:
         - name: frigate
-          image: frigate
+          image: ghcr.io/blakeblackshear/frigate:stable
           imagePullPolicy: Always
 
-          # Security context for device access
           securityContext:
-            privileged: true  # Required for USB device access
+            privileged: true
 
           ports:
             - name: http
@@ -54,15 +42,16 @@ spec:
               protocol: UDP
 
           env:
+            - name: FRIGATE_RTSP_PASSWORD
+              value: "password"
             - name: TZ
               value: "America/Chicago"
-          envFrom:
-            - secretRef:
-                name: frigate-1pw
-
 
           volumeMounts:
-            - name: config
+            - name: config-file
+              mountPath: /config/config.yml
+              subPath: config.yml
+            - name: config-cache
               mountPath: /config
             - name: media
               mountPath: /media/frigate
@@ -93,11 +82,13 @@ spec:
               port: 5000
             initialDelaySeconds: 30
             periodSeconds: 10
-
+      
       volumes:
-        - name: config
+        - name: config-file
           configMap:
             name: frigate-config
+        - name: config-cache
+          emptyDir: {}
         - name: media
           persistentVolumeClaim:
             claimName: frigate-media
