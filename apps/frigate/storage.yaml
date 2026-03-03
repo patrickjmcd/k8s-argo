@@ -1,0 +1,14 @@
+---
+# PersistentVolumeClaim for Frigate media storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi  # Adjust based on your needs
+  # storageClassName: local-path  # Uncomment and adjust for your storage class
+

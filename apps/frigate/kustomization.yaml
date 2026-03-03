@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - httproute.yaml
+  - service.yaml
+  - storage.yaml
+  - 1password.secret.yaml
+
+
+
+images:
+  - name: frigate
+    newName:  ghcr.io/blakeblackshear/frigate
+    newTag: stable

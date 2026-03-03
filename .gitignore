@@ -8,3 +8,4 @@ secrets.env.json
 *.tfstate.*
 terraform.tfvars
 /.claude
+.tmp/

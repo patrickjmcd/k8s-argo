@@ -1,0 +1,113 @@
+---
+# Deployment for Frigate
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frigate
+  labels:
+    app: frigate
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # Important for device access
+  selector:
+    matchLabels:
+      app: frigate
+  template:
+    metadata:
+      labels:
+        app: frigate
+    spec:
+      # Node selector to ensure pod runs on node with Coral TPU
+      # nodeSelector:
+      #   coral-tpu: "true"  # Add this label to your node with: kubectl label nodes <node-name> coral-tpu=true
+
+      # Host network mode for better camera access (optional)
+      # hostNetwork: true
+      # dnsPolicy: ClusterFirstWithHostNet
+
+      containers:
+        - name: frigate
+          image: frigate
+          imagePullPolicy: Always
+
+          # Security context for device access
+          securityContext:
+            privileged: true  # Required for USB device access
+
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+            - name: rtsp
+              containerPort: 8554
+              protocol: TCP
+            - name: webrtc-tcp
+              containerPort: 8555
+              protocol: TCP
+            - name: webrtc-udp
+              containerPort: 8555
+              protocol: UDP
+
+          env:
+            - name: TZ
+              value: "America/Chicago"
+          envFrom:
+            - secretRef:
+                name: frigate-1pw
+
+
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media/frigate
+            - name: cache
+              mountPath: /tmp/cache
+            - name: dev-bus-usb
+              mountPath: /dev/bus/usb
+            - name: dev-apex
+              mountPath: /dev/apex_0
+
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+
+          livenessProbe:
+            httpGet:
+              path: /api/version
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /api/version
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+      volumes:
+        - name: config
+          configMap:
+            name: frigate-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: frigate-media
+        - name: cache
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: dev-bus-usb
+          hostPath:
+            path: /dev/bus/usb
+            type: Directory
+        - name: dev-apex
+          hostPath:
+            path: /dev/apex_0
+            type: CharDevice
