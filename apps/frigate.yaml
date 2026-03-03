@@ -9,7 +9,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "-2"
 spec:
   destination:
-    namespace: kube-system
+    namespace: frigate
     name: in-cluster
   project: core-components
   syncPolicy:
