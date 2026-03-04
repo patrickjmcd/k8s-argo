@@ -27,7 +27,29 @@ spec:
   resources:
     requests:
       storage: 5Gi
-
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: frigate-recordings-pv
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage-frigate-recordings
+  local:
+    path: /opt/frigate/recordings
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - pi5-kube1
 # PVC for recordings (large files)
 # Uses local-storage for speed, no replication needed
 ---
@@ -38,11 +60,33 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-storage
+  storageClassName: local-storage-frigate-recordings
   resources:
     requests:
       storage: 100Gi
-
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: frigate-clips-pv
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage-frigate-clips
+  local:
+    path: /opt/frigate/clips
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - pi5-kube1
 # PVC for clips/snapshots
 # Uses local-storage for speed
 ---
@@ -53,11 +97,34 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-storage
+  storageClassName: local-storage-frigate-clips
   resources:
     requests:
       storage: 20Gi
 
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: frigate-exports-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage-frigate-exports
+  local:
+    path: /opt/frigate/exports
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - pi5-kube1
 # PVC for exports
 # Uses local-storage for speed
 ---
@@ -68,7 +135,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-storage
+  storageClassName: local-storage-frigate-exports
   resources:
     requests:
       storage: 10Gi
