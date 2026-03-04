@@ -1,3 +1,5 @@
+---
+# Deployment for Frigate
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,7 +9,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate
+    type: Recreate  # Important for device access
   selector:
     matchLabels:
       app: frigate
@@ -16,16 +18,18 @@ spec:
       labels:
         app: frigate
     spec:
+      # Node selector to ensure pod runs on node with Coral TPU
       nodeSelector:
         coral-tpu: "true"
-      
+
       containers:
         - name: frigate
-          image: ghcr.io/blakeblackshear/frigate:stable
+          image: frigate
           imagePullPolicy: Always
 
+          # Security context for device access
           securityContext:
-            privileged: true
+            privileged: true  # Required for USB device access
 
           ports:
             - name: http
@@ -42,21 +46,46 @@ spec:
               protocol: UDP
 
           env:
-            - name: FRIGATE_RTSP_PASSWORD
-              value: "password"
             - name: TZ
               value: "America/Chicago"
+          envFrom:
+            - secretRef:
+                name: frigate-1pw
 
           volumeMounts:
+            # Config file from ConfigMap (read-only)
             - name: config-file
               mountPath: /config/config.yml
               subPath: config.yml
-            - name: config-cache
+              readOnly: true
+
+            # Writable config directory for zones, model cache, etc.
+            # Stored on Longhorn for persistence
+            - name: config-storage
               mountPath: /config
-            - name: media
+
+            # Database on Longhorn (replicated, backed up)
+            - name: database
               mountPath: /media/frigate
+              subPath: db
+
+            # Recordings on local-path (fast, large)
+            - name: recordings
+              mountPath: /media/frigate/recordings
+
+            # Clips/snapshots on local-path (fast)
+            - name: clips
+              mountPath: /media/frigate/clips
+
+            # Exports on local-path (fast)
+            - name: exports
+              mountPath: /media/frigate/exports
+
+            # Temp cache in memory
             - name: cache
               mountPath: /tmp/cache
+
+            # USB device for Coral TPU
             - name: dev-bus-usb
               mountPath: /dev/bus/usb
 
@@ -82,20 +111,45 @@ spec:
               port: 5000
             initialDelaySeconds: 30
             periodSeconds: 10
-      
+
       volumes:
+        # ConfigMap with base config (read-only)
         - name: config-file
           configMap:
             name: frigate-config
-        - name: config-cache
-          emptyDir: {}
-        - name: media
+
+        # Longhorn PVC for writable config (zones, cache, etc.)
+        - name: config-storage
           persistentVolumeClaim:
-            claimName: frigate-media
+            claimName: frigate-config
+
+        # Longhorn PVC for SQLite database (replicated)
+        - name: database
+          persistentVolumeClaim:
+            claimName: frigate-db
+
+        # Local PVC for recordings (fast, large)
+        - name: recordings
+          persistentVolumeClaim:
+            claimName: frigate-recordings
+
+        # Local PVC for clips/snapshots
+        - name: clips
+          persistentVolumeClaim:
+            claimName: frigate-clips
+
+        # Local PVC for exports
+        - name: exports
+          persistentVolumeClaim:
+            claimName: frigate-exports
+
+        # Memory cache
         - name: cache
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
+
+        # Host USB device
         - name: dev-bus-usb
           hostPath:
             path: /dev/bus/usb

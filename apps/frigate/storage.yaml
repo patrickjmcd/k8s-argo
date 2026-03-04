@@ -1,14 +1,74 @@
+# PVC for config storage (writable for zones, etc.)
+# Uses Longhorn for replication
 ---
-# PersistentVolumeClaim for Frigate media storage
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: frigate-media
+  name: frigate-config
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: longhorn
   resources:
     requests:
-      storage: 20Gi  # Adjust based on your needs
-  # storageClassName: local-path  # Uncomment and adjust for your storage class
+      storage: 1Gi
 
+# PVC for SQLite database
+# Uses Longhorn for replication and backup
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+
+# PVC for recordings (large files)
+# Uses local-storage for speed, no replication needed
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-recordings
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 100Gi
+
+# PVC for clips/snapshots
+# Uses local-storage for speed
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-clips
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 20Gi
+
+# PVC for exports
+# Uses local-storage for speed
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-exports
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 10Gi
