@@ -22,7 +22,7 @@ spec:
       nodeSelector:
         coral-tpu: "true"
 
-      # Init container to seed config from ConfigMap to Longhorn volume
+      # Init container to seed config from 1Password secret to Longhorn volume
       initContainers:
         - name: config-init
           image: busybox:latest
@@ -32,7 +32,7 @@ spec:
             - |
               # Check if config exists AND is not empty
               if [ ! -f /config-storage/config.yml ] || [ ! -s /config-storage/config.yml ]; then
-                echo "Config missing or empty, copying from ConfigMap..."
+                echo "Config missing or empty, copying from secret..."
                 cp /config-seed/config.yml /config-storage/config.yml
                 echo "Config copied successfully"
                 echo "Config size: $(wc -c < /config-storage/config.yml) bytes"
@@ -46,6 +46,7 @@ spec:
             - name: config-storage
               mountPath: /config-storage
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: frigate
           image: frigate
@@ -132,10 +133,10 @@ spec:
             periodSeconds: 10
 
       volumes:
-        # ConfigMap used ONLY by init container to seed config
+        # 1Password secret used ONLY by init container to seed config
         - name: config-seed
-          configMap:
-            name: frigate-config
+          secret:
+            secretName: frigate-config-1pw
 
         # Longhorn PVC for config (writable, persistent)
         # After init, this is the source of truth
