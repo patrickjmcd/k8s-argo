@@ -45,7 +45,7 @@ spec:
               readOnly: true
             - name: config-storage
               mountPath: /config-storage
-
+      hostNetwork: true
       containers:
         - name: frigate
           image: frigate
@@ -54,6 +54,8 @@ spec:
           # Security context for device access
           securityContext:
             privileged: true  # Required for USB device access
+
+
 
           ports:
             - name: http
