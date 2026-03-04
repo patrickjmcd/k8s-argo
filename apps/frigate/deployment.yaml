@@ -30,13 +30,14 @@ spec:
             - sh
             - -c
             - |
-              # Only copy if config.yml doesn't exist in the persistent volume
-              if [ ! -f /config-storage/config.yml ]; then
-                echo "Config not found in persistent storage, copying from ConfigMap..."
+              # Check if config exists AND is not empty
+              if [ ! -f /config-storage/config.yml ] || [ ! -s /config-storage/config.yml ]; then
+                echo "Config missing or empty, copying from ConfigMap..."
                 cp /config-seed/config.yml /config-storage/config.yml
                 echo "Config copied successfully"
+                echo "Config size: $(wc -c < /config-storage/config.yml) bytes"
               else
-                echo "Config already exists in persistent storage, skipping..."
+                echo "Config exists and is valid ($(wc -c < /config-storage/config.yml) bytes), skipping..."
               fi
           volumeMounts:
             - name: config-seed
