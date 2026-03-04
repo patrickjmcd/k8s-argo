@@ -1,5 +1,5 @@
 ---
-# Deployment for Frigate
+# Deployment for Frigate with Init Container
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,6 +21,29 @@ spec:
       # Node selector to ensure pod runs on node with Coral TPU
       nodeSelector:
         coral-tpu: "true"
+
+      # Init container to seed config from ConfigMap to Longhorn volume
+      initContainers:
+        - name: config-init
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              # Only copy if config.yml doesn't exist in the persistent volume
+              if [ ! -f /config-storage/config.yml ]; then
+                echo "Config not found in persistent storage, copying from ConfigMap..."
+                cp /config-seed/config.yml /config-storage/config.yml
+                echo "Config copied successfully"
+              else
+                echo "Config already exists in persistent storage, skipping..."
+              fi
+          volumeMounts:
+            - name: config-seed
+              mountPath: /config-seed
+              readOnly: true
+            - name: config-storage
+              mountPath: /config-storage
 
       containers:
         - name: frigate
@@ -53,14 +76,7 @@ spec:
                 name: frigate-1pw
 
           volumeMounts:
-            # Config file from ConfigMap (read-only)
-            - name: config-file
-              mountPath: /config/config.yml
-              subPath: config.yml
-              readOnly: true
-
-            # Writable config directory for zones, model cache, etc.
-            # Stored on Longhorn for persistence
+            # Config now lives entirely on Longhorn volume
             - name: config-storage
               mountPath: /config
 
@@ -113,12 +129,13 @@ spec:
             periodSeconds: 10
 
       volumes:
-        # ConfigMap with base config (read-only)
-        - name: config-file
+        # ConfigMap used ONLY by init container to seed config
+        - name: config-seed
           configMap:
             name: frigate-config
 
-        # Longhorn PVC for writable config (zones, cache, etc.)
+        # Longhorn PVC for config (writable, persistent)
+        # After init, this is the source of truth
         - name: config-storage
           persistentVolumeClaim:
             claimName: frigate-config
