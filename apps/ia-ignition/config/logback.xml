@@ -10,7 +10,7 @@
 <configuration debug="true">
   <appender name="SysoutAppender" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%.-1p [%-30c{1}] [%d{HH:mm:ss,SSS}]: %m %X%n</pattern>
+      <pattern>%.-1p [%-30c{1}] [%d{HH:mm:ss.SSS}]: %m %X%n</pattern>
     </encoder>
   </appender>
   <appender name="DB" class="com.inductiveautomation.logging.SQLiteAppender">
