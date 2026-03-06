@@ -9,10 +9,10 @@ service:
 resources:
   requests:
     cpu: 25m
-    memory: 864Mi
+    memory: 650Mi
   limits:
     cpu: 1000m
-    memory: 1700Mi
+    memory: 1Gi
 
 probes:
   readiness:

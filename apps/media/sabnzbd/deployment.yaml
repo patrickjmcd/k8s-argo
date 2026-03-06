@@ -82,7 +82,7 @@ spec:
               memory: 2Gi
             requests:
               cpu: 15m
-              memory: 1850Mi
+              memory: 700Mi
 
           volumeMounts:
             - mountPath: /config
