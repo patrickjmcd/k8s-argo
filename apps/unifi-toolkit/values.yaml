@@ -1,0 +1,51 @@
+image:
+  repository: ghcr.io/crosstalk-solutions/unifi-toolkit
+  tag: "latest"
+
+service:
+  port: 8000
+  portName: tcp
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/unifi-toolkit"
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 100Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /health
+    port: tcp
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /health
+    port: tcp
+    initialDelaySeconds: 60
+    failureThreshold: 3
+    periodSeconds: 10
+    timeoutSeconds: 1
+  startup:
+    enabled: false
+
+httproute:
+  enabled: true
+  hostnames:
+    - unifi-toolkit.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 500Mi
+  mountPath: /app/data
