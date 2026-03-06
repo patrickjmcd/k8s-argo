@@ -296,6 +296,27 @@ kubectl get pods -A -o wide --field-selector spec.nodeName=<node-name>
 
 ## Development
 
+### Security Commit Agent
+
+This repository includes a pre-commit security agent that reviews staged changes before commit.
+
+It blocks commits when it detects:
+- Likely secrets (API keys, tokens, passwords, private keys)
+- Sensitive local files staged by mistake (for example `1password-credentials.json`, `secrets.env.json`, `.env*`)
+- High-risk security patterns (for example `privileged: true`, `allowPrivilegeEscalation: true`, `runAsNonRoot: false`, `:latest`, `curl | sh`)
+
+Install once per clone:
+
+```bash
+./scripts/install-security-agent.sh
+```
+
+Bypass only for one-off exceptions:
+
+```bash
+SECURITY_AGENT_BYPASS=1 git commit -m "..."
+```
+
 ### Renovate
 
 This repository uses Renovate for automated dependency updates. Configuration is in `renovate.json`.

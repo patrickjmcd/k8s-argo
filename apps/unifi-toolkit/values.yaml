@@ -49,3 +49,7 @@ persistence:
   type: longhorn
   size: 500Mi
   mountPath: /app/data
+
+envFrom:
+  - secretRef:
+      name: unifi-toolkit-1pw
