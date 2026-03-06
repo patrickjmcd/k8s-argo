@@ -39,16 +39,32 @@ httproute:
   hostnames:
     - readarr.x.pmcd.io
 
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/readarr"
+
+envFrom:
+  - secretRef:
+      name: readarr-1pw
+
 env:
   TZ: America/Chicago
+  READARR__SERVER__PORT: "8787"
+  READARR__SERVER__BINDADDRESS: "*"
+  READARR__LOG__LEVEL: info
+  READARR__AUTH__METHOD: External
+  READARR__AUTH__REQUIRED: DisabledForLocalAddresses
+  READARR__APP__BRANCH: master
+  READARR__APP__LAUNCHBROWSER: "False"
+  READARR__APP__UPDATEMECHANISM: Docker
+  READARR__APP__INSTANCENAME: readarr
+  READARR__POSTGRES__USER: readarr
+  READARR__POSTGRES__PORT: "5432"
+  READARR__POSTGRES__HOST: 192.168.1.11
+  READARR__POSTGRES__MAINDB: readarr-main
+  READARR__POSTGRES__LOGDB: readarr-logs
 
 extraVolumes:
-  - name: config
-    configMap:
-      name: readarr-config
-      items:
-        - key: config.xml
-          path: config.xml
   - name: media
     persistentVolumeClaim:
       claimName: smb-media-claim
@@ -57,10 +73,6 @@ extraVolumes:
       claimName: sab-downloads-pvc
 
 extraVolumeMounts:
-  - mountPath: /config/config.xml
-    name: config
-    readOnly: true
-    subPath: config.xml
   - mountPath: /mnt/media
     name: media
   - mountPath: /mnt/downloads

@@ -39,24 +39,36 @@ httproute:
   hostnames:
     - prowlarr.x.pmcd.io
 
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/prowlarr"
+
+envFrom:
+  - secretRef:
+      name: prowlarr-1pw
+
 env:
   TZ: America/Chicago
+  PROWLARR__SERVER__PORT: "9696"
+  PROWLARR__SERVER__BINDADDRESS: "*"
+  PROWLARR__LOG__LEVEL: info
+  PROWLARR__AUTH__METHOD: Forms
+  PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
+  PROWLARR__APP__BRANCH: master
+  PROWLARR__APP__LAUNCHBROWSER: "False"
+  PROWLARR__APP__UPDATEMECHANISM: Docker
+  PROWLARR__APP__INSTANCENAME: Prowlarr
+  PROWLARR__POSTGRES__USER: prowlarr
+  PROWLARR__POSTGRES__PORT: "5432"
+  PROWLARR__POSTGRES__HOST: 192.168.4.11
+  PROWLARR__POSTGRES__MAINDB: prowlarr-main
+  PROWLARR__POSTGRES__LOGDB: prowlarr-logs
 
 extraVolumes:
-  - name: config
-    configMap:
-      name: prowlarr-config
-      items:
-        - key: config.xml
-          path: config.xml
   - name: media
     persistentVolumeClaim:
       claimName: smb-media-claim
 
 extraVolumeMounts:
-  - mountPath: /config/config.xml
-    name: config
-    readOnly: true
-    subPath: config.xml
   - mountPath: /media
     name: media

@@ -20,17 +20,19 @@ spec:
         app.kubernetes.io/name: sabnzbd
     spec:
       initContainers:
-        - args:
-            - " echo 'Setting configmap'  && cp /tmp/config/sabnzbd.ini /etc/config/sabnzbd.ini && chmod 777 /etc/config/sabnzbd.ini"
-          command:
-            - sh
-            - -c
-          image: busybox:latest
-          imagePullPolicy: Always
-          name: setup-config
+        - name: setup-config
+          image: alpine:3.20
+          imagePullPolicy: IfNotPresent
+          command: [sh, -c]
+          args:
+            - "apk add --no-cache gettext && envsubst < /tmp/config/sabnzbd.template.ini > /etc/config/sabnzbd.ini && chmod 644 /etc/config/sabnzbd.ini"
+          envFrom:
+            - secretRef:
+                name: sabnzbd-1pw
           volumeMounts:
             - mountPath: /tmp/config
-              name: config
+              name: config-template
+              readOnly: true
             - mountPath: /etc/config
               name: config-empty
       containers:
@@ -96,12 +98,9 @@ spec:
 
       restartPolicy: Always
       volumes:
-        - name: config
+        - name: config-template
           configMap:
-            name: sabnzbd-config
-            items:
-              - key: sabnzbd.ini
-                path: sabnzbd.ini
+            name: sabnzbd-template
         - name: config-empty
           emptyDir: {}
         - name: incomplete-storage

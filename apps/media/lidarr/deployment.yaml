@@ -19,25 +19,42 @@ spec:
         app.kubernetes.io/instance: lidarr
         app.kubernetes.io/name: lidarr
     spec:
-      initContainers:
-        - args:
-            - " echo 'Setting configmap'  && cp /tmp/config/config.xml /etc/config/config.xml && chmod 777 /etc/config/config.xml"
-          command:
-            - sh
-            - -c
-          image: busybox:latest
-          imagePullPolicy: Always
-          name: setup-config
-          volumeMounts:
-            - mountPath: /tmp/config
-              name: config
-            - mountPath: /etc/config
-              name: config-empty
       containers:
         - name: lidarr
+          envFrom:
+            - secretRef:
+                name: lidarr-1pw
           env:
             - name: TZ
               value: America/Chicago
+            - name: LIDARR__SERVER__PORT
+              value: "8686"
+            - name: LIDARR__SERVER__BINDADDRESS
+              value: "*"
+            - name: LIDARR__LOG__LEVEL
+              value: info
+            - name: LIDARR__AUTH__METHOD
+              value: External
+            - name: LIDARR__AUTH__REQUIRED
+              value: DisabledForLocalAddresses
+            - name: LIDARR__APP__BRANCH
+              value: master
+            - name: LIDARR__APP__LAUNCHBROWSER
+              value: "False"
+            - name: LIDARR__APP__UPDATEMECHANISM
+              value: Docker
+            - name: LIDARR__APP__INSTANCENAME
+              value: Lidarr
+            - name: LIDARR__POSTGRES__USER
+              value: lidarr
+            - name: LIDARR__POSTGRES__PORT
+              value: "5432"
+            - name: LIDARR__POSTGRES__HOST
+              value: 192.168.4.11
+            - name: LIDARR__POSTGRES__MAINDB
+              value: lidarr-main
+            - name: LIDARR__POSTGRES__LOGDB
+              value: lidarr-logs
 
           image: lidarr
           imagePullPolicy: IfNotPresent
@@ -56,18 +73,12 @@ spec:
             timeoutSeconds: 1
 
           livenessProbe:
-            exec:
-              command:
-                - /usr/bin/env
-                - bash
-                - -c
-                - curl --fail localhost:8686/v3/system/status?apiKey=`IFS=\> && while
-                  read -d \< E C; do if [[ $E = "ApiKey" ]]; then echo $C; fi; done <
-                  /config/config.xml`
             failureThreshold: 5
             initialDelaySeconds: 60
             periodSeconds: 10
             successThreshold: 1
+            tcpSocket:
+              port: http
             timeoutSeconds: 10
 
           startupProbe:
@@ -87,9 +98,6 @@ spec:
               memory: 768Mi
 
           volumeMounts:
-            - mountPath: /config
-              name: config-empty
-              readOnly: false
             - mountPath: /mnt/media
               name: media
             - mountPath: /mnt/downloads
@@ -97,14 +105,6 @@ spec:
 
       restartPolicy: Always
       volumes:
-        - name: config
-          configMap:
-            name: lidarr-config
-            items:
-              - key: config.xml
-                path: config.xml
-        - name: config-empty
-          emptyDir: {}
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim

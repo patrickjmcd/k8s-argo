@@ -4,6 +4,15 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
+  - 1password.secret.yaml
+
+configMapGenerator:
+  - name: sabnzbd-template
+    files:
+      - sabnzbd.template.ini
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 images:
   - name: sabnzbd

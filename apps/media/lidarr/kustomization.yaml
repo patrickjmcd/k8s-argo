@@ -4,6 +4,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
+  - 1password.secret.yaml
 
 images:
   - name: lidarr

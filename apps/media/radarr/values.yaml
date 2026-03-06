@@ -23,12 +23,7 @@ probes:
     failureThreshold: 3
   liveness:
     enabled: true
-    type: exec
-    command:
-      - /usr/bin/env
-      - bash
-      - -c
-      - "curl --fail localhost:7878/api/v3/system/status?apiKey=`IFS=\\> && while read -d \\< E C; do if [[ $E = \"ApiKey\" ]]; then echo $C; fi; done < /config/config.xml`"
+    type: tcpSocket
     initialDelaySeconds: 60
     failureThreshold: 5
     periodSeconds: 10
@@ -44,16 +39,32 @@ httproute:
   hostnames:
     - radarr.x.pmcd.io
 
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/radarr"
+
+envFrom:
+  - secretRef:
+      name: radarr-1pw
+
 env:
   TZ: America/Chicago
+  RADARR__SERVER__PORT: "7878"
+  RADARR__SERVER__BINDADDRESS: "*"
+  RADARR__LOG__LEVEL: info
+  RADARR__AUTH__METHOD: External
+  RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
+  RADARR__APP__BRANCH: master
+  RADARR__APP__LAUNCHBROWSER: "False"
+  RADARR__APP__UPDATEMECHANISM: Docker
+  RADARR__APP__INSTANCENAME: Radarr
+  RADARR__POSTGRES__USER: radarr
+  RADARR__POSTGRES__PORT: "5432"
+  RADARR__POSTGRES__HOST: 192.168.4.11
+  RADARR__POSTGRES__MAINDB: radarr-main
+  RADARR__POSTGRES__LOGDB: radarr-logs
 
 extraVolumes:
-  - name: config
-    configMap:
-      name: radarr-config
-      items:
-        - key: config.xml
-          path: config.xml
   - name: media
     persistentVolumeClaim:
       claimName: smb-media-claim
@@ -62,10 +73,6 @@ extraVolumes:
       claimName: sab-downloads-pvc
 
 extraVolumeMounts:
-  - mountPath: /config/config.xml
-    name: config
-    readOnly: true
-    subPath: config.xml
   - mountPath: /mnt/media
     name: media
   - mountPath: /mnt/downloads
