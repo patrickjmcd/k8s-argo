@@ -99,3 +99,5 @@ podAnnotations: {}
 
 extraVolumes: []
 extraVolumeMounts: []
+
+securityContext: {}
