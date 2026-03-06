@@ -54,6 +54,9 @@ envFrom:
   - secretRef:
       name: unifi-toolkit-1pw
 
+podSecurityContext:
+  fsGroup: 1000
+
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
