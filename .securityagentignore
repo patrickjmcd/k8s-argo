@@ -1,0 +1,6 @@
+# Files to skip during security-agent scanning.
+# Supports bash glob patterns (one per line). Lines starting with # are comments.
+
+# Frigate config contains RTSP URLs with credentials — kept out of git via
+# .gitignore but may be staged locally during development.
+apps/frigate/config.yaml
