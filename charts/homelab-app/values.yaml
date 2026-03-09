@@ -102,3 +102,4 @@ extraVolumeMounts: []
 
 podSecurityContext: {}
 securityContext: {}
+tolerations: []

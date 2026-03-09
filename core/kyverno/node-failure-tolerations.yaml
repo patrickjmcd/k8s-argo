@@ -1,0 +1,39 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: node-failure-tolerations
+  annotations:
+    policies.kyverno.io/title: Node Failure Fast Eviction
+    policies.kyverno.io/category: Resiliency
+    policies.kyverno.io/description: >-
+      Reduces the default 300s eviction window to 30s for unreachable/not-ready
+      nodes. Pods without explicit tolerations for these taints will be rescheduled
+      within ~30s of a node going unreachable instead of waiting 5 minutes.
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: add-node-failure-tolerations
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      # Don't overwrite pods that already declare these tolerations explicitly.
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.tolerations[?key=='node.kubernetes.io/unreachable'] || '' }}"
+            operator: Equals
+            value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            tolerations:
+              - key: node.kubernetes.io/not-ready
+                operator: Exists
+                effect: NoExecute
+                tolerationSeconds: 30
+              - key: node.kubernetes.io/unreachable
+                operator: Exists
+                effect: NoExecute
+                tolerationSeconds: 30
