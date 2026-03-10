@@ -23,6 +23,7 @@ spec:
     - https://argoproj.github.io/argo-helm
     - https://charts.fairwinds.com/stable
     - https://flannel-io.github.io/flannel/
+    - oci://ghcr.io/containers/charts/kubernetes-mcp-server
   destinations:
     - namespace: "*"
       name: in-cluster

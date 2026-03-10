@@ -31,6 +31,8 @@ spec:
         valuesObject:
           config:
             preserve: false
+            excludeNamespaces:
+              - kube-flannel
           webhookLabels:
             app.kubernetes.io/managed-by: argocd
 
