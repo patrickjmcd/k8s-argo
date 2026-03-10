@@ -96,8 +96,6 @@ spec:
                 cpu: 100m
                 memory: 128Mi
           grafana:
-            deploymentStrategy:
-              type: Recreate
             resources:
               requests:
                 cpu: 25m
