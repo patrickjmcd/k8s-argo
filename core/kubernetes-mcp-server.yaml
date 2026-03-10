@@ -19,7 +19,8 @@ spec:
     syncOptions:
       - CreateNamespace=true
   sources:
-    - repoURL: oci://ghcr.io/containers/charts/kubernetes-mcp-server
+    - chart: kubernetes-mcp-server
+      repoURL: oci://ghcr.io/containers/charts
       targetRevision: 0.1.0
       helm:
         releaseName: kubernetes-mcp-server
