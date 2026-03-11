@@ -15,6 +15,7 @@ spec:
           - name: tautulli
           - name: hdhr2xmltv
           - name: seerr
+          - name: medialyze
   template:
     metadata:
       name: '{{name}}'
