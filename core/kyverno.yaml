@@ -33,6 +33,7 @@ spec:
             preserve: false
             excludeNamespaces:
               - kube-flannel
+              - argocd
           webhookLabels:
             app.kubernetes.io/managed-by: argocd
 
