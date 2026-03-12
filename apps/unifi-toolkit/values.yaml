@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/crosstalk-solutions/unifi-toolkit
-  tag: "latest"
+  tag: "fc09b1a"
 
 service:
   port: 8000

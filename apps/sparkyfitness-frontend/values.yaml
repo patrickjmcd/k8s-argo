@@ -1,6 +1,6 @@
 image:
   repository: codewithcj/sparkyfitness
-  tag: "latest"
+  tag: "v0.16.5.0"
 
 service:
   port: 80
