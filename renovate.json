@@ -6,6 +6,15 @@
   "kubernetes": {
     "fileMatch": ["\\.yaml$"]
   },
+  "kustomize": {
+    "fileMatch": ["(^|/)kustomization\\.yaml$"]
+  },
+  "helm-values": {
+    "fileMatch": [
+      "apps/.+/values\\.yaml$",
+      "core/.+/values\\.yaml$"
+    ]
+  },
   "argocd": {
     "fileMatch": [
       "apps/.+\\.yaml$",
