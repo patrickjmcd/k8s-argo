@@ -24,6 +24,7 @@ spec:
         releaseName: headlamp
         valuesObject:
           config:
+            watchPlugins: true
             oidc:
               callbackURL: "https://headlamp.x.pmcd.io/oidc-callback"
               usePKCE: true
@@ -32,6 +33,19 @@ spec:
               externalSecret:
                 enabled: true
                 name: headlamp-oidc-secret-1pw
+            pluginsManager:
+              enabled: true
+              configContent: |
+                plugins:
+                  - name: 
+                    source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
+                    version: 0.1.0
+                  - name: 
+                    source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_ai_assistant
+                    version: 0.1.0-alpha
+                installOptions:
+                  parallel: true
+                  maxConcurrent: 2
 #          httpRoute:
 #            enabled: true
 #            parentRefs:
