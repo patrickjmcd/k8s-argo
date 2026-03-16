@@ -22,7 +22,7 @@ spec:
     - chart: longhorn
       repoURL: https://charts.longhorn.io/
       # renovate: datasource=helm depName=longhorn registryUrl=https://charts.longhorn.io/
-      targetRevision: 1.11.0
+      targetRevision: 1.11.1
       helm:
         values: |
           preUpgradeChecker:
