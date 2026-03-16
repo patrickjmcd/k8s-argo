@@ -12,7 +12,7 @@ spec:
   channel: https://update.k3s.io/v1-release/channels/stable
   nodeSelector:
     matchExpressions:
-      - key: node-role.kubernetes.io/master
+      - key: node-role.kubernetes.io/control-plane
         operator: NotIn
         values:
           - "true"
