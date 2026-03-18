@@ -14,25 +14,25 @@ resources:
     cpu: 1000m
     memory: 800Mi
 
-#probes:
-#  readiness:
-#    type: httpGet
-#    initialDelaySeconds: 10
-#    periodSeconds: 10
-#    timeoutSeconds: 1
-#    failureThreshold: 3
-#  liveness:
-#    enabled: true
-#    type: httpGet
-#    initialDelaySeconds: 180
-#    failureThreshold: 5
-#    periodSeconds: 10
-#    timeoutSeconds: 10
-#  startup:
-#    enabled: true
-#    type: httpGet
-#    failureThreshold: 30
-#    periodSeconds: 5
+probes:
+  readiness:
+    type: httpGet
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    initialDelaySeconds: 180
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: httpGet
+    failureThreshold: 30
+    periodSeconds: 5
 
 httproute:
   enabled: true
