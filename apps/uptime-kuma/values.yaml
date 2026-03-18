@@ -32,6 +32,14 @@ httproute:
     - status.x.pmcd.io
     - uptime-kuma.x.pmcd.io
 
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: DoesNotExist
+
 persistence:
   enabled: true
   type: longhorn
