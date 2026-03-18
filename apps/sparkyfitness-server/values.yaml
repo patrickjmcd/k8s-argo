@@ -1,6 +1,6 @@
 image:
   repository: codewithcj/sparkyfitness_server
-  tag: "v0.16.5.0"
+  tag: "v0.16.5.4"
 
 service:
   port: 3010
