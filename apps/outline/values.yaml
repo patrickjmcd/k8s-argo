@@ -16,21 +16,21 @@ resources:
 
 probes:
   readiness:
-    type: tcpSocket
+    type: httpGet
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 1
     failureThreshold: 3
   liveness:
     enabled: true
-    type: tcpSocket
+    type: httpGet
     initialDelaySeconds: 180
     failureThreshold: 5
     periodSeconds: 10
     timeoutSeconds: 10
   startup:
     enabled: true
-    type: tcpSocket
+    type: httpGet
     failureThreshold: 30
     periodSeconds: 5
 
