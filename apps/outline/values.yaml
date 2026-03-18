@@ -4,7 +4,7 @@ image:
 
 service:
   port: 80
-  containerPort: 7745
+  containerPort: 3000
 
 resources:
   requests:
