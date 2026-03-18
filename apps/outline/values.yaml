@@ -43,7 +43,7 @@ persistence:
   enabled: true
   type: smb
   size: 500Mi
-  mountPath: /data
+  mountPath: /var/lib/outline/data
   accessMode: ReadWriteMany
   smb:
     source: "//192.168.1.253/AppConfig/outline"
