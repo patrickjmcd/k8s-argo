@@ -1,0 +1,10 @@
+# pgBackRest Automated Backup Schedule
+# 
+# Full backup: Weekly on Sunday at 2 AM
+# Differential backup: Daily at 2 AM (Monday-Saturday)
+ 
+# Full backup - Sunday 2 AM
+0 2 * * 0 postgres /usr/local/bin/pgbackrest-scripts/full-backup.sh
+ 
+# Differential backup - Monday-Saturday 2 AM
+0 2 * * 1-6 postgres /usr/local/bin/pgbackrest-scripts/diff-backup.sh

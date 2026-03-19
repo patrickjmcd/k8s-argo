@@ -1,0 +1,126 @@
+- alias: pgBackRest Backup Health Check
+  description: ""
+  triggers:
+    - webhook_id: pgbackrest_backup_health
+      trigger: webhook
+  actions:
+    - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.json.status in ['error', 'warning'] }}"
+        sequence:
+          - data:
+              title: ⚠️ PostgreSQL Backup Issue
+              message: "{{ trigger.json.message }}"
+              data:
+                priority: high
+            action: notify.YOUR_MOBILE_APP
+
+- alias: pgBackRest Backup Status
+  description: ""
+  triggers:
+    - webhook_id: pgbackrest_backup_status
+      trigger: webhook
+  actions:
+    - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.json.status == 'error' }}"
+        sequence:
+          - data:
+              title: 🔴 PostgreSQL Backup Failed
+              message: "{{ trigger.json.message }}"
+              data:
+                priority: high
+            action: notify.YOUR_MOBILE_APP
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.json.status == 'success' }}"
+        sequence:
+          - target:
+              entity_id: input_text.last_postgres_backup
+            data:
+              value: >-
+                {{ now().strftime('%Y-%m-%d %H:%M:%S') }} - {{ trigger.json.type
+                }} backup OK
+            action: input_text.set_value
+
+- alias: pgBackRest Restore Test Notification
+  description: Handle restore test results and send notifications
+  triggers:
+    - webhook_id: pgbackrest_restore_test
+      trigger: webhook
+  actions:
+    - target:
+        entity_id: input_text.last_pgbackrest_restore_test
+      data:
+        value: "{{ trigger.json.timestamp }}: {{ trigger.json.message }}"
+      action: input_text.set_value
+    - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.json.status == 'success' }}"
+        sequence:
+          - data:
+              title: ✅ Database Restore Test Passed
+              message: "{{ trigger.json.message }}"
+              data:
+                tag: pgbackrest_restore_test
+                group: database_backups
+            action: notify.YOUR_MOBILE_APP
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.json.status == 'error' }}"
+        sequence:
+          - data:
+              title: 🔴 Database Restore Test FAILED
+              message: "{{ trigger.json.message }}"
+              data:
+                priority: high
+                tag: pgbackrest_restore_test
+                group: database_backups
+                actions:
+                  - action: CHECK_LOGS
+                    title: Check Logs
+            action: notify.YOUR_MOBILE_APP
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.json.status == 'warning' }}"
+        sequence:
+          - data:
+              title: ⚠️ Database Restore Test Warning
+              message: "{{ trigger.json.message }}"
+              data:
+                tag: pgbackrest_restore_test
+                group: database_backups
+            action: notify.YOUR_MOBILE_APP
+
+- alias: pgBackRest Restore Test Overdue
+  description: Alert if weekly restore test hasn't run
+  triggers:
+    - at: "08:00:00"
+      trigger: time
+  conditions:
+    - condition: template
+      value_template: >
+        {% set last_test = states('input_text.last_pgbackrest_restore_test') %} {%
+        if last_test == 'Never run' %}
+          true
+        {% else %}
+          {% set last_timestamp = last_test.split(':')[0] %}
+          {% set last_time = as_timestamp(last_timestamp) %}
+          {% set now = as_timestamp(now()) %}
+          {% set days_ago = (now - last_time) / 86400 %}
+          {{ days_ago > 8 }}
+        {% endif %}
+  actions:
+    - data:
+        title: ⚠️ Database Restore Test Overdue
+        message: >-
+          pgBackRest restore test hasn't run in over 8 days. Last run: {{
+          states('input_text.last_pgbackrest_restore_test') }}
+        data:
+          priority: high
+          tag: pgbackrest_test_overdue
+      action: notify.mobile_app_l_carpetron_dookmarriot
+

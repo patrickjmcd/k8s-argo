@@ -1,0 +1,10 @@
+# /etc/cron.d/pgbackrest-restore-test
+# Weekly restore test to verify backups are actually recoverable
+# Runs every Sunday at 4 AM (after the full backup at 2 AM)
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+WEBHOOK_URL=http://YOUR_HA_IP:8123/api/webhook/pgbackrest_restore_test
+
+# Weekly restore test - Sunday 4 AM
+0 4 * * 0 root /usr/local/bin/pgbackrest_restore_test.sh
