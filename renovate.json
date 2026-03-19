@@ -4,48 +4,66 @@
     "config:recommended"
   ],
   "kubernetes": {
-    "fileMatch": ["\\.yaml$"]
+    "managerFilePatterns": [
+      "/\\.yaml$/"
+    ]
   },
   "kustomize": {
-    "fileMatch": ["(^|/)kustomization\\.yaml$"]
+    "managerFilePatterns": [
+      "/(^|/)kustomization\\.yaml$/"
+    ]
   },
   "helm-values": {
-    "fileMatch": [
-      "apps/.+/values\\.yaml$",
-      "core/.+/values\\.yaml$"
+    "managerFilePatterns": [
+      "/apps/.+/values\\.yaml$/",
+      "/core/.+/values\\.yaml$/"
     ]
   },
   "argocd": {
-    "fileMatch": [
-      "apps/.+\\.yaml$",
-      "core/.+\\.yaml$",
-      "github-action-runner/.+\\.yaml$",
-      "cronjobs/.+\\.yaml$"
+    "managerFilePatterns": [
+      "/apps/.+\\.yaml$/",
+      "/core/.+\\.yaml$/",
+      "/github-action-runner/.+\\.yaml$/",
+      "/cronjobs/.+\\.yaml$/"
     ]
   },
   "packageRules": [
     {
-      "matchPackageNames": ["argo-cd"],
+      "matchPackageNames": [
+        "argo-cd"
+      ],
       "groupName": "ArgoCD",
       "automerge": false
     },
     {
-      "matchPackagePatterns": ["^traefik", "^cert-manager", "^external-secrets"],
       "groupName": "Infrastructure Charts",
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": [
+        "/^traefik/",
+        "/^cert-manager/",
+        "/^external-secrets/"
+      ]
     },
     {
-      "matchPackagePatterns": ["^kube-prometheus", "^prometheus", "^grafana"],
       "groupName": "Monitoring Stack",
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": [
+        "/^kube-prometheus/",
+        "/^prometheus/",
+        "/^grafana/"
+      ]
     },
     {
-      "matchPackageNames": ["longhorn"],
+      "matchPackageNames": [
+        "longhorn"
+      ],
       "groupName": "Longhorn",
       "automerge": false
     },
     {
-      "matchPackageNames": ["flannel-io/flannel"],
+      "matchPackageNames": [
+        "flannel-io/flannel"
+      ],
       "groupName": "Flannel",
       "automerge": false
     }
