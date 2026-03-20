@@ -1,6 +1,6 @@
 image:
   repository: linuxserver/sonarr
-  tag: "4.0.16"
+  tag: "4.0.17"
 
 service:
   port: 80
