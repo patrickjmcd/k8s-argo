@@ -25,6 +25,7 @@ spec:
         valuesObject:
           config:
             watchPlugins: true
+            sessionTTL: 0
             oidc:
               callbackURL: "https://headlamp.x.pmcd.io/oidc-callback"
               usePKCE: true
