@@ -28,9 +28,6 @@ env:
   TZ: America/Chicago
   SCAN_RUNTIME_WORKER_COUNT: "4"
 
-nodeSelector:
-  kubernetes.io/arch: amd64
-
 extraVolumes:
   - name: media
     persistentVolumeClaim:
