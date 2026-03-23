@@ -1,6 +1,6 @@
 image:
-  repository: ghcr.io/patrickjmcd/medialyze
-  tag: "0.2.2-dev001"
+  repository: ghcr.io/frederikemmer/medialyze
+  tag: "0.2.3"
 
 service:
   port: 8080
