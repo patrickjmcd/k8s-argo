@@ -39,7 +39,7 @@ spec:
             prometheusSpec:
               retentionSize: 8GiB
               nodeSelector:
-                kubernetes.io/arch: amd64
+                kubernetes.io/arch: arm64
               resources:
                 requests:
                   cpu: 200m
@@ -68,7 +68,7 @@ spec:
           alertmanager:
             alertmanagerSpec:
               nodeSelector:
-                kubernetes.io/arch: amd64
+                kubernetes.io/arch: arm64
               resources:
                 requests:
                   cpu: 25m
