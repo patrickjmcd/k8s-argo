@@ -53,6 +53,9 @@ spec:
               server.insecure: true
 
           server:
+            autoscaling:
+              enabled: true
+              minReplicas: 2
             resources:
               requests:
                 cpu: 15m
@@ -62,6 +65,7 @@ spec:
                 memory: 512Mi
 
           controller:
+            replicas: 2
             resources:
               requests:
                 cpu: 200m
@@ -71,6 +75,9 @@ spec:
                 memory: 2Gi
 
           repoServer:
+            autoscaling:
+              enabled: true
+              minReplicas: 2
             livenessProbe:
               timeoutSeconds: 10
             readinessProbe:
@@ -93,6 +100,7 @@ spec:
                 memory: 200Mi
 
           applicationSet:
+            replicas: 2
             resources:
               requests:
                 cpu: 15m
