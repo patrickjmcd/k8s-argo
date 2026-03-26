@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: iss-guru
+  name: iss-in-space
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -22,6 +22,6 @@ spec:
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
       helm:
-        releaseName: iss-guru
+        releaseName: iss-in-space
         valueFiles:
-          - $values/apps/iss-guru/values.yaml
+          - $values/apps/iss-in-space/values.yaml

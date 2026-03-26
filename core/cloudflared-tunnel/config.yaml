@@ -94,7 +94,7 @@ ingress:
     service: http://outline.default:80
 
   - hostname: iss-in.space
-    service: http://iss-guru.default:8000
+    service: http://iss-in-space.default:8000
 
   # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
   # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
