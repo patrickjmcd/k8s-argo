@@ -55,7 +55,6 @@ onePassword:
 
 env:
   GENERIC_TIMEZONE: America/Chicago
-  N8N_RUNNERS_ENABLED: "true"
   N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
   WEBHOOK_URL: https://n8n.pmcd.dev
   N8N_PROXY_HOPS: "1"

@@ -1,0 +1,22 @@
+image:
+  repository: ghcr.io/patrickjmcd/iss.guru
+  tag: "v1.1.0"
+
+service:
+  port: 8000
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+httproute:
+  enabled: true
+  hostnames:
+    - iss.x.pmcd.io
+
+imagePullSecrets:
+  - name: ghcr-registry-cred
