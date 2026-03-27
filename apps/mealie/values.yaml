@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/mealie-recipes/mealie
-  tag: "v3.13.1"
+  tag: "v3.14.0"
 
 service:
   port: 9000
