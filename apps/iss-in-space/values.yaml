@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/patrickjmcd/iss-in.space
-  tag: "v1.4.0"
+  tag: "v1.5.0"
 
 service:
   port: 8000
