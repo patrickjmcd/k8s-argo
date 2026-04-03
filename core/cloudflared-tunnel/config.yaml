@@ -91,7 +91,7 @@ ingress:
     service: http://192.168.1.210:8409
 
   - hostname: outline.pmcd.dev
-    service: outline
+    service: tcp://outline.default:80
 
   - hostname: iss-in.space
     service: http://iss-in-space.default:8000
