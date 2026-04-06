@@ -55,6 +55,7 @@ onePassword:
 
 env:
   TZ: America/Chicago
+  FILE_STORAGE: local
   FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
 
 envFrom:
