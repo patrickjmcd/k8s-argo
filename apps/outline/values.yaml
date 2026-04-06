@@ -1,6 +1,6 @@
-we image:
+image:
   repository: outlinewiki/outline
-  tag: "1.6"
+  tag: "1.6.1"
 
 service:
   port: 80
@@ -55,7 +55,7 @@ onePassword:
 
 env:
   TZ: America/Chicago
-  FILE_STORAGE_UPLOAD_MAX_SIZE: 26214400
+  FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
 
 envFrom:
   - secretRef:
