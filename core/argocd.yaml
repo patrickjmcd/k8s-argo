@@ -71,13 +71,14 @@ spec:
                 cpu: 200m
                 memory: 1280Mi
               limits:
-                cpu: 500m
+                cpu: 1000m
                 memory: 2Gi
 
           repoServer:
             autoscaling:
               enabled: true
               minReplicas: 2
+              maxReplicas: 3
             livenessProbe:
               timeoutSeconds: 10
             readinessProbe:
@@ -88,7 +89,7 @@ spec:
                 memory: 256Mi
               limits:
                 cpu: 500m
-                memory: 512Mi
+                memory: 1Gi
 
           redis:
             resources:

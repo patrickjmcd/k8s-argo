@@ -75,7 +75,7 @@ ingress:
 
   # ARGO
   - hostname: argo.pmcd.dev
-    service: http://argocd-server.argocd:8080
+    service: http://argocd-server.argocd:80
 
   - hostname: feed.reedme.dev
     service: http://reedme.default:80
