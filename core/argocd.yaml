@@ -51,6 +51,9 @@ spec:
                 g, argocd_admin, role:admin
             params:
               server.insecure: true
+            resource.customizations.ignoreDifferences.argoproj.io_Application: |
+              jsonPointers:
+                - /metadata/finalizers
 
           server:
             autoscaling:
