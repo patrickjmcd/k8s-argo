@@ -2,6 +2,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: prefer-pi5-nodes
+  annotations:
+    kyverno.io/pod-controllers: none
 spec:
   validationFailureAction: Audit
   background: false

@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: node-failure-tolerations
   annotations:
+    kyverno.io/pod-controllers: none
     policies.kyverno.io/title: Node Failure Fast Eviction
     policies.kyverno.io/category: Resiliency
     policies.kyverno.io/description: >-
