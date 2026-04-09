@@ -15,7 +15,7 @@ resources:
 
 env:
   TZ: America/Chicago
-  PORT: 5000
+  OCTOPRINT_PORT: "5000"
 
 probes:
   readiness:
