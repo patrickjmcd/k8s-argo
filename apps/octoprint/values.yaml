@@ -1,0 +1,38 @@
+image:
+  repository: octoprint/octoprint
+  tag: "1.10.3"
+
+service:
+  port: 5000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  liveness:
+    enabled: false
+  startup:
+    enabled: false
+
+httproute:
+  enabled: true
+  hostnames:
+    - octoprint.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 5Gi
+  mountPath: /octoprint
