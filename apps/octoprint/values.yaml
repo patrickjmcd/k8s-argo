@@ -13,6 +13,10 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+env:
+  TZ: America/Chicago
+  PORT: 5000
+
 probes:
   readiness:
     type: httpGet
