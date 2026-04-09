@@ -1,6 +1,6 @@
 image:
   repository: octoprint/octoprint
-  tag: "1.10.3"
+  tag: "1.11.7"
 
 service:
   port: 5000
