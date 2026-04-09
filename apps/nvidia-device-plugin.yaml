@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nvidia-device-plugin
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: kube-system
+    name: in-cluster
+  project: apps
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - chart: nvidia-device-plugin
+      repoURL: https://nvidia.github.io/k8s-device-plugin
+      targetRevision: 0.14.5
+      helm:
+        valuesObject:
+          nodeSelector:
+            nvidia.com/gpu: "true"
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
