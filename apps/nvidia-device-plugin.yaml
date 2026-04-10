@@ -30,3 +30,7 @@ spec:
             - key: nvidia.com/gpu
               operator: Exists
               effect: NoSchedule
+          config:
+            flags:
+              deviceDiscoveryStrategy: "tegra"
+              nvidiaDriverRoot: "/"
