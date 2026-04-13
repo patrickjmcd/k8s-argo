@@ -23,7 +23,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: wyoming-whisper
-          image: rhasspy/wyoming-faster-whisper:2.4.0
+          image: rhasspy/wyoming-whisper:3.1.0
           args:
             - --uri
             - tcp://0.0.0.0:10300
