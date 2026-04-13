@@ -31,6 +31,14 @@ spec:
               operator: Exists
               effect: NoSchedule
           config:
-            flags:
-              deviceDiscoveryStrategy: "tegra"
-              nvidiaDriverRoot: "/"
+            map:
+              default: |-
+                version: v1
+                flags:
+                  migStrategy: none
+                  failOnInitError: true
+                  nvidiaDriverRoot: /
+                  deviceDiscoveryStrategy: tegra
+                  gdsEnabled: false
+                  mofedEnabled: false
+                  gdrcopyEnabled: false
