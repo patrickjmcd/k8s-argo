@@ -23,7 +23,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: wyoming-openwakeword
-          image: rhasspy/wyoming-openwakeword:1.10.0
+          image: rhasspy/wyoming-openwakeword:2.1.0
           args:
             - --uri
             - tcp://0.0.0.0:10400
