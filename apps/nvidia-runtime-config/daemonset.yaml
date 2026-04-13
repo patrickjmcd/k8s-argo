@@ -54,7 +54,7 @@ spec:
               readOnly: true
       containers:
         - name: pause
-          image: registry.k8s.io/pause:3.9
+          image: registry.k8s.io/pause:3.10
       volumes:
         - name: host-root
           hostPath:
