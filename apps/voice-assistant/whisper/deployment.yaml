@@ -69,5 +69,6 @@ spec:
             failureThreshold: 6
       volumes:
         - name: data
-          persistentVolumeClaim:
-            claimName: wyoming-whisper-data
+          hostPath:
+            path: /var/lib/wyoming/whisper
+            type: DirectoryOrCreate

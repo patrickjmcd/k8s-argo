@@ -56,5 +56,6 @@ spec:
             failureThreshold: 3
       volumes:
         - name: data
-          persistentVolumeClaim:
-            claimName: wyoming-openwakeword-data
+          hostPath:
+            path: /var/lib/wyoming/openwakeword
+            type: DirectoryOrCreate

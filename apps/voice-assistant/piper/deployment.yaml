@@ -62,5 +62,6 @@ spec:
             failureThreshold: 3
       volumes:
         - name: data
-          persistentVolumeClaim:
-            claimName: wyoming-piper-data
+          hostPath:
+            path: /var/lib/wyoming/piper
+            type: DirectoryOrCreate
