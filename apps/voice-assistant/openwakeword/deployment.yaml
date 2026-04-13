@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-openwakeword
+  namespace: voice-assistant
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-openwakeword
+  template:
+    metadata:
+      labels:
+        app: wyoming-openwakeword
+    spec:
+      nodeSelector:
+        nvidia.com/gpu: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: wyoming-openwakeword
+          image: rhasspy/wyoming-openwakeword:1.10.0
+          args:
+            - --uri
+            - tcp://0.0.0.0:10400
+            - --preload-model
+            - ok_nabu
+          ports:
+            - name: wyoming
+              containerPort: 10400
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          startupProbe:
+            tcpSocket:
+              port: 10400
+            failureThreshold: 12
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 10400
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: wyoming-openwakeword-data

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-piper
+  namespace: voice-assistant
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-piper
+  template:
+    metadata:
+      labels:
+        app: wyoming-piper
+    spec:
+      nodeSelector:
+        nvidia.com/gpu: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: wyoming-piper
+          image: rhasspy/wyoming-piper:1.5.0
+          args:
+            - --uri
+            - tcp://0.0.0.0:10200
+            - --piper
+            - /usr/share/piper/piper
+            - --voice
+            - en_US-lessac-medium
+            - --data-dir
+            - /data
+            - --download-dir
+            - /data
+          ports:
+            - name: wyoming
+              containerPort: 10200
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          startupProbe:
+            tcpSocket:
+              port: 10200
+            failureThreshold: 18
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 10200
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: wyoming-piper-data

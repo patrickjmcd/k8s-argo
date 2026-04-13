@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-whisper
+  namespace: voice-assistant
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-whisper
+  template:
+    metadata:
+      labels:
+        app: wyoming-whisper
+    spec:
+      nodeSelector:
+        nvidia.com/gpu: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: wyoming-whisper
+          image: rhasspy/wyoming-faster-whisper:2.4.0
+          args:
+            - --uri
+            - tcp://0.0.0.0:10300
+            - --model
+            - base-int8
+            - --language
+            - en
+            - --device
+            - cuda
+            - --compute-type
+            - int8_float16
+            - --data-dir
+            - /data
+            - --download-dir
+            - /data
+          ports:
+            - name: wyoming
+              containerPort: 10300
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+              nvidia.com/gpu: "1"
+            limits:
+              memory: 2Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          # First run downloads the model — allow up to 5 minutes before declaring failure.
+          startupProbe:
+            tcpSocket:
+              port: 10300
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 10300
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: wyoming-whisper-data
