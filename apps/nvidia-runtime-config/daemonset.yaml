@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-runtime-configurator
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-runtime-configurator
+  template:
+    metadata:
+      labels:
+        app: nvidia-runtime-configurator
+    spec:
+      nodeSelector:
+        nvidia.com/gpu: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      hostPID: true
+      initContainers:
+        - name: configure-nvidia-runtime
+          image: debian:bookworm-slim
+          securityContext:
+            privileged: true # security-agent: ignore
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -e
+              CONTAINERD_CONFIG=/host/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+
+              if grep -q "nvidia" "${CONTAINERD_CONFIG}" 2>/dev/null; then
+                echo "NVIDIA runtime already configured, skipping"
+                exit 0
+              fi
+
+              echo "Configuring NVIDIA container runtime for k3s..."
+              nsenter -t 1 -m -u -i -n -p -- \
+                nvidia-ctk runtime configure \
+                  --runtime=containerd \
+                  --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+
+              echo "Restarting k3s-agent..."
+              nsenter -t 1 -m -u -i -n -p -- \
+                systemctl restart k3s-agent || \
+              nsenter -t 1 -m -u -i -n -p -- \
+                systemctl restart k3s
+
+              echo "Done"
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+              readOnly: true
+      containers:
+        - name: pause
+          image: registry.k8s.io/pause:3.9
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
