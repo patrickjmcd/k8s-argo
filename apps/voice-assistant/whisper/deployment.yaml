@@ -15,12 +15,6 @@ spec:
       labels:
         app: wyoming-whisper
     spec:
-      nodeSelector:
-        nvidia.com/gpu: "true"
-      tolerations:
-        - key: nvidia.com/gpu
-          operator: Exists
-          effect: NoSchedule
       containers:
         - name: wyoming-whisper
           image: rhasspy/wyoming-whisper:3.1.0
@@ -32,9 +26,9 @@ spec:
             - --language
             - en
             - --device
-            - cuda
+            - cpu
             - --compute-type
-            - int8_float16
+            - int8
             - --data-dir
             - /data
             - --download-dir
@@ -45,12 +39,11 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 100m
+              cpu: 500m
               memory: 512Mi
-              nvidia.com/gpu: "1"
             limits:
+              cpu: 2000m
               memory: 2Gi
-              nvidia.com/gpu: "1"
           volumeMounts:
             - name: data
               mountPath: /data
@@ -69,6 +62,5 @@ spec:
             failureThreshold: 6
       volumes:
         - name: data
-          hostPath:
-            path: /var/lib/wyoming/whisper
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: wyoming-whisper-data
