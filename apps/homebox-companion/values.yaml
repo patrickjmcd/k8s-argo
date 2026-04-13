@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/duelion/homebox-companion
-  tag: "2.5.0"
+  tag: "2.6.0"
 
 service:
   port: 80
