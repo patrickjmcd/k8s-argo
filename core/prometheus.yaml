@@ -66,6 +66,23 @@ spec:
               serviceMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
+              additionalScrapeConfigs:
+                - job_name: pve
+                  static_configs:
+                    - targets:
+                        - 192.168.1.10
+                        - 192.168.1.12
+                        - 192.168.1.13
+                  metrics_path: /pve
+                  params:
+                    module: [default]
+                  relabel_configs:
+                    - source_labels: [__address__]
+                      target_label: __param_target
+                    - source_labels: [__param_target]
+                      target_label: instance
+                    - target_label: __address__
+                      replacement: pve-exporter.prometheus.svc:9221
           prometheusOperator:
             resources:
               requests:

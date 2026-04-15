@@ -1,0 +1,50 @@
+image:
+  repository: prompve/prometheus-pve-exporter
+  tag: "3.5.4"
+
+service:
+  port: 9221
+  portName: http
+
+httproute:
+  enabled: false
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    port: http
+  startup:
+    type: httpGet
+    path: /
+    failureThreshold: 12
+    periodSeconds: 5
+
+onePassword:
+  enabled: true
+  itemPath: vaults/Kubernetes/items/pve-exporter
+
+extraVolumes:
+  - name: config
+    secret:
+      secretName: pve-exporter-1pw
+      items:
+        - key: pve.yml
+          path: pve.yml
+
+extraVolumeMounts:
+  - name: config
+    mountPath: /etc/prometheus-pve-exporter/pve.yml
+    subPath: pve.yml
+    readOnly: true
+
+args:
+  - --config.file=/etc/prometheus-pve-exporter/pve.yml
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
