@@ -54,6 +54,19 @@ spec:
             resource.customizations.ignoreDifferences.argoproj.io_Application: |
               jsonPointers:
                 - /metadata/finalizers
+            # Ignore tolerations injected by Kyverno's node-failure-tolerations policy.
+            # This policy mutates pod specs (and pod controller templates) to add 30s
+            # eviction tolerations for not-ready/unreachable nodes. ArgoCD's selfHeal
+            # would otherwise fight Kyverno in an infinite loop.
+            resource.customizations.ignoreDifferences.apps_Deployment: |
+              jqPathExpressions:
+                - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
+            resource.customizations.ignoreDifferences.apps_DaemonSet: |
+              jqPathExpressions:
+                - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
+            resource.customizations.ignoreDifferences.apps_StatefulSet: |
+              jqPathExpressions:
+                - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
 
           server:
             autoscaling:
