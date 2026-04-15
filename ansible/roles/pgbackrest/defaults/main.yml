@@ -1,0 +1,15 @@
+pgbackrest_stanza: main-db
+pgbackrest_repo_path: /mnt/backups/pgbackrest
+pgbackrest_retention_full: 4
+pgbackrest_retention_diff: 4
+pgbackrest_compress_type: lz4
+pgbackrest_compress_level: 3
+pgbackrest_process_max: 4
+pgbackrest_lock_path: /var/spool/pgbackrest
+
+pgbackrest_full_backup_schedule: "0 2 * * 0"
+pgbackrest_diff_backup_schedule: "0 2 * * 1-6"
+pgbackrest_restore_test_schedule: "0 8 * * 6"
+
+ha_backup_webhook: ""
+ha_restore_test_webhook: ""

@@ -1,0 +1,26 @@
+---
+- name: Ensure postgresql conf.d directory exists
+  file:
+    path: /etc/postgresql/{{ pg_version }}/main/conf.d
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0755"
+
+- name: Deploy postgresql.conf
+  template:
+    src: postgresql.conf.j2
+    dest: /etc/postgresql/{{ pg_version }}/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: "0644"
+  notify: restart postgresql
+
+- name: Deploy conf.d/pgbackrest.conf
+  template:
+    src: pgbackrest-postgres.conf.j2
+    dest: /etc/postgresql/{{ pg_version }}/main/conf.d/pgbackrest.conf
+    owner: postgres
+    group: postgres
+    mode: "0644"
+  notify: restart postgresql

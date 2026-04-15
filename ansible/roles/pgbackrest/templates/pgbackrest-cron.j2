@@ -1,0 +1,11 @@
+# Managed by Ansible - do not edit manually
+# pgBackRest Automated Backup Schedule
+
+# Full backup
+{{ pgbackrest_full_backup_schedule }} postgres /usr/local/bin/pgbackrest-scripts/full-backup.sh
+
+# Differential backup
+{{ pgbackrest_diff_backup_schedule }} postgres /usr/local/bin/pgbackrest-scripts/diff-backup.sh
+
+# Restore test
+{{ pgbackrest_restore_test_schedule }} root /usr/local/bin/pgbackrest_restore_test.sh

@@ -1,0 +1,22 @@
+# Managed by Ansible - do not edit manually
+# roles/pgbackrest/templates/pgbackrest.conf.j2
+
+[global]
+repo1-path={{ pgbackrest_repo_path }}
+repo1-retention-full={{ pgbackrest_retention_full }}
+repo1-retention-diff={{ pgbackrest_retention_diff }}
+
+process-max={{ pgbackrest_process_max }}
+log-level-console=info
+log-level-file=detail
+start-fast=y
+
+compress-type={{ pgbackrest_compress_type }}
+compress-level={{ pgbackrest_compress_level }}
+
+lock-path={{ pgbackrest_lock_path }}
+
+[{{ pgbackrest_stanza }}]
+pg1-path=/var/lib/postgresql/{{ pg_version }}/main
+pg1-port={{ pg_port }}
+pg1-user=postgres

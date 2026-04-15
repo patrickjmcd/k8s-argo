@@ -1,0 +1,26 @@
+# PostgreSQL
+pg_version: 18
+pg_port: 5432
+pg_max_connections: 100
+pg_shared_buffers: 128MB
+pg_max_wal_size: 1GB
+pg_min_wal_size: 80MB
+
+# pgBackRest
+pgbackrest_stanza: main-db
+pgbackrest_repo_path: /mnt/backups/pgbackrest
+pgbackrest_retention_full: 4
+pgbackrest_retention_diff: 4
+pgbackrest_compress_type: lz4
+pgbackrest_compress_level: 3
+pgbackrest_process_max: 4
+pgbackrest_lock_path: /var/spool/pgbackrest
+
+# Backup schedule (cron syntax)
+pgbackrest_full_backup_schedule: "0 2 * * 0"    # Sunday 2 AM
+pgbackrest_diff_backup_schedule: "0 2 * * 1-6"  # Mon-Sat 2 AM
+pgbackrest_restore_test_schedule: "0 8 * * 6"   # Saturday 8 AM
+
+# Home Assistant notifications
+ha_backup_webhook: "http://192.168.1.21:8123/api/webhook/pgbackrest_backup_status"
+ha_restore_test_webhook: "http://192.168.1.21:8123/api/webhook/pgbackrest_restore_test"

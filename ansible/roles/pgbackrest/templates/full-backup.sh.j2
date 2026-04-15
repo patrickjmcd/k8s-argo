@@ -1,0 +1,14 @@
+#!/bin/bash
+# Managed by Ansible - do not edit manually
+WEBHOOK_URL="{{ ha_backup_webhook }}"
+
+if /usr/bin/pgbackrest --stanza={{ pgbackrest_stanza }} --type=full backup; then
+    curl -s -X POST "$WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d '{"status":"success","message":"Full backup completed successfully","type":"full"}'
+else
+    curl -s -X POST "$WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d '{"status":"error","message":"Full backup FAILED","type":"full"}'
+    exit 1
+fi

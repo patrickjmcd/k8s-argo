@@ -1,0 +1,16 @@
+# Managed by Ansible - do not edit manually
+# roles/postgres/templates/pgbackrest-postgres.conf.j2
+
+# Write-Ahead Log (WAL) Settings
+wal_level = replica
+archive_mode = on
+archive_command = 'pgbackrest --stanza={{ pgbackrest_stanza }} archive-push %p'
+archive_timeout = 3600
+
+# Restore Settings
+restore_command = 'pgbackrest --stanza={{ pgbackrest_stanza }} archive-get %f "%p"'
+
+# Checkpoint settings for better performance
+checkpoint_timeout = 15min
+max_wal_size = 2GB
+min_wal_size = 1GB

@@ -1,0 +1,32 @@
+# Managed by Ansible - do not edit manually
+# roles/postgres/templates/postgresql.conf.j2
+
+data_directory = '/var/lib/postgresql/{{ pg_version }}/main'
+hba_file = '/etc/postgresql/{{ pg_version }}/main/pg_hba.conf'
+ident_file = '/etc/postgresql/{{ pg_version }}/main/pg_ident.conf'
+external_pid_file = '/var/run/postgresql/{{ pg_version }}-main.pid'
+
+listen_addresses = '*'
+port = {{ pg_port }}
+max_connections = {{ pg_max_connections }}
+unix_socket_directories = '/var/run/postgresql'
+
+shared_buffers = {{ pg_shared_buffers }}
+dynamic_shared_memory_type = posix
+
+max_wal_size = {{ pg_max_wal_size }}
+min_wal_size = {{ pg_min_wal_size }}
+
+log_line_prefix = '%m [%p] %q%u@%d '
+log_timezone = 'Etc/UTC'
+cluster_name = '{{ pg_version }}/main'
+
+datestyle = 'iso, mdy'
+timezone = 'Etc/UTC'
+lc_messages = 'C.UTF-8'
+lc_monetary = 'C.UTF-8'
+lc_numeric = 'C.UTF-8'
+lc_time = 'C.UTF-8'
+default_text_search_config = 'pg_catalog.english'
+
+include_dir = 'conf.d'

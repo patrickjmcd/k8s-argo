@@ -1,0 +1,64 @@
+---
+- name: Create pgbackrest lock directory
+  file:
+    path: "{{ pgbackrest_lock_path }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0770"
+
+- name: Create pgbackrest log directory
+  file:
+    path: /var/log/pgbackrest
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0750"
+
+- name: Deploy /etc/pgbackrest.conf
+  template:
+    src: pgbackrest.conf.j2
+    dest: /etc/pgbackrest.conf
+    owner: root
+    group: postgres
+    mode: "0640"
+
+- name: Create backup scripts directory
+  file:
+    path: /usr/local/bin/pgbackrest-scripts
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy full-backup.sh
+  template:
+    src: full-backup.sh.j2
+    dest: /usr/local/bin/pgbackrest-scripts/full-backup.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy diff-backup.sh
+  template:
+    src: diff-backup.sh.j2
+    dest: /usr/local/bin/pgbackrest-scripts/diff-backup.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy restore test script
+  template:
+    src: pgbackrest_restore_test.sh.j2
+    dest: /usr/local/bin/pgbackrest_restore_test.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy pgbackrest cron jobs
+  template:
+    src: pgbackrest-cron.j2
+    dest: /etc/cron.d/pgbackrest
+    owner: root
+    group: root
+    mode: "0644"

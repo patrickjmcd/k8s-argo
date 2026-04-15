@@ -1,0 +1,14 @@
+#!/bin/bash
+# Managed by Ansible - do not edit manually
+WEBHOOK_URL="{{ ha_backup_webhook }}"
+
+if /usr/bin/pgbackrest --stanza={{ pgbackrest_stanza }} --type=diff backup; then
+    curl -s -X POST "$WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d '{"status":"success","message":"Differential backup completed successfully","type":"diff"}'
+else
+    curl -s -X POST "$WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d '{"status":"error","message":"Differential backup FAILED","type":"diff"}'
+    exit 1
+fi
