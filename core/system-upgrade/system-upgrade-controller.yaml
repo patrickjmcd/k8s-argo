@@ -306,6 +306,16 @@ spec:
       - effect: NoExecute
         key: node-role.kubernetes.io/etcd
         operator: Exists
+      # Kyverno node-failure-tolerations policy adds these; include in git so
+      # Kyverno's precondition (unreachable not present) is false and it skips mutation.
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 30
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 30
       volumes:
       - hostPath:
           path: /etc/ssl
