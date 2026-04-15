@@ -124,7 +124,6 @@ spec:
           grafana:
             deploymentStrategy:
               type: Recreate
-              rollingUpdate: null
             resources:
               requests:
                 cpu: 25m
