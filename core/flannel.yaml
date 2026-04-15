@@ -21,7 +21,7 @@ spec:
   source:
     chart: flannel
     repoURL: https://flannel-io.github.io/flannel/
-    targetRevision: v0.28.2
+    targetRevision: v0.28.4
     helm:
       releaseName: flannel
       valuesObject:
