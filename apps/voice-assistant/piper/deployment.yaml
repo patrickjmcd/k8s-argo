@@ -27,8 +27,6 @@ spec:
           args:
             - --uri
             - tcp://0.0.0.0:10200
-            - --piper
-            - /usr/share/piper/piper
             - --voice
             - en_US-lessac-medium
             - --data-dir
