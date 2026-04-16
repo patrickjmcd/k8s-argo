@@ -17,5 +17,5 @@ spec:
   receivers:
     - name: n8n-claude
       webhookConfigs:
-        - url: http://n8n.n8n.svc.cluster.local:5678/webhook/alertmanager
+        - url: http://n8n.default.svc.cluster.local/webhook/alertmanager
           sendResolved: true
