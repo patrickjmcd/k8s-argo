@@ -5,7 +5,7 @@ metadata:
   namespace: prometheus
 spec:
   route:
-    receiver: discord
+    receiver: n8n-claude
     groupBy: ['alertname', 'namespace']
     groupWait: 30s
     groupInterval: 5m
@@ -15,15 +15,7 @@ spec:
         matchType: "!~"
         value: "^(Watchdog|InfoInhibitor)$"
   receivers:
-    - name: discord
-      discordConfigs:
-        - apiURL:
-            name: alertmanager-discord-1pw
-            key: webhook_url
-          title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
-          message: |-
-            {{ range .Alerts -}}
-            **{{ .Labels.alertname }}**{{ if .Labels.namespace }} ({{ .Labels.namespace }}){{ end }}
-            {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ end }}
-            {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
-            {{ end }}
+    - name: n8n-claude
+      webhookConfigs:
+        - url: http://n8n.n8n.svc.cluster.local:5678/webhook/alertmanager
+          sendResolved: true
