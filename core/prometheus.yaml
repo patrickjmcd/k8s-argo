@@ -167,9 +167,6 @@ spec:
                 cpu: 100m
                 memory: 128Mi
           grafana:
-            deploymentStrategy:
-              type: Recreate
-              rollingUpdate: null
             tolerations:
               - effect: NoExecute
                 key: node.kubernetes.io/not-ready
