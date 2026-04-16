@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: discord
+  namespace: prometheus
+spec:
+  route:
+    receiver: discord
+    groupBy: ['alertname', 'namespace']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    matchers:
+      - name: alertname
+        matchType: "!~"
+        value: "^(Watchdog|InfoInhibitor)$"
+  receivers:
+    - name: discord
+      discordConfigs:
+        - apiURL:
+            name: alertmanager-discord-1pw
+            key: webhook_url
+          title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
+          message: |-
+            {{ range .Alerts -}}
+            **{{ .Labels.alertname }}**{{ if .Labels.namespace }} ({{ .Labels.namespace }}){{ end }}
+            {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ end }}
+            {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
+            {{ end }}

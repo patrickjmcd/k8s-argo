@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - alertmanager-discord-secret.yaml
+  - alertmanager-discord-config.yaml
   - httproute.prometheus.yaml
   - httproute.alertmanager.yaml
 

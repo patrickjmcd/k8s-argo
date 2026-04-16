@@ -102,6 +102,10 @@ spec:
                 limits:
                   cpu: 100m
                   memory: 128Mi
+            alertmanagerConfigMatcherStrategy:
+              type: None
+            alertmanagerConfigSelector: {}
+            alertmanagerConfigNamespaceSelector: {}
             config:
               global:
                 resolve_timeout: 5m
@@ -110,7 +114,7 @@ spec:
                 group_wait: 30s
                 group_interval: 5m
                 repeat_interval: 12h
-                receiver: discord
+                receiver: "null"
                 routes:
                   - receiver: "null"
                     matchers:
@@ -120,18 +124,6 @@ spec:
                       - alertname = InfoInhibitor
               receivers:
                 - name: "null"
-                - name: discord
-                  discord_configs:
-                    - webhook_url_secret:
-                        name: alertmanager-discord-1pw
-                        key: webhook_url
-                      title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
-                      message: |-
-                        {{ range .Alerts -}}
-                        **{{ .Labels.alertname }}**{{ if .Labels.namespace }} ({{ .Labels.namespace }}){{ end }}
-                        {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ end }}
-                        {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
-                        {{ end }}
               inhibit_rules:
                 - source_matchers:
                     - severity="critical"
