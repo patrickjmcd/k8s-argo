@@ -102,6 +102,42 @@ spec:
                 limits:
                   cpu: 100m
                   memory: 128Mi
+            config:
+              global:
+                resolve_timeout: 5m
+              route:
+                group_by: ['alertname', 'namespace']
+                group_wait: 30s
+                group_interval: 5m
+                repeat_interval: 12h
+                receiver: discord
+                routes:
+                  - receiver: "null"
+                    matchers:
+                      - alertname = Watchdog
+                  - receiver: "null"
+                    matchers:
+                      - alertname = InfoInhibitor
+              receivers:
+                - name: "null"
+                - name: discord
+                  discord_configs:
+                    - webhook_url_secret:
+                        name: alertmanager-discord-1pw
+                        key: webhook_url
+                      title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
+                      message: |-
+                        {{ range .Alerts -}}
+                        **{{ .Labels.alertname }}**{{ if .Labels.namespace }} ({{ .Labels.namespace }}){{ end }}
+                        {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ end }}
+                        {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
+                        {{ end }}
+              inhibit_rules:
+                - source_matchers:
+                    - severity="critical"
+                  target_matchers:
+                    - severity="warning"
+                  equal: ['alertname', 'namespace']
           prometheus-node-exporter:
             affinity: null
             hostNetwork: false

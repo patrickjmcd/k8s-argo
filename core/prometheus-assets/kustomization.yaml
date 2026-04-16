@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - httproute.yaml
+  - alertmanager-discord-secret.yaml
 
 
