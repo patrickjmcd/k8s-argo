@@ -102,10 +102,10 @@ spec:
                 limits:
                   cpu: 100m
                   memory: 128Mi
-            alertmanagerConfigMatcherStrategy:
-              type: None
-            alertmanagerConfigSelector: {}
-            alertmanagerConfigNamespaceSelector: {}
+              alertmanagerConfigMatcherStrategy:
+                type: None
+              alertmanagerConfigSelector: {}
+              alertmanagerConfigNamespaceSelector: {}
             config:
               global:
                 resolve_timeout: 5m
