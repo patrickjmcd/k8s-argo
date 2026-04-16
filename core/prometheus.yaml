@@ -106,6 +106,15 @@ spec:
             affinity: null
             hostNetwork: false
             hostPID: false
+            tolerations:
+              - effect: NoExecute
+                key: node.kubernetes.io/not-ready
+                operator: Exists
+                tolerationSeconds: 30
+              - effect: NoExecute
+                key: node.kubernetes.io/unreachable
+                operator: Exists
+                tolerationSeconds: 30
             resources:
               requests:
                 cpu: 25m
@@ -124,6 +133,15 @@ spec:
           grafana:
             deploymentStrategy:
               type: Recreate
+            tolerations:
+              - effect: NoExecute
+                key: node.kubernetes.io/not-ready
+                operator: Exists
+                tolerationSeconds: 30
+              - effect: NoExecute
+                key: node.kubernetes.io/unreachable
+                operator: Exists
+                tolerationSeconds: 30
             resources:
               requests:
                 cpu: 25m
