@@ -122,6 +122,13 @@ spec:
                   - receiver: "null"
                     matchers:
                       - alertname = InfoInhibitor
+                  - receiver: "null"
+                    matchers:
+                      - alertname =~ "KubeSchedulerDown|KubeProxyDown|KubeControllerManagerDown"
+                  - receiver: "null"
+                    matchers:
+                      - alertname = CPUThrottlingHigh
+                      - severity = info
               receivers:
                 - name: "null"
               inhibit_rules:
