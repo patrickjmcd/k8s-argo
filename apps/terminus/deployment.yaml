@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terminus
+  namespace: terminus
+  labels:
+    app.kubernetes.io/name: terminus
+    app.kubernetes.io/instance: terminus
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: terminus
+      app.kubernetes.io/instance: terminus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: terminus
+        app.kubernetes.io/instance: terminus
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: terminus
+          image: ghcr.io/usetrmnl/terminus:latest
+          ports:
+            - containerPort: 2300
+              name: http
+              protocol: TCP
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: APP_SETUP
+              value: "true"
+            - name: HANAMI_PORT
+              value: "2300"
+            - name: API_URI
+              value: https://terminus.x.pmcd.io
+            - name: RACK_ATTACK_ALLOWED_SUBNETS
+              value: "10.42.0.0/16"
+          envFrom:
+            - secretRef:
+                name: terminus-1pw
+          volumeMounts:
+            - mountPath: /app/public/uploads
+              name: uploads
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+        - name: sidekiq
+          image: ghcr.io/usetrmnl/terminus:latest
+          command: ["bundle", "exec", "sidekiq", "-r", "./config/sidekiq.rb"]
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: API_URI
+              value: https://terminus.x.pmcd.io
+            - name: RACK_ATTACK_ALLOWED_SUBNETS
+              value: "10.42.0.0/16"
+          envFrom:
+            - secretRef:
+                name: terminus-1pw
+          volumeMounts:
+            - mountPath: /app/public/uploads
+              name: uploads
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: terminus-uploads
