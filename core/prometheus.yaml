@@ -152,11 +152,11 @@ spec:
                 tolerationSeconds: 30
             resources:
               requests:
-                cpu: 25m
+                cpu: 23m
                 memory: 100Mi
               limits:
-                cpu: 200m
-                memory: 200Mi
+                cpu: 23m
+                memory: 100Mi
           kube-state-metrics:
             resources:
               requests:

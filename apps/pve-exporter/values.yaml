@@ -43,8 +43,8 @@ args:
 
 resources:
   requests:
-    cpu: 10m
-    memory: 32Mi
+    cpu: 63m
+    memory: 100Mi
   limits:
-    cpu: 200m
-    memory: 64Mi
+    cpu: 82m
+    memory: 100Mi
