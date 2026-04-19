@@ -9,11 +9,11 @@ libraries:
       - default: basic                                      # Some basic chart collections
         template_variables:
           style: standards
-      - default: seasonal                                   # Christmas, Halloween, etc.
-        template_variables:                             # Disable any US-specific seasonal collections
-          schedule_independence: never
-          schedule_memorial: never
-          schedule_labor: never
+      - default: seasonal                                   # Christmas, Halloween, Valentine's Day, etc.
+      - default: universe                                   # Pixar, Disney Animated, DreamWorks, Studio Ghibli, Laika, Illumination, etc.
+      - default: studio                                     # Collections by animation/production studio
+      - default: decade                                     # 80s, 90s, 2000s, etc. — surfaces older animated classics
+      - default: content_rating_kids                        # Little Kids, Older Kids, Teens — built from Common Sense ratings
     remove_overlays: false                          # Set to true if you want to remove overlays
     reapply_overlays: false                         # Set to true if you want to force-reapply overlays to everything
       # THERE IS RARELY IF EVER A REASON TO DO THIS AS IT WILL EXTEND RUN TIMES ANS CAUSE IMAGE BLOAT
@@ -22,6 +22,7 @@ libraries:
 
     overlay_files:
       - default: content_rating_us_movie
+      - default: commonsense                                # Common Sense Media age badge on poster
       - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
       - default: resolution                                 # 4K HDR, 1080P FHD, etc.
       - default: video_format                               # Remux, DVD, Blu-Ray, etc. in bottom left
@@ -45,6 +46,9 @@ libraries:
     collection_files:
       - default: separator_chart                            # An "index card"
       - default: basic                                      # Some basic chart collections
+      - default: seasonal                                   # Christmas specials, Halloween episodes, etc.
+      - default: network                                    # Disney Channel, Disney Junior, Cartoon Network, Nickelodeon, PBS Kids, etc.
+      - default: content_rating_kids                        # Little Kids, Older Kids, Teens — built from Common Sense ratings
     remove_overlays: false                          # Set to true if you want to remove overlays
     reapply_overlays: false                         # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
     #reset_overlays: tmdb                           # if you want to reset the poster to default poster from tmdb - can cause image bloat
@@ -56,6 +60,7 @@ libraries:
       - default: content_rating_us_show
         template_variables:
           builder_level: episode
+      - default: commonsense                                # Common Sense Media age badge on show poster
       - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. on show and episode
       - default: audio_codec
         template_variables:
