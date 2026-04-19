@@ -155,7 +155,6 @@ spec:
                 cpu: 23m
                 memory: 100Mi
               limits:
-                cpu: 23m
                 memory: 100Mi
           kube-state-metrics:
             resources:
