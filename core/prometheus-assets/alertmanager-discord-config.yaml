@@ -13,7 +13,7 @@ spec:
     matchers:
       - name: alertname
         matchType: "!~"
-        value: "^(Watchdog|InfoInhibitor)$"
+        value: "^(Watchdog|InfoInhibitor|KubeSchedulerDown|KubeProxyDown|KubeControllerManagerDown)$"
   receivers:
     - name: n8n-claude
       webhookConfigs:
