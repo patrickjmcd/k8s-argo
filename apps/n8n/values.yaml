@@ -58,6 +58,7 @@ env:
   N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
   WEBHOOK_URL: https://n8n.pmcd.dev
   N8N_PROXY_HOPS: "1"
+  N8N_PORT: "5678"
 
 envFrom:
   - secretRef:

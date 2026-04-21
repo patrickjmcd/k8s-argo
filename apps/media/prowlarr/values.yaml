@@ -11,8 +11,8 @@ resources:
     cpu: 15m
     memory: 237Mi
   limits:
-    cpu: 49m
-    memory: 239Mi
+    cpu: 1000m
+    memory: 512Mi
 
 probes:
   readiness:

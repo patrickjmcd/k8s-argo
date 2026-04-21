@@ -104,8 +104,8 @@ spec:
                 cpu: 15m
                 memory: 138Mi
               limits:
-                cpu: 15m
-                memory: 139Mi
+                cpu: 500m
+                memory: 512Mi
 
           redis:
             resources:
