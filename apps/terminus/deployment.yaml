@@ -24,7 +24,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: terminus
-          image: ghcr.io/usetrmnl/terminus:latest
+          image: terminus
           ports:
             - containerPort: 2300
               name: http
@@ -76,7 +76,7 @@ spec:
               cpu: 13m
               memory: 418Mi
         - name: sidekiq
-          image: ghcr.io/usetrmnl/terminus:latest
+          image: terminus
           command: ["bundle", "exec", "sidekiq", "-r", "./config/sidekiq.rb"]
           env:
             - name: TZ

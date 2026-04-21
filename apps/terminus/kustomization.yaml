@@ -7,3 +7,8 @@ resources:
   - httproute.yaml
   - 1password.secret.yaml
   - storage.yaml
+
+images:
+  - name: terminus
+    newName:  ghcr.io/usetrmnl/terminus:latest
+    newTag: "0.54.0"
