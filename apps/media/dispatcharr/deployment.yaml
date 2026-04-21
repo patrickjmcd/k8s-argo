@@ -66,11 +66,11 @@ spec:
 
           resources:
             limits:
-              cpu: 1000m
-              memory: 1700Mi
+              cpu: 15m
+              memory: 1008Mi
             requests:
-              cpu: 25m
-              memory: 864Mi
+              cpu: 15m
+              memory: 991Mi
 
           volumeMounts:
             - mountPath: /data

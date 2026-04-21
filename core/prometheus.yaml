@@ -159,11 +159,11 @@ spec:
           kube-state-metrics:
             resources:
               requests:
-                cpu: 10m
-                memory: 64Mi
+                cpu: 23m
+                memory: 100Mi
               limits:
-                cpu: 100m
-                memory: 128Mi
+                cpu: 23m
+                memory: 100Mi
           grafana:
             deploymentStrategy:
               type: Recreate
@@ -178,11 +178,11 @@ spec:
                 tolerationSeconds: 30
             resources:
               requests:
-                cpu: 25m
-                memory: 224Mi
+                cpu: 23m
+                memory: 259Mi
               limits:
-                cpu: 200m
-                memory: 512Mi
+                cpu: 23m
+                memory: 263Mi
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io

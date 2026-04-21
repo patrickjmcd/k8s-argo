@@ -41,24 +41,24 @@ spec:
               cpu: 15m
               memory: 105Mi
             limits:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 15m
+              memory: 106Mi
           cainjector:
             resources:
               requests:
                 cpu: 15m
-                memory: 110Mi
+                memory: 121Mi
               limits:
-                cpu: 50m
-                memory: 160Mi
+                cpu: 15m
+                memory: 122Mi
           webhook:
             resources:
               requests:
                 cpu: 15m
-                memory: 105Mi
+                memory: 100Mi
               limits:
-                cpu: 50m
-                memory: 128Mi
+                cpu: 15m
+                memory: 100Mi
     - path: core/cert-manager
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main

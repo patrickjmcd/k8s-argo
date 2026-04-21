@@ -106,8 +106,11 @@ spec:
           #
           resources:
             requests:
-              cpu: 100m
-              memory: 50Mi
+              cpu: 49m
+              memory: 100Mi
+            limits:
+              cpu: 49m
+              memory: 100Mi
           tolerations:
             - effect: NoExecute
               operator: Exists

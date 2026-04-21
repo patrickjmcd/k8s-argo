@@ -91,11 +91,11 @@ spec:
 
           resources:
             limits:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 15m
+              memory: 341Mi
             requests:
               cpu: 15m
-              memory: 768Mi
+              memory: 335Mi
 
           volumeMounts:
             - mountPath: /mnt/media

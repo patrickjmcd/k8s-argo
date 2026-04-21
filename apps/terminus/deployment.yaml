@@ -70,11 +70,11 @@ spec:
             periodSeconds: 5
           resources:
             requests:
-              cpu: 200m
-              memory: 512Mi
+              cpu: 11m
+              memory: 283Mi
             limits:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 13m
+              memory: 418Mi
         - name: sidekiq
           image: ghcr.io/usetrmnl/terminus:latest
           command: ["bundle", "exec", "sidekiq", "-r", "./config/sidekiq.rb"]
@@ -93,11 +93,11 @@ spec:
               name: uploads
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 442m
+              memory: 729Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 676m
+              memory: 964Mi
       volumes:
         - name: uploads
           persistentVolumeClaim:

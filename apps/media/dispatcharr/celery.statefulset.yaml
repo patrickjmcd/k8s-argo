@@ -94,11 +94,11 @@ spec:
 
           resources:
             limits:
-              cpu: 1000m
-              memory: 1536Mi
+              cpu: 15m
+              memory: 369Mi
             requests:
               cpu: 15m
-              memory: 896Mi
+              memory: 363Mi
           volumeMounts:
             - mountPath: /data
               name: data

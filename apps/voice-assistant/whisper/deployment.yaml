@@ -39,11 +39,11 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 15m
+              memory: 488Mi
             limits:
-              cpu: 2000m
-              memory: 2Gi
+              cpu: 15m
+              memory: 549Mi
           volumeMounts:
             - name: data
               mountPath: /data

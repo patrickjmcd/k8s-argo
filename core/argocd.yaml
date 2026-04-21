@@ -84,11 +84,11 @@ spec:
             replicas: 2
             resources:
               requests:
-                cpu: 200m
-                memory: 1280Mi
+                cpu: 143m
+                memory: 1114Mi
               limits:
-                cpu: 1000m
-                memory: 2Gi
+                cpu: 205m
+                memory: 1264Mi
 
           repoServer:
             autoscaling:
@@ -101,20 +101,20 @@ spec:
               timeoutSeconds: 10
             resources:
               requests:
-                cpu: 35m
-                memory: 256Mi
+                cpu: 15m
+                memory: 138Mi
               limits:
-                cpu: 500m
-                memory: 1Gi
+                cpu: 15m
+                memory: 139Mi
 
           redis:
             resources:
               requests:
-                cpu: 15m
+                cpu: 23m
                 memory: 100Mi
               limits:
-                cpu: 100m
-                memory: 200Mi
+                cpu: 23m
+                memory: 100Mi
 
           applicationSet:
             replicas: 2
