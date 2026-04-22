@@ -5,6 +5,7 @@ metadata:
   namespace: voice-assistant
 spec:
   type: LoadBalancer
+  loadBalancerIP: 192.168.8.203
   selector:
     app: wyoming-openwakeword
   ports:
