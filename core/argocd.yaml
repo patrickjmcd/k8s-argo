@@ -87,7 +87,6 @@ spec:
                 cpu: 143m
                 memory: 1114Mi
               limits:
-                cpu: 205m
                 memory: 1264Mi
 
           repoServer:
@@ -113,7 +112,6 @@ spec:
                 cpu: 23m
                 memory: 100Mi
               limits:
-                cpu: 23m
                 memory: 100Mi
 
           applicationSet:
