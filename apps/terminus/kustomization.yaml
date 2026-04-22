@@ -10,5 +10,5 @@ resources:
 
 images:
   - name: terminus
-    newName:  ghcr.io/usetrmnl/terminus:latest
+    newName:  ghcr.io/usetrmnl/terminus
     newTag: "0.54.0"
