@@ -77,6 +77,14 @@ spec:
         - name: sidekiq
           image: terminus
           command: ["bundle", "exec", "sidekiq", "-r", "./config/sidekiq.rb"]
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - bash
+                  - -c
+                  - |
+                    sleep 15 && cd /app && echo "Terminus::App['repositories.extension'].all.each { |ext| Terminus::App['aspects.jobs.schedule'].upsert(*ext.to_schedule) }" | bundle exec hanami console
           env:
             - name: TZ
               value: America/Chicago
