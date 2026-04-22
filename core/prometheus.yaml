@@ -37,6 +37,7 @@ spec:
               enabled: true
           prometheus:
             prometheusSpec:
+              scrapeInterval: 60s
               retentionSize: 8GiB
               nodeSelector:
                 kubernetes.io/arch: arm64
@@ -162,7 +163,6 @@ spec:
                 cpu: 23m
                 memory: 100Mi
               limits:
-                cpu: 23m
                 memory: 100Mi
           grafana:
             deploymentStrategy:
@@ -181,7 +181,6 @@ spec:
                 cpu: 23m
                 memory: 259Mi
               limits:
-                cpu: 23m
                 memory: 263Mi
             grafana.ini:
               server:
