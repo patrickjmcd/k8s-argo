@@ -717,6 +717,10 @@ def process_media(media_path: Path) -> None:
     if ext not in MEDIA_EXTS or ext in SKIP_EXTS:
         return
 
+    # yt-dlp writes Foo.temp.mp4 while merging; skip until it renames to Foo.mp4
+    if media_path.stem.endswith(".temp"):
+        return
+
     try:
         media_path.relative_to(INCOMING)
     except ValueError:
