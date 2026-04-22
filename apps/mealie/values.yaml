@@ -10,7 +10,6 @@ resources:
     cpu: 15m
     memory: 392Mi
   limits:
-    cpu: 23m
     memory: 397Mi
 
 probes:
