@@ -73,7 +73,6 @@ spec:
               cpu: 11m
               memory: 283Mi
             limits:
-              cpu: 13m
               memory: 418Mi
         - name: sidekiq
           image: terminus
