@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-local-dns
+data:
+  local-dns.conf: |
+    address=/x.pmcd.io/192.168.8.200

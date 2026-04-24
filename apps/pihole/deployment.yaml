@@ -40,6 +40,8 @@ spec:
               value: "all"
             - name: VIRTUAL_HOST
               value: "pihole.x.pmcd.io"
+            - name: FTLCONF_misc_etc_dnsmasq_d
+              value: "true"
           envFrom:
             - secretRef:
                 name: pihole-1pw
@@ -48,6 +50,9 @@ spec:
               mountPath: /etc/pihole
             - name: pihole-dnsmasq
               mountPath: /etc/dnsmasq.d
+            - name: local-dns-config
+              mountPath: /etc/dnsmasq.d/local-dns.conf
+              subPath: local-dns.conf
           readinessProbe:
             tcpSocket:
               port: 80
@@ -68,3 +73,6 @@ spec:
         - name: pihole-dnsmasq
           persistentVolumeClaim:
             claimName: pihole-dnsmasq
+        - name: local-dns-config
+          configMap:
+            name: pihole-local-dns
