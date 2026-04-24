@@ -16,6 +16,25 @@ spec:
       labels:
         app: pihole
     spec:
+      initContainers:
+        - name: seed-adlists
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              TARGET=/etc/pihole/adlists.list
+              if [ ! -f "$TARGET" ]; then
+                echo "Seeding adlists.list from configmap..."
+                cp /adlists-config/adlists.list "$TARGET"
+              else
+                echo "adlists.list already exists, skipping seed"
+              fi
+          volumeMounts:
+            - name: pihole-data
+              mountPath: /etc/pihole
+            - name: adlists-config
+              mountPath: /adlists-config
       containers:
         - name: pihole
           image: pihole/pihole:2026.04.0
@@ -69,3 +88,6 @@ spec:
         - name: pihole-dnsmasq
           persistentVolumeClaim:
             claimName: pihole-dnsmasq
+        - name: adlists-config
+          configMap:
+            name: pihole-adlists
