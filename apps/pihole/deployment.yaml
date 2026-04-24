@@ -16,25 +16,6 @@ spec:
       labels:
         app: pihole
     spec:
-      initContainers:
-        - name: seed-adlists
-          image: busybox:latest
-          command:
-            - sh
-            - -c
-            - |
-              TARGET=/etc/pihole/adlists.list
-              if [ ! -f "$TARGET" ]; then
-                echo "Seeding adlists.list from configmap..."
-                cp /adlists-config/adlists.list "$TARGET"
-              else
-                echo "adlists.list already exists, skipping seed"
-              fi
-          volumeMounts:
-            - name: pihole-data
-              mountPath: /etc/pihole
-            - name: adlists-config
-              mountPath: /adlists-config
       containers:
         - name: pihole
           image: pihole/pihole:2026.04.0
@@ -62,11 +43,49 @@ spec:
           envFrom:
             - secretRef:
                 name: pihole-1pw
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    # Wait for Pi-hole API to be ready (up to 120s)
+                    i=0
+                    until curl -sf http://localhost/api/auth > /dev/null 2>&1 || [ $i -ge 60 ]; do
+                      sleep 2
+                      i=$((i+1))
+                    done
+                    [ $i -ge 60 ] && exit 0
+
+                    # Authenticate and get session token
+                    RESPONSE=$(curl -sf -X POST http://localhost/api/auth \
+                      -H "Content-Type: application/json" \
+                      -d "{\"password\":\"${WEBPASSWORD}\"}")
+                    TOKEN=$(echo "$RESPONSE" | grep -o '"sid":"[^"]*"' | cut -d'"' -f4)
+                    [ -z "$TOKEN" ] && exit 0
+
+                    # Add each adlist; duplicates are silently ignored by the API
+                    while IFS= read -r url; do
+                      case "$url" in '#'*|''|' '*) continue ;; esac
+                      curl -sf -X POST http://localhost/api/lists \
+                        -H "X-FTL-SID: $TOKEN" \
+                        -H "Content-Type: application/json" \
+                        -d "{\"address\":\"${url}\",\"type\":0,\"comment\":\"seeded-from-k8s\",\"enabled\":true,\"groups\":[0]}" \
+                        > /dev/null 2>&1 || true
+                    done < /adlists-config/adlists.list
+
+                    # Trigger gravity update to compile the new lists
+                    curl -sf -X POST http://localhost/api/action/gravity \
+                      -H "X-FTL-SID: $TOKEN" > /dev/null 2>&1 || true
           volumeMounts:
             - name: pihole-data
               mountPath: /etc/pihole
             - name: pihole-dnsmasq
               mountPath: /etc/dnsmasq.d
+            - name: adlists-config
+              mountPath: /adlists-config
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /admin/
