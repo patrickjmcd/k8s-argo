@@ -50,22 +50,22 @@ spec:
                   - sh
                   - -c
                   - |
-                    # Wait for Pi-hole API to be ready (up to 120s)
-                    i=0
-                    until curl -sf http://localhost/api/auth > /dev/null 2>&1 || [ $i -ge 60 ]; do
-                      sleep 2
-                      i=$((i+1))
-                    done
-                    [ $i -ge 60 ] && exit 0
+                    # Wait for Pi-hole web server on port 80 (hits public root, no API auth logs)
+                    until curl -so /dev/null --connect-timeout 1 http://localhost/ 2>/dev/null; do sleep 2; done
 
                     # Authenticate and get session token
                     RESPONSE=$(curl -sf -X POST http://localhost/api/auth \
                       -H "Content-Type: application/json" \
-                      -d "{\"password\":\"${WEBPASSWORD}\"}")
+                      -d "{\"password\":\"${WEBPASSWORD}\"}" 2>/dev/null)
                     TOKEN=$(echo "$RESPONSE" | grep -o '"sid":"[^"]*"' | cut -d'"' -f4)
                     [ -z "$TOKEN" ] && exit 0
 
-                    # Add each adlist; duplicates are silently ignored by the API
+                    # Skip if adlists are already seeded
+                    COUNT=$(curl -sf "http://localhost/api/lists?type=0" \
+                      -H "X-FTL-SID: $TOKEN" 2>/dev/null | grep -c '"address"' || echo 0)
+                    [ "$COUNT" -gt "0" ] && exit 0
+
+                    # Add each adlist; duplicates return 4xx which are silently ignored
                     while IFS= read -r url; do
                       case "$url" in '#'*|''|' '*) continue ;; esac
                       curl -sf -X POST http://localhost/api/lists \
