@@ -1,6 +1,6 @@
 image:
   repository: outlinewiki/outline
-  tag: "1.6.1"
+  tag: "1.7.0"
 
 service:
   port: 80
