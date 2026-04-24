@@ -48,11 +48,8 @@ spec:
           volumeMounts:
             - name: pihole-data
               mountPath: /etc/pihole
-            - name: pihole-dnsmasq
-              mountPath: /etc/dnsmasq.d
             - name: local-dns-config
-              mountPath: /etc/dnsmasq.d/local-dns.conf
-              subPath: local-dns.conf
+              mountPath: /etc/dnsmasq.d
           readinessProbe:
             tcpSocket:
               port: 80
@@ -70,9 +67,6 @@ spec:
         - name: pihole-data
           persistentVolumeClaim:
             claimName: pihole-data
-        - name: pihole-dnsmasq
-          persistentVolumeClaim:
-            claimName: pihole-dnsmasq
         - name: local-dns-config
           configMap:
             name: pihole-local-dns

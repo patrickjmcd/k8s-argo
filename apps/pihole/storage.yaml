@@ -9,15 +9,3 @@ spec:
   resources:
     requests:
       storage: 500Mi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pihole-dnsmasq
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: longhorn
-  resources:
-    requests:
-      storage: 100Mi
