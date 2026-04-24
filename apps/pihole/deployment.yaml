@@ -50,18 +50,23 @@ spec:
                   - sh
                   - -c
                   - |
-                    # Wait for Pi-hole web server on port 80 (hits public root, no API auth logs)
-                    until curl -so /dev/null --connect-timeout 1 http://localhost/ 2>/dev/null; do sleep 2; done
-
-                    # Authenticate and get session token
-                    RESPONSE=$(curl -sf -X POST http://localhost/api/auth \
-                      -H "Content-Type: application/json" \
-                      -d "{\"password\":\"${WEBPASSWORD}\"}" 2>/dev/null)
-                    TOKEN=$(echo "$RESPONSE" | grep -o '"sid":"[^"]*"' | cut -d'"' -f4)
+                    # Poll POST /api/auth until we get a valid session token.
+                    # Using the auth endpoint itself avoids unauthenticated hits that
+                    # generate "Authentication required" log spam.
+                    TOKEN=""
+                    i=0
+                    while [ -z "$TOKEN" ] && [ $i -lt 60 ]; do
+                      sleep 2
+                      i=$((i+1))
+                      RESPONSE=$(curl -sf -X POST http://localhost/api/auth \
+                        -H "Content-Type: application/json" \
+                        -d "{\"password\":\"${WEBPASSWORD}\"}" 2>/dev/null)
+                      TOKEN=$(echo "$RESPONSE" | grep -o '"sid":"[^"]*"' | cut -d'"' -f4)
+                    done
                     [ -z "$TOKEN" ] && exit 0
 
                     # Skip if adlists are already seeded
-                    COUNT=$(curl -sf "http://localhost/api/lists?type=0" \
+                    COUNT=$(curl -sf "http://localhost/api/lists?type=block" \
                       -H "X-FTL-SID: $TOKEN" 2>/dev/null | grep -c '"address"' || echo 0)
                     [ "$COUNT" -gt "0" ] && exit 0
 
@@ -71,7 +76,7 @@ spec:
                       curl -sf -X POST http://localhost/api/lists \
                         -H "X-FTL-SID: $TOKEN" \
                         -H "Content-Type: application/json" \
-                        -d "{\"address\":\"${url}\",\"type\":0,\"comment\":\"seeded-from-k8s\",\"enabled\":true,\"groups\":[0]}" \
+                        -d "{\"address\":\"${url}\",\"type\":\"block\",\"comment\":\"seeded-from-k8s\",\"enabled\":true,\"groups\":[0]}" \
                         > /dev/null 2>&1 || true
                     done < /adlists-config/adlists.list
 
