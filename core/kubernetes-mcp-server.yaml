@@ -20,7 +20,7 @@ spec:
       - CreateNamespace=true
   sources:
     - chart: kubernetes-mcp-server
-      repoURL: oci://ghcr.io/containers/charts/kubernetes-mcp-server
+      repoURL: https://ghcr.io/containers/charts/kubernetes-mcp-server
       targetRevision: 0.1.0
       helm:
         releaseName: kubernetes-mcp-server
