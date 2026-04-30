@@ -19,20 +19,6 @@ spec:
         app.kubernetes.io/instance: bazarr
         app.kubernetes.io/name: bazarr
     spec:
-      initContainers:
-        - args:
-            - " echo 'Setting configmap'  && cp /tmp/config/config.ini /config/config/config.ini && chmod 777 /config/config/config.ini && ls /config/config"
-          command:
-            - sh
-            - -c
-          image: busybox:latest
-          imagePullPolicy: Always
-          name: setup-config
-          volumeMounts:
-            - mountPath: /tmp/config
-              name: config
-            - mountPath: /config/config
-              name: config-empty
       containers:
         - name: bazarr
           env:
@@ -42,15 +28,12 @@ spec:
               value: "1000"
             - name: PUID
               value: "1000"
-
           image: bazarr
           imagePullPolicy: IfNotPresent
-
           ports:
             - containerPort: 6767
               name: http
               protocol: TCP
-
           readinessProbe:
             failureThreshold: 3
             periodSeconds: 10
@@ -58,22 +41,14 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           livenessProbe:
-            exec:
-              command:
-                - /usr/bin/env
-                - bash
-                - -c
-                - curl --fail localhost:6767/v3/system/status?apiKey=`IFS=\> && while
-                  read -d \< E C; do if [[ $E = "ApiKey" ]]; then echo $C; fi; done <
-                  /config/config.xml`
             failureThreshold: 5
-            initialDelaySeconds: 180
+            initialDelaySeconds: 60
             periodSeconds: 10
             successThreshold: 1
+            tcpSocket:
+              port: http
             timeoutSeconds: 10
-
           startupProbe:
             failureThreshold: 30
             periodSeconds: 5
@@ -81,33 +56,24 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           resources:
             limits:
-              cpu: 1000m
-              memory: 1024Mi
+              memory: 512Mi
             requests:
-              cpu: 100m
-              memory: 256Mi
-
+              cpu: 15m
+              memory: 128Mi
           volumeMounts:
-            - mountPath: /config/config
-              name: config-empty
+            - mountPath: /config
+              name: config
             - mountPath: /media
               name: media
             - mountPath: /downloads
               name: downloads
-
       restartPolicy: Always
       volumes:
         - name: config
-          configMap:
-            name: bazarr-config
-            items:
-              - key: config.ini
-                path: config.ini
-        - name: config-empty
-          emptyDir: { }
+          persistentVolumeClaim:
+            claimName: longhorn-bazarr-data
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim

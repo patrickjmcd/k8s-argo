@@ -3,8 +3,10 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - storage.yaml
+  - httproute.yaml
 
 images:
   - name: bazarr
     newName: linuxserver/bazarr
-    newTag: 1.5.7-development
+    newTag: 1.5.1

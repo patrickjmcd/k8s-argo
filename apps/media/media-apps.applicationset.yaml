@@ -54,6 +54,7 @@ spec:
   generators:
     - list:
         elements:
+          - name: bazarr
           - name: lidarr
           - name: notifiarr
           - name: sabnzbd
