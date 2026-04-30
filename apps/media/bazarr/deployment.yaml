@@ -65,9 +65,9 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: config
-            - mountPath: /media
+            - mountPath: /mnt/media
               name: media
-            - mountPath: /downloads
+            - mountPath: /mnt/downloads
               name: downloads
       restartPolicy: Always
       volumes:
