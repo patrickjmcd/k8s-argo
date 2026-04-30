@@ -45,6 +45,3 @@ machine-learning:
       size: 10Gi
       storageClass: longhorn
       accessMode: ReadWriteOnce
-
-redis:
-  enabled: false
