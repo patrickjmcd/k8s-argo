@@ -7,7 +7,7 @@ immich:
       existingClaim: immich-library
 
 env:
-  DB_HOSTNAME: "192.168.1.11"
+  DB_HOSTNAME: "immich-postgres"
   DB_DATABASE_NAME: "immich"
   REDIS_HOSTNAME: "192.168.1.252"
 
