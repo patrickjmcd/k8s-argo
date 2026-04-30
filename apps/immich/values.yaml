@@ -1,4 +1,5 @@
 image:
+  # renovate: depName=ghcr.io/immich-app/immich-server
   tag: v1.130.0
 
 immich:
