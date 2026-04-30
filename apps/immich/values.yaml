@@ -1,0 +1,45 @@
+image:
+  tag: v1.130.0
+
+immich:
+  persistence:
+    library:
+      existingClaim: immich-library
+
+env:
+  REDIS_HOSTNAME: "192.168.1.252"
+
+
+server:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+machine-learning:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 4Gi
+  persistence:
+    cache:
+      enabled: true
+      size: 10Gi
+      storageClass: longhorn
+      accessMode: ReadWriteOnce
+
+postgresql:
+  enabled: true
+  primary:
+    persistence:
+      storageClass: longhorn
+      size: 8Gi
+
+redis:
+  enabled: false

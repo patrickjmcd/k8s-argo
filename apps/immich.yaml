@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: immich
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+    namespace: immich
+  project: apps
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      ref: values
+    - chart: immich
+      repoURL: https://immich-app.github.io/immich-charts
+      targetRevision: 0.9.0
+      helm:
+        releaseName: immich
+        valueFiles:
+          - $values/apps/immich/values.yaml
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      path: apps/immich
