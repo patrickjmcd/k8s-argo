@@ -1,38 +1,48 @@
-image:
-  # renovate: depName=ghcr.io/immich-app/immich-server
-  tag: v1.130.0
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          # renovate: depName=ghcr.io/immich-app/immich-server
+          tag: v2.6.3
+        env:
+          DB_HOSTNAME: "postgres-rw"
+          DB_DATABASE_NAME: "app"
+          REDIS_HOSTNAME: "192.168.1.252"
+        envFrom:
+          - secretRef:
+              name: immich-1pw
 
 immich:
   persistence:
     library:
       existingClaim: immich-library
 
-env:
-  DB_HOSTNAME: "postgres-rw"
-  DB_DATABASE_NAME: "app"
-  REDIS_HOSTNAME: "192.168.1.252"
-
-envFrom:
-  - secretRef:
-      name: immich-1pw
-
 server:
   enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 512Mi
-    limits:
-      memory: 1Gi
+  controllers:
+    main:
+      containers:
+        main:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
 
 machine-learning:
   enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 1Gi
-    limits:
-      memory: 4Gi
+  controllers:
+    main:
+      containers:
+        main:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
   persistence:
     cache:
       enabled: true
