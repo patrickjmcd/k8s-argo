@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tailscale-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  destination:
+    namespace: tailscale
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - chart: tailscale-operator
+      targetRevision: 1.96.5
+      repoURL: https://pkgs.tailscale.com/helmcharts
+      helm:
+        releaseName: tailscale-operator
+        valuesObject:
+          operatorConfig:
+            hostname: k8s-operator
+    - path: core/tailscale-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
