@@ -16,19 +16,6 @@ spec:
     storageClass: local-path
     size: 15Gi
 
-  postgresql:
-    shared_preload_libraries:
-      - vchord
-      - vector
-    extensions:
-      - name: vchord
-        image:
-          reference: tensorchord/vchord-scratch:pg18-v1.1.1
-        extension_control_path:
-          - /usr/share/postgresql/18
-        dynamic_library_path:
-          - /usr/lib/postgresql/18/lib
-
   primaryUpdateMethod: switchover
 ---
 apiVersion: postgresql.cnpg.io/v1
@@ -42,7 +29,6 @@ spec:
   cluster:
     name: postgres
   extensions:
-    - name: vchord
     - name: vector
     - name: earthdistance
     - name: cube
