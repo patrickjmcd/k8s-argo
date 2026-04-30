@@ -27,6 +27,10 @@
       "/cronjobs/.+\\.yaml$/"
     ]
   },
+  "ignoreDeps": [
+    "ghcr.io/containers/charts/kubernetes-mcp-server/kubernetes-mcp-server",
+    "ghcr.io/patrickjmcd/lake-info"
+  ],
   "packageRules": [
     {
       "matchPackageNames": [
