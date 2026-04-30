@@ -30,7 +30,7 @@ spec:
         recurse: false
     - chart: argo-cd
       repoURL: https://argoproj.github.io/argo-helm
-      targetRevision: 9.5.4
+      targetRevision: 9.5.9
       helm:
         releaseName: argocd
         valuesObject:
