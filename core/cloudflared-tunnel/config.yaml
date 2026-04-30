@@ -73,6 +73,9 @@ ingress:
   - hostname: n8n.pmcd.dev
     service: http://n8n.default:80
 
+  - hostname: pics.pmcd.io
+    service: http://immich-server.immich:2283
+
   # ARGO
   - hostname: argo.pmcd.dev
     service: http://argocd-server.argocd:80
