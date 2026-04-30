@@ -8,13 +8,19 @@ immich:
       existingClaim: immich-library
 
 env:
-  DB_HOSTNAME: "immich-postgres"
-  DB_DATABASE_NAME: "immich"
+  DB_HOSTNAME: "postgres-rw"
+  DB_DATABASE_NAME: "app"
   REDIS_HOSTNAME: "192.168.1.252"
-
-envFrom:
-  - secretRef:
-      name: immich-1pw
+  DB_USERNAME:
+    valueFrom:
+      secretKeyRef:
+        name: postgres-app
+        key: username
+  DB_PASSWORD:
+    valueFrom:
+      secretKeyRef:
+        name: postgres-app
+        key: password
 
 server:
   enabled: true

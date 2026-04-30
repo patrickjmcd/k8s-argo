@@ -4,9 +4,7 @@ resources:
   - storage.yaml
   - postgres.yaml
   - httproute.yaml
-  - 1password.secret.yaml
 
 images:
-  - name: immich-postgres
-    newName: ghcr.io/immich-app/postgres
-    newTag: "16"
+  - name: tensorchord/vchord-scratch
+    newTag: pg18-v1.1.1

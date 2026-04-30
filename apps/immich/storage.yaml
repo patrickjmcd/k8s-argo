@@ -37,16 +37,3 @@ spec:
       storage: 10Ti
   volumeName: smb-immich-photos
   storageClassName: ""
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: immich-postgres-data
-  namespace: immich
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: longhorn
-  resources:
-    requests:
-      storage: 8Gi

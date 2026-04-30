@@ -1,62 +1,51 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
 metadata:
-  name: immich-postgres
+  name: postgres
   namespace: immich
 spec:
-  selector:
-    matchLabels:
-      app: immich-postgres
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: immich-postgres
-    spec:
-      containers:
-        - name: postgres
-          image: immich-postgres
-          env:
-            - name: POSTGRES_DB
-              value: immich
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: immich-1pw
-                  key: DB_USERNAME
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: immich-1pw
-                  key: DB_PASSWORD
-            - name: POSTGRES_INITDB_ARGS
-              value: "--data-checksums"
-          ports:
-            - containerPort: 5432
-              name: postgres
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              memory: 1Gi
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: data
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: immich-postgres-data
+  instances: 3
+
+  imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ClusterImageCatalog
+    name: postgresql-standard-trixie
+    major: 18
+
+  storage:
+    storageClass: local-path
+    size: 15Gi
+
+  postgresql:
+    shared_preload_libraries:
+      - vchord
+      - vector
+    extensions:
+      - name: vchord
+        image:
+          reference: tensorchord/vchord-scratch:pg18-v1.1.1
+        extension_control_path:
+          - /usr/share/postgresql/18
+        dynamic_library_path:
+          - /usr/lib/postgresql/18/lib
+
+  primaryUpdateMethod: switchover
 ---
-apiVersion: v1
-kind: Service
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
 metadata:
-  name: immich-postgres
+  name: immich-db
   namespace: immich
 spec:
-  selector:
-    app: immich-postgres
-  ports:
-    - port: 5432
-      targetPort: postgres
+  name: app
+  owner: app
+  cluster:
+    name: postgres
+  extensions:
+    - name: vchord
+    - name: vector
+    - name: earthdistance
+    - name: cube
+    - name: unaccent
+    - name: uuid-ossp
+    - name: pg_trgm
