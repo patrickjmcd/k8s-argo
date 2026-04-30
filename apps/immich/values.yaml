@@ -39,9 +39,3 @@ machine-learning:
       size: 10Gi
       storageClass: longhorn
       accessMode: ReadWriteOnce
-
-postgresql:
-  enabled: false
-
-redis:
-  enabled: false
