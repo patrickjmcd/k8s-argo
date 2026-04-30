@@ -23,6 +23,11 @@ spec:
     - path: core/argo-assets
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
+    - path: argo/projects
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      directory:
+        recurse: false
     - chart: argo-cd
       repoURL: https://argoproj.github.io/argo-helm
       targetRevision: 9.5.4
