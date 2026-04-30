@@ -4,7 +4,4 @@ resources:
   - storage.yaml
   - postgres.yaml
   - httproute.yaml
-
-images:
-  - name: tensorchord/vchord-scratch
-    newTag: pg18-v1.1.1
+  - 1password.secret.yaml

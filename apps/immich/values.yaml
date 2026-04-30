@@ -11,16 +11,10 @@ env:
   DB_HOSTNAME: "postgres-rw"
   DB_DATABASE_NAME: "app"
   REDIS_HOSTNAME: "192.168.1.252"
-  DB_USERNAME:
-    valueFrom:
-      secretKeyRef:
-        name: postgres-app
-        key: username
-  DB_PASSWORD:
-    valueFrom:
-      secretKeyRef:
-        name: postgres-app
-        key: password
+
+envFrom:
+  - secretRef:
+      name: immich-1pw
 
 server:
   enabled: true
@@ -45,3 +39,9 @@ machine-learning:
       size: 10Gi
       storageClass: longhorn
       accessMode: ReadWriteOnce
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
