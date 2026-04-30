@@ -21,6 +21,9 @@ spec:
       repoURL: https://cloudnative-pg.github.io/charts
       # renovate: datasource=helm depName=cloudnative-pg registryUrl=https://cloudnative-pg.github.io/charts
       targetRevision: 0.28.0
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      path: core/cnpg
   destination:
     namespace: cnpg-system
     name: in-cluster
