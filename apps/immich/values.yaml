@@ -7,8 +7,13 @@ immich:
       existingClaim: immich-library
 
 env:
+  DB_HOSTNAME: "192.168.1.11"
+  DB_DATABASE_NAME: "immich"
   REDIS_HOSTNAME: "192.168.1.252"
 
+envFrom:
+  - secretRef:
+      name: immich-1pw
 
 server:
   enabled: true
@@ -35,11 +40,7 @@ machine-learning:
       accessMode: ReadWriteOnce
 
 postgresql:
-  enabled: true
-  primary:
-    persistence:
-      storageClass: longhorn
-      size: 8Gi
+  enabled: false
 
 redis:
   enabled: false
