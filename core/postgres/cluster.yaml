@@ -31,6 +31,7 @@ spec:
       - host all reedme all trust
       - host all n8n all trust
       - host all homebox all trust
+      - host all dispatcharr all trust
 
   managed:
     roles:
@@ -65,5 +66,8 @@ spec:
         ensure: present
         login: true
       - name: homebox
+        ensure: present
+        login: true
+      - name: dispatcharr
         ensure: present
         login: true

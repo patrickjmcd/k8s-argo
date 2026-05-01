@@ -184,3 +184,14 @@ spec:
   owner: homebox
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: dispatcharr
+  namespace: postgres
+spec:
+  name: dispatcharr
+  owner: dispatcharr
+  cluster:
+    name: shared-postgres

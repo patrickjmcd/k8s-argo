@@ -27,6 +27,10 @@ spec:
               value: modular
             - name: USE_LEGACY_NUMPY
               value: "true"
+            - name: POSTGRES_HOST
+              value: "shared-postgres-rw.postgres.svc.cluster.local"
+            - name: POSTGRES_PASSWORD
+              value: ""
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw
