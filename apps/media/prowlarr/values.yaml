@@ -60,7 +60,7 @@ env:
   PROWLARR__APP__INSTANCENAME: Prowlarr
   PROWLARR__POSTGRES__USER: prowlarr
   PROWLARR__POSTGRES__PORT: "5432"
-  PROWLARR__POSTGRES__HOST: 192.168.4.11
+  PROWLARR__POSTGRES__HOST: "shared-postgres-rw.postgres.svc.cluster.local"
   PROWLARR__POSTGRES__MAINDB: prowlarr-main
   PROWLARR__POSTGRES__LOGDB: prowlarr-logs
 
