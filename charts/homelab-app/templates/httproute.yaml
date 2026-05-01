@@ -19,6 +19,12 @@ spec:
         - path:
             type: PathPrefix
             value: /
+      {{- if .Values.httproute.hostnameRewrite }}
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: {{ .Values.httproute.hostnameRewrite | quote }}
+      {{- end }}
       backendRefs:
         - name: {{ include "homelab-app.fullname" . }}
           kind: Service
