@@ -22,7 +22,7 @@ spec:
     - https://argoproj.github.io/argo-helm
     - https://charts.fairwinds.com/stable
     - https://flannel-io.github.io/flannel/
-    - https://ghcr.io/containers/charts/kubernetes-mcp-server
+    - oci://ghcr.io/containers/charts/kubernetes-mcp-server
     - https://pkgs.tailscale.com/helmcharts
     - https://charts.jetstack.io
     - https://cloudnative-pg.github.io/charts
