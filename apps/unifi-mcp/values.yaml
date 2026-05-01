@@ -10,6 +10,7 @@ env:
   UNIFI_MCP_HOST: "0.0.0.0"
   UNIFI_MCP_PORT: "3000"
   UNIFI_NETWORK_VERIFY_SSL: "false"
+  FASTMCP_ALLOWED_HOSTS: "unifi-mcp.x.pmcd.io,localhost,127.0.0.1"
 
 onePassword:
   enabled: true
