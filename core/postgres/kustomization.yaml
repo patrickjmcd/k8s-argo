@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - storage.yaml
-  - 1password.yaml
   - cluster.yaml
   - databases.yaml
   - backup-cronjob.yaml

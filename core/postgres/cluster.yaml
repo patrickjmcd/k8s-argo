@@ -18,10 +18,32 @@ spec:
 
   primaryUpdateMethod: switchover
 
+  postgresql:
+    pg_hba:
+      - host all mealie all trust
+      - host all radarr all trust
+      - host all sonarr all trust
+      - host all prowlarr all trust
+      - host all readarr all trust
+      - host all lidarr all trust
+
   managed:
     roles:
       - name: mealie
         ensure: present
         login: true
-        passwordSecret:
-          name: mealie-pg-role
+      - name: radarr
+        ensure: present
+        login: true
+      - name: sonarr
+        ensure: present
+        login: true
+      - name: prowlarr
+        ensure: present
+        login: true
+      - name: readarr
+        ensure: present
+        login: true
+      - name: lidarr
+        ensure: present
+        login: true
