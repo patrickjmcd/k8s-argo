@@ -17,4 +17,4 @@ generatorOptions:
 images:
   - name: sabnzbd
     newName: linuxserver/sabnzbd
-    newTag: 4.5.5
+    newTag: 5.0.0
