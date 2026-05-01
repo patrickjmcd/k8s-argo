@@ -30,6 +30,7 @@ spec:
       - host all outline all trust
       - host all reedme all trust
       - host all n8n all trust
+      - host all homebox all trust
 
   managed:
     roles:
@@ -61,5 +62,8 @@ spec:
         ensure: present
         login: true
       - name: n8n
+        ensure: present
+        login: true
+      - name: homebox
         ensure: present
         login: true
