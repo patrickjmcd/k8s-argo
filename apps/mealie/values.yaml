@@ -47,6 +47,7 @@ env:
   BASE_URL: https://mealie.pmcd.dev
   POSTGRES_USER: mealie
   POSTGRES_DB: mealie
+  POSTGRES_SERVER: "shared-postgres-rw.postgres.svc.cluster.local"
   OIDC_AUTH_ENABLED: "True"
   OIDC_SIGNUP_ENABLED: "False"
   OIDC_CONFIGURATION_URL: https://auth.pmcd.dev/.well-known/openid-configuration
