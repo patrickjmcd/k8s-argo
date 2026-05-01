@@ -1,8 +1,0 @@
----
-- name: Configure PostgreSQL database servers
-  hosts: db_servers
-  become: true
-
-  roles:
-    - role: postgres
-    - role: pgbackrest
