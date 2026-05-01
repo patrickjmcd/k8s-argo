@@ -98,14 +98,14 @@ spec:
             autoscaling:
               enabled: true
               minReplicas: 2
-              maxReplicas: 3
+              maxReplicas: 5
             livenessProbe:
               timeoutSeconds: 10
             readinessProbe:
               timeoutSeconds: 10
             resources:
               requests:
-                cpu: 15m
+                cpu: 100m
                 memory: 138Mi
               limits:
                 cpu: 500m
