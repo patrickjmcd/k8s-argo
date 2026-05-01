@@ -1,0 +1,33 @@
+image:
+  repository: ghcr.io/sirkirby/unifi-network-mcp
+  tag: "latest"
+
+service:
+  port: 3000
+
+env:
+  UNIFI_MCP_HTTP_ENABLED: "true"
+  UNIFI_MCP_HOST: "0.0.0.0"
+  UNIFI_MCP_PORT: "3000"
+  UNIFI_NETWORK_VERIFY_SSL: "false"
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/unifi-mcp"
+
+envFrom:
+  - secretRef:
+      name: unifi-mcp-1pw
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+httproute:
+  enabled: true
+  hostnames:
+    - unifi-mcp.x.pmcd.io
