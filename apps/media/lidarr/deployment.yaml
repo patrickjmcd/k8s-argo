@@ -50,11 +50,13 @@ spec:
             - name: LIDARR__POSTGRES__PORT
               value: "5432"
             - name: LIDARR__POSTGRES__HOST
-              value: 192.168.4.11
+              value: "shared-postgres-rw.postgres.svc.cluster.local"
             - name: LIDARR__POSTGRES__MAINDB
               value: lidarr-main
             - name: LIDARR__POSTGRES__LOGDB
               value: lidarr-logs
+            - name: LIDARR__POSTGRES__PASSWORD
+              value: ""
 
           image: lidarr
           imagePullPolicy: IfNotPresent
