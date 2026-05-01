@@ -25,28 +25,3 @@ spec:
         login: true
         passwordSecret:
           name: mealie-pg-role
-      - name: radarr
-        ensure: present
-        login: true
-        passwordSecret:
-          name: radarr-pg-role
-      - name: sonarr
-        ensure: present
-        login: true
-        passwordSecret:
-          name: sonarr-pg-role
-      - name: prowlarr
-        ensure: present
-        login: true
-        passwordSecret:
-          name: prowlarr-pg-role
-      - name: readarr
-        ensure: present
-        login: true
-        passwordSecret:
-          name: readarr-pg-role
-      - name: lidarr
-        ensure: present
-        login: true
-        passwordSecret:
-          name: lidarr-pg-role
