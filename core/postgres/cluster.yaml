@@ -29,6 +29,7 @@ spec:
       - host all pocketid all trust
       - host all outline all trust
       - host all reedme all trust
+      - host all n8n all trust
 
   managed:
     roles:
@@ -57,5 +58,8 @@ spec:
         ensure: present
         login: true
       - name: reedme
+        ensure: present
+        login: true
+      - name: n8n
         ensure: present
         login: true

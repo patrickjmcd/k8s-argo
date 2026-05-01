@@ -58,6 +58,12 @@ env:
   WEBHOOK_URL: https://n8n.pmcd.dev
   N8N_PROXY_HOPS: "1"
   N8N_PORT: "5678"
+  DB_TYPE: postgresdb
+  DB_POSTGRESDB_DATABASE: n8n
+  DB_POSTGRESDB_USER: n8n
+  DB_POSTGRESDB_PORT: "5432"
+  DB_POSTGRESDB_SCHEMA: public
+  DB_POSTGRESDB_HOST: shared-postgres-rw.postgres.svc.cluster.local
 
 envFrom:
   - secretRef:

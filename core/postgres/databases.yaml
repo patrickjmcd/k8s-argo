@@ -151,3 +151,14 @@ spec:
   owner: reedme
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: n8n
+  namespace: postgres
+spec:
+  name: n8n
+  owner: n8n
+  cluster:
+    name: shared-postgres
