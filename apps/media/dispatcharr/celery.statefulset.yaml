@@ -86,6 +86,10 @@ spec:
               value: "1"
             - name: USE_LEGACY_NUMPY
               value: "true"
+            - name: POSTGRES_HOST
+              value: "shared-postgres-rw.postgres.svc.cluster.local"
+            - name: POSTGRES_PASSWORD
+              value: ""
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw
@@ -95,12 +99,15 @@ spec:
           resources:
             limits:
               memory: 768Mi
+              nvidia.com/gpu: 1
             requests:
               cpu: 15m
               memory: 363Mi
           volumeMounts:
             - mountPath: /data
               name: data
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
       volumes:
         - name: data
           persistentVolumeClaim:

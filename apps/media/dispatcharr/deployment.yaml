@@ -71,6 +71,7 @@ spec:
           resources:
             limits:
               memory: 1008Mi
+              nvidia.com/gpu: 1
             requests:
               cpu: 15m
               memory: 991Mi
@@ -79,6 +80,8 @@ spec:
             - mountPath: /data
               name: data
 
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
       restartPolicy: Always
       volumes:
         - name: data
