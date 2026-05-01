@@ -38,36 +38,60 @@ spec:
       - name: mealie
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: radarr
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: sonarr
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: prowlarr
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: readarr
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: lidarr
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: pocketid
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: outline
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: reedme
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: n8n
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: homebox
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
       - name: dispatcharr
         ensure: present
         login: true
+        inherit: true
+        connectionLimit: -1
