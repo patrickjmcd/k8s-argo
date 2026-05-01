@@ -27,8 +27,20 @@ spec:
           image: pocketid
           imagePullPolicy: IfNotPresent
           envFrom:
-            - configMapRef:
-                name: pocketid-config
+            - secretRef:
+                name: pocketid-1pw
+          env:
+          - name: DB_CONNECTION_STRING
+            value: "postgresql://pocketid@shared-postgres-rw.postgres.svc.cluster.local:5432/pocketid"
+          - name: FILE_BACKEND
+            value: database
+          - name: KEYS_STORAGE
+            value: database
+          - name: DB_PROVIDER
+            value: postgres
+
+
+
           ports:
             - containerPort: 1411
               name: http
