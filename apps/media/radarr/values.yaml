@@ -59,7 +59,7 @@ env:
   RADARR__APP__INSTANCENAME: Radarr
   RADARR__POSTGRES__USER: radarr
   RADARR__POSTGRES__PORT: "5432"
-  RADARR__POSTGRES__HOST: 192.168.4.11
+  RADARR__POSTGRES__HOST: "shared-postgres-rw.postgres.svc.cluster.local"
   RADARR__POSTGRES__MAINDB: radarr-main
   RADARR__POSTGRES__LOGDB: radarr-logs
 
