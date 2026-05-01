@@ -99,15 +99,12 @@ spec:
           resources:
             limits:
               memory: 768Mi
-              nvidia.com/gpu: 1
             requests:
               cpu: 15m
               memory: 363Mi
           volumeMounts:
             - mountPath: /data
               name: data
-      nodeSelector:
-        nvidia.com/gpu.present: "true"
       volumes:
         - name: data
           persistentVolumeClaim:
