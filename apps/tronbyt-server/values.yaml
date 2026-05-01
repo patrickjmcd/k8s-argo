@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tronbyt/server
-  tag: "2.2.7"
+  tag: "2.2.8"
 
 service:
   port: 8888
