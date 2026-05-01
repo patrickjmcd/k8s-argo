@@ -118,3 +118,36 @@ spec:
   owner: lidarr
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: pocketid
+  namespace: postgres
+spec:
+  name: pocketid
+  owner: pocketid
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: outline
+  namespace: postgres
+spec:
+  name: outline
+  owner: outline
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: reedme
+  namespace: postgres
+spec:
+  name: reedme
+  owner: reedme
+  cluster:
+    name: shared-postgres

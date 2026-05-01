@@ -49,6 +49,7 @@ onePassword:
 env:
   TZ: America/Chicago
   REEDME_PORT: "8080"
+  REEDME_DATABASE_URL: "postgres://reedme@shared-postgres-rw.postgres.svc.cluster.local/reedme?sslmode=disable"
 
 envFrom:
   - secretRef:

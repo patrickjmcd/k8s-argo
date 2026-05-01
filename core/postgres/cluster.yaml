@@ -26,6 +26,9 @@ spec:
       - host all prowlarr all trust
       - host all readarr all trust
       - host all lidarr all trust
+      - host all pocketid all trust
+      - host all outline all trust
+      - host all reedme all trust
 
   managed:
     roles:
@@ -45,5 +48,14 @@ spec:
         ensure: present
         login: true
       - name: lidarr
+        ensure: present
+        login: true
+      - name: pocketid
+        ensure: present
+        login: true
+      - name: outline
+        ensure: present
+        login: true
+      - name: reedme
         ensure: present
         login: true
