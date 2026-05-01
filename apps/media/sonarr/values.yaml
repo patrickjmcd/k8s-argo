@@ -59,7 +59,7 @@ env:
   SONARR__APP__INSTANCENAME: Sonarr
   SONARR__POSTGRES__USER: sonarr
   SONARR__POSTGRES__PORT: "5432"
-  SONARR__POSTGRES__HOST: 192.168.4.11
+  SONARR__POSTGRES__HOST: "shared-postgres-rw.postgres.svc.cluster.local"
   SONARR__POSTGRES__MAINDB: sonarr-main
   SONARR__POSTGRES__LOGDB: sonarr-logs
 

@@ -59,7 +59,7 @@ env:
   READARR__APP__INSTANCENAME: readarr
   READARR__POSTGRES__USER: readarr
   READARR__POSTGRES__PORT: "5432"
-  READARR__POSTGRES__HOST: 192.168.1.11
+  READARR__POSTGRES__HOST: "shared-postgres-rw.postgres.svc.cluster.local"
   READARR__POSTGRES__MAINDB: readarr-main
   READARR__POSTGRES__LOGDB: readarr-logs
 
