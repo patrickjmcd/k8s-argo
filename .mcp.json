@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "unifi-mcp": {
+      "type": "http",
+      "url": "https://unifi-mcp.x.pmcd.io/mcp"
+    }
+  }
+}
