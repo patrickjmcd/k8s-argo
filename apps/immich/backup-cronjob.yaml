@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: immich-postgres-backup
+  namespace: immich
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pg-dump
+              image: postgres:18-alpine
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-app
+                      key: password
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  mkdir -p /backup/immich
+                  FILENAME="/backup/immich/immich_$(date +%Y%m%d_%H%M%S).dump"
+                  pg_dump -h postgres-rw -U app -d app -Fc -f "$FILENAME"
+                  echo "Backup written to $FILENAME"
+                  find /backup/immich -name "*.dump" -mtime +7 -delete
+                  echo "Old backups pruned"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+              volumeMounts:
+                - mountPath: /backup
+                  name: pgbackup
+          volumes:
+            - name: pgbackup
+              persistentVolumeClaim:
+                claimName: smb-pgbackup-claim

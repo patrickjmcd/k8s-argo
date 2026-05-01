@@ -37,3 +37,42 @@ spec:
       storage: 10Ti
   volumeName: smb-immich-photos
   storageClassName: ""
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-pgbackup
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: pgbackup-volume-id
+    volumeAttributes:
+      source: "//192.168.1.253/PGBackup"
+    nodeStageSecretRef:
+      name: smb-creds-1pw
+      namespace: csi-smb-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-pgbackup-claim
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ti
+  volumeName: smb-pgbackup
+  storageClassName: ""

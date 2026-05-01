@@ -5,3 +5,4 @@ resources:
   - postgres.yaml
   - httproute.yaml
   - 1password.secret.yaml
+  - backup-cronjob.yaml
