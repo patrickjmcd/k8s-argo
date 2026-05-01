@@ -100,6 +100,17 @@ spec:
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
+  name: readarr-cache
+  namespace: postgres
+spec:
+  name: readarr-cache
+  owner: readarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
   name: lidarr-main
   namespace: postgres
 spec:

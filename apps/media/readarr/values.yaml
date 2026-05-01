@@ -62,6 +62,7 @@ env:
   READARR__POSTGRES__HOST: "shared-postgres-rw.postgres.svc.cluster.local"
   READARR__POSTGRES__MAINDB: readarr-main
   READARR__POSTGRES__LOGDB: readarr-logs
+  READARR__POSTGRES__CACHEDB: readarr-cache
 
 extraVolumes:
   - name: media
