@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: shared-postgres-backup
+  namespace: postgres
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pg-dump
+              image: postgres:18-alpine
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: shared-postgres-app
+                      key: password
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: shared-postgres-app
+                      key: username
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  mkdir -p /backup/shared
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  for DB in mealie radarr-main radarr-logs sonarr-main sonarr-logs prowlarr-main prowlarr-logs readarr-main readarr-logs lidarr-main lidarr-logs; do
+                    echo "Backing up $DB..."
+                    pg_dump -h shared-postgres-rw -U "$PGUSER" -d "$DB" -Fc -f "/backup/shared/${DB}_${TIMESTAMP}.dump"
+                  done
+                  echo "All backups complete"
+                  find /backup/shared -name "*.dump" -mtime +7 -delete
+                  echo "Old backups pruned"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+              volumeMounts:
+                - mountPath: /backup
+                  name: pgbackup
+          volumes:
+            - name: pgbackup
+              persistentVolumeClaim:
+                claimName: smb-pgbackup-shared-claim

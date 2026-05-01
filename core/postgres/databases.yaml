@@ -1,0 +1,120 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: mealie
+  namespace: postgres
+spec:
+  name: mealie
+  owner: mealie
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: radarr-main
+  namespace: postgres
+spec:
+  name: radarr-main
+  owner: radarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: radarr-logs
+  namespace: postgres
+spec:
+  name: radarr-logs
+  owner: radarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: sonarr-main
+  namespace: postgres
+spec:
+  name: sonarr-main
+  owner: sonarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: sonarr-logs
+  namespace: postgres
+spec:
+  name: sonarr-logs
+  owner: sonarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: prowlarr-main
+  namespace: postgres
+spec:
+  name: prowlarr-main
+  owner: prowlarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: prowlarr-logs
+  namespace: postgres
+spec:
+  name: prowlarr-logs
+  owner: prowlarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: readarr-main
+  namespace: postgres
+spec:
+  name: readarr-main
+  owner: readarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: readarr-logs
+  namespace: postgres
+spec:
+  name: readarr-logs
+  owner: readarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lidarr-main
+  namespace: postgres
+spec:
+  name: lidarr-main
+  owner: lidarr
+  cluster:
+    name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lidarr-logs
+  namespace: postgres
+spec:
+  name: lidarr-logs
+  owner: lidarr
+  cluster:
+    name: shared-postgres
