@@ -5,3 +5,4 @@ resources:
   - cluster.yaml
   - databases.yaml
   - backup-cronjob.yaml
+  - grants-job.yaml

@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shared-postgres-backup-grants
+  namespace: postgres
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: grants
+          image: postgres:18-alpine
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-superuser
+                  key: password
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-superuser
+                  key: username
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              psql -h shared-postgres-rw -U "$PGUSER" -d postgres << 'ENDSQL'
+              DO $$
+              DECLARE
+                db RECORD;
+              BEGIN
+                FOR db IN
+                  SELECT datname FROM pg_database
+                  WHERE datistemplate = false AND datname NOT IN ('postgres')
+                LOOP
+                  EXECUTE format('GRANT CONNECT ON DATABASE %I TO backup', db.datname);
+                END LOOP;
+                GRANT pg_read_all_data TO backup;
+              END $$;
+              ENDSQL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
