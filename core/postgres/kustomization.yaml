@@ -6,3 +6,4 @@ resources:
   - databases.yaml
   - backup-cronjob.yaml
   - grants-job.yaml
+  - restore-test-cronjob.yaml

@@ -1,0 +1,143 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: shared-postgres-restore-test
+  namespace: postgres
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 80
+                preference:
+                  matchExpressions:
+                  - key: <node.kubernetes.io/pi-model>
+                    operator: In
+                    values:
+                    - "5"
+          restartPolicy: Never
+          tolerations:
+          - effect: NoExecute
+            key: <node.kubernetes.io/not-ready>
+            operator: Exists
+            tolerationSeconds: 30
+          - effect: NoExecute
+            key: <node.kubernetes.io/unreachable>
+            operator: Exists
+            tolerationSeconds: 30
+          containers:
+          - name: restore-test
+            image: postgres:18-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              BACKUP_DIR=/backup/shared
+              PGDATA=/pgdata/data
+              PASS=0
+              FAIL=0
+
+              echo "=== Postgres Backup Restore Test: $(date) ==="
+              echo ""
+
+              mkdir -p "$PGDATA"
+              chown -R postgres "$PGDATA"
+              su -s /bin/sh postgres -c "initdb -D '$PGDATA' -U postgres -A trust >/dev/null 2>&1"
+              su -s /bin/sh postgres -c "pg_ctl -D '$PGDATA' start -w -l /tmp/pg.log"
+              echo "Local Postgres ready."
+              echo ""
+
+              for DB in mealie radarr-main radarr-logs sonarr-main sonarr-logs prowlarr-main prowlarr-logs readarr-main readarr-logs lidarr-main lidarr-logs; do
+                LATEST=$(ls -t "${BACKUP_DIR}/${DB}_"*.dump 2>/dev/null | head -1 || true)
+
+                if [ -z "$LATEST" ]; then
+                  echo "[FAIL] $DB: no dump file found"
+                  FAIL=$((FAIL+1))
+                  continue
+                fi
+
+                DUMP_SIZE=$(du -sh "$LATEST" | cut -f1)
+                DUMP_AGE_H=$(( ( $(date +%s) - $(stat -c %Y "$LATEST") ) / 3600 ))
+
+                su -s /bin/sh postgres -c "createdb -h localhost -U postgres 'test_${DB}'" 2>/dev/null || true
+
+                su -s /bin/sh postgres -c "pg_restore -h localhost -U postgres -d 'test_${DB}' --no-owner --no-acl '$LATEST'" 2>/tmp/restore_err_${DB} \
+                  && RESTORE_OK=1 || RESTORE_OK=0
+
+                if [ "$RESTORE_OK" = "0" ] && grep -qi " error:" /tmp/restore_err_${DB} 2>/dev/null; then
+                  ERRMSG=$(grep -i " error:" /tmp/restore_err_${DB} | head -2 | tr '\n' ' ')
+                  echo "[FAIL] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  -- ${ERRMSG}"
+                  FAIL=$((FAIL+1))
+                  continue
+                fi
+
+                TABLES=$(su -s /bin/sh postgres -c \
+                  "psql -h localhost -U postgres -d 'test_${DB}' -tAc \
+                   \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'\"" \
+                  2>/dev/null | tr -d ' \n' || echo "?")
+
+                ROWS_BACKUP=$(su -s /bin/sh postgres -c \
+                  "psql -h localhost -U postgres -d 'test_${DB}' -tAc \
+                   \"SELECT COALESCE(SUM(c.reltuples::bigint),0) FROM pg_class c \
+                     JOIN pg_namespace n ON n.oid=c.relnamespace \
+                     WHERE c.relkind='r' AND n.nspname='public'\"" \
+                  2>/dev/null | tr -d ' \n' || echo "?")
+
+                ROWS_LIVE=$(PGPASSWORD="$PGPASSWORD" psql \
+                  -h shared-postgres-rw -U "$PGUSER" -d "$DB" -tAc \
+                  "SELECT COALESCE(SUM(c.reltuples::bigint),0) FROM pg_class c \
+                   JOIN pg_namespace n ON n.oid=c.relnamespace \
+                   WHERE c.relkind='r' AND n.nspname='public'" \
+                  2>/dev/null | tr -d ' \n' || echo "N/A")
+
+                echo "[PASS] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  tables=${TABLES}  rows_backup~${ROWS_BACKUP}  rows_live~${ROWS_LIVE}"
+                PASS=$((PASS+1))
+              done
+
+              echo ""
+              echo "=== RESULT: ${PASS} passed, ${FAIL} failed ==="
+              echo "=== Completed: $(date) ==="
+
+              su -s /bin/sh postgres -c "pg_ctl -D '$PGDATA' stop -m fast" 2>/dev/null || true
+
+              [ "$FAIL" -eq 0 ]
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-app
+                  key: password
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-app
+                  key: username
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+              limits:
+                cpu: "1"
+                memory: 1Gi
+            volumeMounts:
+            - name: pgbackup
+              mountPath: /backup
+              readOnly: true
+            - name: pgdata
+              mountPath: /pgdata
+          volumes:
+          - name: pgbackup
+            persistentVolumeClaim:
+              claimName: smb-pgbackup-shared-claim
+          - name: pgdata
+            emptyDir:
+              sizeLimit: 10Gi
