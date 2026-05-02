@@ -13,6 +13,10 @@ spec:
       backoffLimit: 0
       template:
         spec:
+          securityContext:
+            runAsUser: 70
+            runAsGroup: 70
+            fsGroup: 70
           affinity:
             nodeAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
@@ -36,8 +40,6 @@ spec:
           containers:
             - name: restore-test
               image: postgres:18-alpine
-              securityContext:
-                runAsUser: 0
               command:
                 - /bin/sh
                 - -c
@@ -52,9 +54,8 @@ spec:
                   echo ""
 
                   mkdir -p "$PGDATA"
-                  chown -R postgres "$PGDATA"
-                  su -s /bin/sh postgres -c "initdb -D '$PGDATA' -U postgres -A trust >/dev/null 2>&1"
-                  su -s /bin/sh postgres -c "pg_ctl -D '$PGDATA' start -w -l /tmp/pg.log"
+                  initdb -D "$PGDATA" -U postgres -A trust >/dev/null 2>&1
+                  pg_ctl -D "$PGDATA" start -w -l /tmp/pg.log
                   echo "Local Postgres ready."
                   echo ""
 
@@ -70,29 +71,29 @@ spec:
                     DUMP_SIZE=$(du -sh "$LATEST" | cut -f1)
                     DUMP_AGE_H=$(( ( $(date +%s) - $(stat -c %Y "$LATEST") ) / 3600 ))
 
-                    su -s /bin/sh postgres -c "createdb -h localhost -U postgres 'test_${DB}'" 2>/dev/null || true
+                    if ! createdb -h localhost -U postgres "test_${DB}" 2>/tmp/restore_err_${DB}; then
+                      ERRMSG=$(head -2 /tmp/restore_err_${DB} | tr '\n' ' ')
+                      echo "[FAIL] $DB: createdb failed -- ${ERRMSG}"
+                      FAIL=$((FAIL+1))
+                      continue
+                    fi
 
-                    su -s /bin/sh postgres -c "pg_restore -h localhost -U postgres -d 'test_${DB}' --no-owner --no-acl '$LATEST'" 2>/tmp/restore_err_${DB} \
-                      && RESTORE_OK=1 || RESTORE_OK=0
-
-                    if [ "$RESTORE_OK" = "0" ] && grep -qi " error:" /tmp/restore_err_${DB} 2>/dev/null; then
-                      ERRMSG=$(grep -i " error:" /tmp/restore_err_${DB} | head -2 | tr '\n' ' ')
+                    if ! pg_restore -h localhost -U postgres -d "test_${DB}" --no-owner --no-acl "$LATEST" 2>/tmp/restore_err_${DB}; then
+                      ERRMSG=$(head -2 /tmp/restore_err_${DB} | tr '\n' ' ')
                       echo "[FAIL] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  -- ${ERRMSG}"
                       FAIL=$((FAIL+1))
                       continue
                     fi
 
-                    TABLES=$(su -s /bin/sh postgres -c \
-                      "psql -h localhost -U postgres -d 'test_${DB}' -tAc \
-                       \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'\""  \
+                    TABLES=$(psql -h localhost -U postgres -d "test_${DB}" -tAc \
+                      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'" \
                       2>/dev/null || echo "?")
                     TABLES=$(echo "$TABLES" | tr -d ' \n')
 
-                    ROWS_BACKUP=$(su -s /bin/sh postgres -c \
-                      "psql -h localhost -U postgres -d 'test_${DB}' -tAc \
-                       \"SELECT COALESCE(SUM(c.reltuples::bigint),0) FROM pg_class c \
-                         JOIN pg_namespace n ON n.oid=c.relnamespace \
-                         WHERE c.relkind='r' AND n.nspname='public'\""  \
+                    ROWS_BACKUP=$(psql -h localhost -U postgres -d "test_${DB}" -tAc \
+                      "SELECT COALESCE(SUM(c.reltuples::bigint),0) FROM pg_class c \
+                       JOIN pg_namespace n ON n.oid=c.relnamespace \
+                       WHERE c.relkind='r' AND n.nspname='public'" \
                       2>/dev/null || echo "?")
                     ROWS_BACKUP=$(echo "$ROWS_BACKUP" | tr -d ' \n')
 
@@ -112,7 +113,7 @@ spec:
                   echo "=== RESULT: ${PASS} passed, ${FAIL} failed ==="
                   echo "=== Completed: $(date) ==="
 
-                  su -s /bin/sh postgres -c "pg_ctl -D '$PGDATA' stop -m fast" 2>/dev/null || true
+                  pg_ctl -D "$PGDATA" stop -m fast 2>/dev/null || true
 
                   [ "$FAIL" -eq 0 ]
               env:
