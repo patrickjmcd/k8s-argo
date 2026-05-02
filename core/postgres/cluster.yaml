@@ -18,6 +18,8 @@ spec:
 
   primaryUpdateMethod: switchover
 
+  enableSuperuserAccess: true
+
   postgresql:
     pg_hba:
       - host all mealie all trust
@@ -32,6 +34,7 @@ spec:
       - host all n8n all trust
       - host all homebox all trust
       - host all dispatcharr all trust
+      - host all backup all trust
 
   managed:
     roles:
@@ -91,6 +94,11 @@ spec:
         inherit: true
         connectionLimit: -1
       - name: dispatcharr
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+      - name: backup
         ensure: present
         login: true
         inherit: true
