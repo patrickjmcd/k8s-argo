@@ -21,12 +21,12 @@ spec:
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: shared-postgres-app
+                      name: shared-postgres-superuser
                       key: password
                 - name: PGUSER
                   valueFrom:
                     secretKeyRef:
-                      name: shared-postgres-app
+                      name: shared-postgres-superuser
                       key: username
               command:
                 - /bin/sh

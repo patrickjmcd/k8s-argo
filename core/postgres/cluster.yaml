@@ -18,6 +18,8 @@ spec:
 
   primaryUpdateMethod: switchover
 
+  enableSuperuserAccess: true
+
   postgresql:
     pg_hba:
       - host all mealie all trust
