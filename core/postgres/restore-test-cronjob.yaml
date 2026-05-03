@@ -108,7 +108,13 @@ spec:
                       2>/dev/null || echo "N/A")
                     ROWS_LIVE=$(echo "$ROWS_LIVE" | tr -d ' \n')
 
-                    echo "[PASS] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  tables=${TABLES}  rows_backup~${ROWS_BACKUP}  rows_live~${ROWS_LIVE}"
+                    TABLES_LIVE=$(psql \
+                      -h shared-postgres-rw -U "$PGUSER" -d "$DB" -tAc \
+                      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'" \
+                      2>/dev/null || echo "N/A")
+                    TABLES_LIVE=$(echo "$TABLES_LIVE" | tr -d ' \n')
+
+                    echo "[PASS] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  tables=${TABLES}(live:${TABLES_LIVE})  rows_backup~${ROWS_BACKUP}  rows_live~${ROWS_LIVE}"
                     PASS=$((PASS+1))
                     dropdb -h localhost -U postgres "test_${DB}" 2>/dev/null || true
                   done
