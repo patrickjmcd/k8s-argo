@@ -83,6 +83,7 @@ spec:
                     if ! pg_restore -h localhost -U postgres -d "test_${DB}" --no-owner --no-acl "$LATEST" 2>/tmp/restore_err_${DB}; then
                       ERRMSG=$(head -2 /tmp/restore_err_${DB} | tr '\n' ' ')
                       echo "[FAIL] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  -- ${ERRMSG}"
+                      dropdb -h localhost -U postgres "test_${DB}" 2>/dev/null || true
                       FAIL=$((FAIL+1))
                       continue
                     fi
@@ -99,7 +100,7 @@ spec:
                       2>/dev/null || echo "?")
                     ROWS_BACKUP=$(echo "$ROWS_BACKUP" | tr -d ' \n')
 
-                    ROWS_LIVE=$(PGPASSWORD="$PGPASSWORD" psql \
+                    ROWS_LIVE=$(psql \
                       -h shared-postgres-rw -U "$PGUSER" -d "$DB" -tAc \
                       "SELECT COALESCE(SUM(c.reltuples::bigint),0) FROM pg_class c \
                        JOIN pg_namespace n ON n.oid=c.relnamespace \
@@ -120,16 +121,8 @@ spec:
 
                   [ "$FAIL" -eq 0 ]
               env:
-                - name: PGPASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: shared-postgres-app
-                      key: password
                 - name: PGUSER
-                  valueFrom:
-                    secretKeyRef:
-                      name: shared-postgres-app
-                      key: username
+                  value: backup
               resources:
                 requests:
                   cpu: 200m
