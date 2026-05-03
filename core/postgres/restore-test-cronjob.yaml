@@ -54,7 +54,7 @@ spec:
                   echo ""
 
                   mkdir -p "$PGDATA"
-                  initdb -D "$PGDATA" -U postgres -A trust
+                  initdb -D "$PGDATA" -U postgres -A trust --auth-host=trust
                   pg_ctl -D "$PGDATA" start -w -l /tmp/pg.log || {
                     echo "pg_ctl start failed:"; tail -20 /tmp/pg.log 2>/dev/null || true; exit 1
                   }
