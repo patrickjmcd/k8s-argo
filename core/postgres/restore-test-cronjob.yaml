@@ -44,7 +44,7 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  set -eo pipefail
+                  set -e
                   BACKUP_DIR=/backup/shared
                   PGDATA=/pgdata/data
                   PASS=0
@@ -54,8 +54,10 @@ spec:
                   echo ""
 
                   mkdir -p "$PGDATA"
-                  initdb -D "$PGDATA" -U postgres -A trust >/dev/null 2>&1
-                  pg_ctl -D "$PGDATA" start -w -l /tmp/pg.log
+                  initdb -D "$PGDATA" -U postgres -A trust
+                  pg_ctl -D "$PGDATA" start -w -l /tmp/pg.log || {
+                    echo "pg_ctl start failed:"; tail -20 /tmp/pg.log; exit 1
+                  }
                   echo "Local Postgres ready."
                   echo ""
 
@@ -107,6 +109,7 @@ spec:
 
                     echo "[PASS] $DB  size=${DUMP_SIZE}  age=${DUMP_AGE_H}h  tables=${TABLES}  rows_backup~${ROWS_BACKUP}  rows_live~${ROWS_LIVE}"
                     PASS=$((PASS+1))
+                    dropdb -h localhost -U postgres "test_${DB}" 2>/dev/null || true
                   done
 
                   echo ""
