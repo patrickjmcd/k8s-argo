@@ -56,13 +56,22 @@ spec:
                   mkdir -p "$PGDATA"
                   initdb -D "$PGDATA" -U postgres -A trust
                   pg_ctl -D "$PGDATA" start -w -l /tmp/pg.log || {
-                    echo "pg_ctl start failed:"; tail -20 /tmp/pg.log; exit 1
+                    echo "pg_ctl start failed:"; tail -20 /tmp/pg.log 2>/dev/null || true; exit 1
                   }
                   echo "Local Postgres ready."
                   echo ""
 
-                  for DB in mealie radarr-main radarr-logs sonarr-main sonarr-logs prowlarr-main prowlarr-logs readarr-main readarr-logs lidarr-main lidarr-logs; do
-                    LATEST=$(ls -t "${BACKUP_DIR}/${DB}_"*.dump 2>/dev/null | head -1 || true)
+                  DBS=$(find "${BACKUP_DIR}" -maxdepth 1 -name "*.dump" 2>/dev/null \
+                    | sed 's|.*/||; s/_[0-9]\{8\}_[0-9]\{6\}\.dump$//' | sort -u)
+
+                  if [ -z "$DBS" ]; then
+                    echo "[FAIL] No dump files found in ${BACKUP_DIR}"
+                    exit 1
+                  fi
+
+                  for DB in $DBS; do
+                    LATEST=$(find "${BACKUP_DIR}" -maxdepth 1 -name "${DB}_*.dump" 2>/dev/null \
+                      | sort -r | head -1)
 
                     if [ -z "$LATEST" ]; then
                       echo "[FAIL] $DB: no dump file found"
