@@ -44,6 +44,9 @@ spec:
                 GRANT pg_read_all_data TO backup;
               END $$;
               ENDSQL
+              # Reassign any superuser-owned objects in the outline database to the outline role
+              # so that Outline's migrations can run ALTER TABLE statements successfully.
+              psql -h shared-postgres-rw -U "$PGUSER" -d outline -c "REASSIGN OWNED BY \"$PGUSER\" TO outline;"
           resources:
             requests:
               cpu: 10m
