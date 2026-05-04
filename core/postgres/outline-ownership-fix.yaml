@@ -34,29 +34,20 @@ spec:
                 "SELECT 1 FROM pg_database WHERE datname='outline'" 2>/dev/null | grep -q 1; do
                 echo "Waiting for outline database..."; sleep 5
               done
-              psql -h shared-postgres-rw -U "$PGUSER" -d outline << 'ENDSQL'
-              DO $$
-              DECLARE obj RECORD;
-              BEGIN
-                FOR obj IN
-                  SELECT c.relname, c.relkind
-                  FROM pg_class c
-                  JOIN pg_namespace n ON n.oid = c.relnamespace
-                  JOIN pg_roles r ON r.oid = c.relowner
-                  WHERE n.nspname = 'public'
-                    AND c.relkind IN ('r', 'S', 'v', 'm', 'p')
-                    AND r.rolname != 'outline'
-                LOOP
-                  IF obj.relkind = 'S' THEN
-                    EXECUTE format('ALTER SEQUENCE public.%I OWNER TO outline', obj.relname);
-                  ELSIF obj.relkind = 'm' THEN
-                    EXECUTE format('ALTER MATERIALIZED VIEW public.%I OWNER TO outline', obj.relname);
-                  ELSE
-                    EXECUTE format('ALTER TABLE public.%I OWNER TO outline', obj.relname);
-                  END IF;
-                END LOOP;
-              END $$;
-              ENDSQL
+              psql -h shared-postgres-rw -U "$PGUSER" -d outline -tAc \
+                "SELECT format(
+                   CASE c.relkind
+                     WHEN 'S' THEN 'ALTER SEQUENCE public.%I OWNER TO outline;'
+                     WHEN 'm' THEN 'ALTER MATERIALIZED VIEW public.%I OWNER TO outline;'
+                     ELSE 'ALTER TABLE public.%I OWNER TO outline;'
+                   END, c.relname)
+                 FROM pg_class c
+                 JOIN pg_namespace n ON n.oid = c.relnamespace
+                 JOIN pg_roles r ON r.oid = c.relowner
+                 WHERE n.nspname = 'public'
+                   AND c.relkind IN ('r', 'S', 'v', 'm', 'p')
+                   AND r.rolname != 'outline'" \
+                | psql -h shared-postgres-rw -U "$PGUSER" -d outline
           resources:
             requests:
               cpu: 10m
