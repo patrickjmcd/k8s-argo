@@ -18,8 +18,16 @@ spec:
             - name: pg-dump
               image: postgres:18-alpine
               env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: shared-postgres-app
+                      key: password
                 - name: PGUSER
-                  value: backup
+                  valueFrom:
+                    secretKeyRef:
+                      name: shared-postgres-app
+                      key: username
               command:
                 - /bin/sh
                 - -c
