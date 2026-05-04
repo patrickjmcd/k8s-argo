@@ -136,16 +136,8 @@ spec:
 
                   [ "$FAIL" -eq 0 ]
               env:
-                - name: PGPASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: shared-postgres-superuser
-                      key: password
                 - name: PGUSER
-                  valueFrom:
-                    secretKeyRef:
-                      name: shared-postgres-superuser
-                      key: username
+                  value: backup
               resources:
                 requests:
                   cpu: 200m
