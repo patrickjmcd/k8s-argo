@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/tautulli/tautulli
-  tag: "v2.17.0"
+  tag: "v2.17.1"
 
 service:
   port: 80
