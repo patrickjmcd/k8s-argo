@@ -18,14 +18,14 @@ spec:
       path: /var/lib/longhorn/
       storageReserved: 36772384358
       tags: []
-    # usb:
-    #   allowScheduling: true
-    #   diskDriver: ""
-    #   diskType: filesystem
-    #   evictionRequested: false
-    #   path: /mnt/usb
-    #   storageReserved: 21474836480
-    #   tags: []
+    usb:
+      allowScheduling: false
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /mnt/usb
+      storageReserved: 21474836480
+      tags: []
   evictionRequested: false
   instanceManagerCPURequest: 0
   name: pi5-kube0
