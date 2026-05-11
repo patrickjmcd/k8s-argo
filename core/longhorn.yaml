@@ -30,6 +30,18 @@ spec:
           defaultSettings:
             taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule"
           longhornManager:
+            tolerations:
+              - key: "node-role.kubernetes.io/control-plane"
+                effect: "NoSchedule"
+                operator: "Exists"
+              - key: "node.kubernetes.io/not-ready"
+                effect: "NoExecute"
+                operator: "Exists"
+                tolerationSeconds: 30
+              - key: "node.kubernetes.io/unreachable"
+                effect: "NoExecute"
+                operator: "Exists"
+                tolerationSeconds: 30
             resources:
               requests:
                 cpu: 50m
