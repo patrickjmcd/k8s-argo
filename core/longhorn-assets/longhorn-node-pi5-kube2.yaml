@@ -1,0 +1,32 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: pi5-kube2
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  allowScheduling: true
+  disks:
+    nvme:
+      allowScheduling: true
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /var/lib/longhorn/
+      storageReserved: 37598313676
+      tags: []
+    # usb:
+    #   allowScheduling: true
+    #   diskDriver: ""
+    #   diskType: filesystem
+    #   evictionRequested: false
+    #   path: /mnt/usb
+    #   storageReserved: 21474836480
+    #   tags: []
+  evictionRequested: false
+  instanceManagerCPURequest: 0
+  name: pi5-kube2
+  tags: []

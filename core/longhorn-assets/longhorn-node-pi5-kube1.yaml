@@ -1,0 +1,24 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: pi5-kube1
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  allowScheduling: true
+  disks:
+    nvme:
+      allowScheduling: true
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /var/lib/longhorn/
+      storageReserved: 18677309030
+      tags: []
+  evictionRequested: false
+  instanceManagerCPURequest: 0
+  name: pi5-kube1
+  tags: []

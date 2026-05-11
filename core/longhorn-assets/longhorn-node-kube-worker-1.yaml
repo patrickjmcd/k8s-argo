@@ -1,0 +1,24 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: kube-worker-1
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  allowScheduling: true
+  disks:
+    default-disk-a8026458cd5c490c:
+      allowScheduling: true
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /var/lib/longhorn/
+      storageReserved: 20226795110
+      tags: []
+  evictionRequested: false
+  instanceManagerCPURequest: 0
+  name: kube-worker-1
+  tags: []
