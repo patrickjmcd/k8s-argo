@@ -27,11 +27,9 @@ spec:
         values: |
           preUpgradeChecker:
             jobEnabled: false
+          defaultSettings:
+            taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule"
           longhornManager:
-            tolerations:
-              - key: "node-role.kubernetes.io/control-plane"
-                effect: "NoSchedule"
-                operator: "Exists"
             resources:
               requests:
                 cpu: 50m
