@@ -59,6 +59,7 @@ persistence:
   size: 1Gi
   mountPath: /data  # if empty, PVC volume is created but not auto-mounted
   accessMode: ReadWriteOnce
+  labels: {}
   smb:
     source: ""
     volumeHandle: ""

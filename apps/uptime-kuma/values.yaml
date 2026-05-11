@@ -45,6 +45,8 @@ persistence:
   type: longhorn
   size: 1Gi
   mountPath: /app/data
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
 
 serviceMonitor:
   enabled: true

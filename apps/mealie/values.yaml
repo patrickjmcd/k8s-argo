@@ -35,6 +35,8 @@ persistence:
   type: longhorn
   size: 500Mi
   mountPath: /app/data
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
 
 onePassword:
   enabled: true

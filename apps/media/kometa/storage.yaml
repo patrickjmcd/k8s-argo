@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-kometa-config
   namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
 spec:
   accessModes:
     - ReadWriteOnce

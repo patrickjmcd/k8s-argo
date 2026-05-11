@@ -37,6 +37,8 @@ persistence:
   type: longhorn
   size: 1Gi
   mountPath: ""  # PVC created but not auto-mounted (subPath mounts used instead)
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
 
 env:
   SERVER_HOSTNAME_OR_IP: tronbyt-server
