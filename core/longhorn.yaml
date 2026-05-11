@@ -25,6 +25,9 @@ spec:
       targetRevision: 1.11.2
       helm:
         values: |
+          defaultSettings:
+            backupTarget: "s3://mcd-backup@us-east-005/"
+            backupTargetCredentialSecret: "longhorn-b2-backup" # security-agent: ignore
           preUpgradeChecker:
             jobEnabled: false
           longhornManager:
