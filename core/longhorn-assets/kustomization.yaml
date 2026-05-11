@@ -4,5 +4,6 @@ resources:
   - httproute.yaml
   - service-monitor.yaml
   - 1password.secret.yaml
+  - backup-target.yaml
 
 

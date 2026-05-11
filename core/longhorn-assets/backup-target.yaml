@@ -1,0 +1,9 @@
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: default
+  namespace: longhorn-system
+spec:
+  backupTargetURL: "s3://mcd-backup@us-east-005/"
+  credentialSecret: "longhorn-b2-backup" # security-agent: ignore
+  pollInterval: "5m0s"
