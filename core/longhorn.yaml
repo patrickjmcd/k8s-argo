@@ -28,6 +28,10 @@ spec:
           preUpgradeChecker:
             jobEnabled: false
           longhornManager:
+            tolerations:
+              - key: "node-role.kubernetes.io/control-plane"
+                effect: "NoSchedule"
+                operator: "Exists"
             resources:
               requests:
                 cpu: 50m
