@@ -1,6 +1,0 @@
-apiVersion: longhorn.io/v1beta2
-kind: Setting
-metadata:
-  name: backupstore-poll-interval
-  namespace: longhorn-system
-value: "3600"
