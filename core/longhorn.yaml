@@ -30,6 +30,15 @@ spec:
           defaultSettings:
             taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule"
           longhornManager:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
             tolerations:
               - key: "node-role.kubernetes.io/control-plane"
                 effect: "NoSchedule"
@@ -50,6 +59,15 @@ spec:
                 cpu: 300m
                 memory: 300Mi
           longhornDriver:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
             resources:
               requests:
                 cpu: 25m

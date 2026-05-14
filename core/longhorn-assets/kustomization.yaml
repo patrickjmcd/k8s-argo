@@ -11,6 +11,7 @@ resources:
   - longhorn-node-pi5-kube0.yaml
   - longhorn-node-pi5-kube1.yaml
   - longhorn-node-pi5-kube2.yaml
+  - longhorn-node-jetson-nano-kube0.yaml
   - recurring-jobs.yaml
   - settings.yaml
 

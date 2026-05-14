@@ -1,0 +1,15 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: jetson-nano-kube0
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  allowScheduling: false
+  evictionRequested: true
+  instanceManagerCPURequest: 0
+  name: jetson-nano-kube0
+  tags: []
