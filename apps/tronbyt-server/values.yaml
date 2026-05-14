@@ -35,7 +35,7 @@ httproute:
 persistence:
   enabled: true
   type: longhorn
-  size: 1Gi
+  size: 5Gi
   mountPath: ""  # PVC created but not auto-mounted (subPath mounts used instead)
   labels:
     recurring-job-group.longhorn.io/b2-backup: enabled

@@ -167,6 +167,15 @@ spec:
           grafana:
             deploymentStrategy:
               type: Recreate
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
             tolerations:
               - effect: NoExecute
                 key: node.kubernetes.io/not-ready
