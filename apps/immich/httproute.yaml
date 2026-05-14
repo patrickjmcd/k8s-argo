@@ -16,6 +16,8 @@ spec:
         - path:
             type: PathPrefix
             value: /
+      timeouts:
+        request: 600s
       backendRefs:
         - name: immich-server
           kind: Service
