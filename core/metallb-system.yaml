@@ -29,3 +29,12 @@ spec:
       targetRevision: 0.15.3
       helm:
         releaseName: metallb
+        valuesObject:
+          speaker:
+            tolerations:
+              - key: node-role.kubernetes.io/master
+                effect: NoSchedule
+                operator: Exists
+              - key: node-role.kubernetes.io/control-plane
+                effect: NoSchedule
+                operator: Exists
