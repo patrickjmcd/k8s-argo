@@ -64,6 +64,11 @@ spec:
               resource.customizations.ignoreDifferences.apps_DaemonSet: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable" or .key == "node-role.kubernetes.io/master" or .key == "node-role.kubernetes.io/control-plane")'
+              # HTTPRoute backendRefs get group:"" and weight:1 defaulted by the API server.
+              resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
+                jqPathExpressions:
+                  - '.spec.rules[].backendRefs[]?.group'
+                  - '.spec.rules[].backendRefs[]?.weight'
               resource.customizations.ignoreDifferences.apps_StatefulSet: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
