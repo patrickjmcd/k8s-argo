@@ -41,9 +41,9 @@ spec:
             podDisruptionBudget:
               enabled: true
               minAvailable: 1
-          # Secret created by 1Password operator; field must be named "auth-token"
           joinTokenSecret:
             name: teleport-kube-agent-join-token
+            key: join-token
     - path: core/teleport-assets
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
