@@ -16,6 +16,7 @@ spec:
     automated: { }
     syncOptions:
       - ServerSideApply=true
+      - ServerSideApplyForceConflicts=true
   sources:
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
