@@ -43,7 +43,18 @@ spec:
               minAvailable: 1
           joinTokenSecret:
             name: teleport-kube-agent-join-token
-            key: join-token
+          extraVolumes:
+            - name: join-token-remapped
+              secret:
+                secretName: teleport-kube-agent-join-token
+                items:
+                  - key: join-token
+                    path: auth-token
+          extraVolumeMounts:
+            - name: join-token-remapped
+              mountPath: /etc/teleport-secrets/auth-token
+              subPath: auth-token
+              readOnly: true
     - path: core/teleport-assets
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
