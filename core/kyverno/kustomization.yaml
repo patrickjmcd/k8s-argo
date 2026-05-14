@@ -4,5 +4,6 @@ resources:
   - pi5-preference.yaml
   - goldilocks-namespace-label.yaml
   - node-failure-tolerations.yaml
+  - metallb-speaker-tolerations.yaml
 
 

@@ -63,7 +63,7 @@ spec:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
               resource.customizations.ignoreDifferences.apps_DaemonSet: |
                 jqPathExpressions:
-                  - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
+                  - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable" or .key == "node-role.kubernetes.io/master" or .key == "node-role.kubernetes.io/control-plane")'
               resource.customizations.ignoreDifferences.apps_StatefulSet: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'

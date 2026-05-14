@@ -1,0 +1,39 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: metallb-speaker-control-plane-tolerations
+  annotations:
+    kyverno.io/pod-controllers: none
+    policies.kyverno.io/title: MetalLB Speaker Control-Plane Tolerations
+    policies.kyverno.io/category: Resiliency
+    policies.kyverno.io/description: >-
+      Enforces master/control-plane NoSchedule tolerations on the metallb-speaker
+      DaemonSet so it runs on all nodes including control-plane. A Rancher CSA
+      controller continuously strips these tolerations; this policy re-adds them
+      at admission time so they survive any write to the DaemonSet.
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: add-control-plane-tolerations
+      match:
+        any:
+          - resources:
+              kinds:
+                - DaemonSet
+              names:
+                - metallb-speaker
+              namespaces:
+                - metallb-system
+      mutate:
+        patchStrategicMerge:
+          spec:
+            template:
+              spec:
+                tolerations:
+                  - key: node-role.kubernetes.io/master
+                    effect: NoSchedule
+                    operator: Exists
+                  - key: node-role.kubernetes.io/control-plane
+                    effect: NoSchedule
+                    operator: Exists
