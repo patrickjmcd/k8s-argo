@@ -43,6 +43,3 @@ spec:
               minAvailable: 1
           joinTokenSecret:
             name: teleport-kube-agent-join-token
-    - path: core/teleport-assets
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
