@@ -22,7 +22,7 @@ spec:
       ref: values
     - chart: immich
       repoURL: https://immich-app.github.io/immich-charts
-      targetRevision: 0.11.1
+      targetRevision: 0.12.0
       helm:
         releaseName: immich
         valueFiles:
