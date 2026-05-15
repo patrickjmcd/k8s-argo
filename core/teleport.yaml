@@ -9,6 +9,12 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "-1"
 spec:
+  ignoreDifferences:
+    - kind: Secret
+      name: teleport-auth-secret
+      namespace: teleport
+      jsonPointers:
+        - /data
   destination:
     namespace: teleport
     name: in-cluster
