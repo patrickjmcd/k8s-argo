@@ -9,12 +9,6 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "-1"
 spec:
-  ignoreDifferences:
-    - kind: Secret
-      name: teleport-auth-secret
-      namespace: teleport
-      jsonPointers:
-        - /data
   destination:
     namespace: teleport
     name: in-cluster
@@ -49,3 +43,6 @@ spec:
               minAvailable: 1
           joinTokenSecret:
             name: teleport-auth-secret
+    - path: core/teleport-assets
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
