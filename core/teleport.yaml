@@ -42,4 +42,4 @@ spec:
               enabled: true
               minAvailable: 1
           joinTokenSecret:
-            name: teleport-kube-agent-join-token
+            name: teleport-auth-secret
