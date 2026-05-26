@@ -13,3 +13,17 @@ spec:
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: pmcddev-tls-le
+  namespace: default
+spec:
+  secretName: pmcddev-tls-le
+  dnsNames:
+    - "pmcd.dev"
+    - "*.pmcd.dev"
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
