@@ -90,6 +90,7 @@ spec:
                   from: All
                 certificateRefs:
                   - name: pmcdio-tls-le
+                  - name: pmcddev-tls-le
           # Enable Observability
           logs:
             general:

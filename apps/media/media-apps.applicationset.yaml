@@ -55,6 +55,7 @@ spec:
     - list:
         elements:
           - name: bazarr
+          - name: jellyfin
           - name: lidarr
           - name: notifiarr
           - name: sabnzbd
