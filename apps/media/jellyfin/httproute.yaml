@@ -10,7 +10,8 @@ spec:
       name: traefik-gateway
       namespace: default
   hostnames:
-    - jellyfin.x.pmcd.io  # TODO: replace with your actual domain
+    - jellyfin.x.pmcd.io
+    - jellyfin.pmcd.dev
   rules:
     - matches:
         - path:
