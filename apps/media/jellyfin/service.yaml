@@ -12,15 +12,18 @@ spec:
       targetPort: 8096
   type: ClusterIP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
   name: jellyfin
   namespace: media
-subsets:
+  labels:
+    kubernetes.io/service-name: jellyfin
+addressType: IPv4
+endpoints:
   - addresses:
-      - ip: 192.168.1.210
-    ports:
-      - name: http
-        port: 8096
-        protocol: TCP
+      - 192.168.1.210
+ports:
+  - name: http
+    port: 8096
+    protocol: TCP
