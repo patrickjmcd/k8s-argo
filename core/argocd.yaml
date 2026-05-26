@@ -72,6 +72,15 @@ spec:
               resource.customizations.ignoreDifferences.apps_StatefulSet: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
+              # Only exclude core Endpoints (auto-managed by kube-controller); allow
+              # EndpointSlice so manually-created slices for external services sync normally.
+              resource.exclusions: |
+                - apiGroups:
+                  - ""
+                  kinds:
+                  - Endpoints
+                  clusters:
+                  - "*"
             rbac:
               policy.csv: |
                 g, argocd_admin, role:admin
