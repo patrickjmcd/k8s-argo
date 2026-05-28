@@ -6,5 +6,8 @@ resources:
   - alertmanager-discord-config.yaml
   - httproute.prometheus.yaml
   - httproute.alertmanager.yaml
+  - json-exporter-1pw.yaml
+  - json-exporter-config.yaml
+  - json-exporter-deployment.yaml
 
 

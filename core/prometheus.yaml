@@ -68,6 +68,20 @@ spec:
                 matchLabels:
                   prometheus: enabled
               additionalScrapeConfigs:
+                - job_name: jellyfin-sessions
+                  metrics_path: /probe
+                  params:
+                    module: [jellyfin]
+                  static_configs:
+                    - targets:
+                        - http://jellyfin.media.svc.cluster.local:8096/Sessions
+                  relabel_configs:
+                    - source_labels: [__address__]
+                      target_label: __param_target
+                    - source_labels: [__param_target]
+                      target_label: instance
+                    - target_label: __address__
+                      replacement: json-exporter.prometheus.svc:7979
                 - job_name: pve
                   static_configs:
                     - targets:

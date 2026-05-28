@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: json-exporter
+  namespace: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: json-exporter
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: json-exporter
+    spec:
+      initContainers:
+        - name: init-config
+          image: alpine:3.21
+          imagePullPolicy: IfNotPresent
+          command: [sh, -c]
+          args:
+            - "apk add --no-cache gettext && envsubst < /tpl/config.yml > /config/config.yml"
+          env:
+            - name: JELLYFIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: jellyfin-json-exporter-1pw
+                  key: api-key
+          volumeMounts:
+            - name: config-tpl
+              mountPath: /tpl
+              readOnly: true
+            - name: config
+              mountPath: /config
+      containers:
+        - name: json-exporter
+          image: ghcr.io/prometheus-community/json-exporter:v0.6.0
+          args:
+            - --config.file=/etc/json_exporter/config.yml
+          ports:
+            - name: http
+              containerPort: 7979
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/json_exporter
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 7979
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: config-tpl
+          configMap:
+            name: json-exporter-config-tpl
+        - name: config
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: json-exporter
+  namespace: prometheus
+spec:
+  selector:
+    app: json-exporter
+  ports:
+    - name: http
+      port: 7979
+      targetPort: 7979
