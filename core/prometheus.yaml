@@ -194,8 +194,6 @@ spec:
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io
-              feature_toggles:
-                kubernetesDashboards: false
             persistence:
               type: pvc
               enabled: true
