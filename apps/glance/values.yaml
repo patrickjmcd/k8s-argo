@@ -46,6 +46,16 @@ onePassword:
 envFrom:
   - secretRef:
       name: glance-1pw
+  - secretRef:
+      name: glance-pihole-1pw
+
+extraObjects:
+  - apiVersion: onepassword.com/v1
+    kind: OnePasswordItem
+    metadata:
+      name: glance-pihole-1pw
+    spec:
+      itemPath: "vaults/Kubernetes/items/pihole"
 
 command:
   - "/app/glance"
@@ -65,6 +75,22 @@ configMap:
               widgets:
                 - type: calendar
 
+                - type: search
+                  search-engine: duckduckgo
+                  bangs:
+                    - title: YouTube
+                      shortcut: "!yt"
+                      url: https://www.youtube.com/results?search_query={QUERY}
+                    - title: GitHub
+                      shortcut: "!gh"
+                      url: https://github.com/search?q={QUERY}
+                    - title: Reddit
+                      shortcut: "!r"
+                      url: https://www.reddit.com/search/?q={QUERY}
+                    - title: Hacker News
+                      shortcut: "!hn"
+                      url: https://hn.algolia.com/?query={QUERY}
+
                 - type: rss
                   limit: 10
                   collapse-after: 3
@@ -79,7 +105,6 @@ configMap:
                     - url: https://technotim.live/feed.xml
                       title: Techno Tim
 
-
                 - type: monitor
                   cache: 1m
                   title: Services
@@ -90,6 +115,16 @@ configMap:
                       url: https://auth.pmcd.dev
                     - title: Mealie
                       url: https://mealie.x.pmcd.io
+                    - title: Homebox
+                      url: https://homebox.x.pmcd.io
+                    - title: N8N
+                      url: https://n8n.x.pmcd.io
+                    - title: Outline
+                      url: https://outline.x.pmcd.io
+                    - title: Immich
+                      url: https://immich.x.pmcd.io
+                    - title: Octoprint
+                      url: https://octoprint.x.pmcd.io
                     - title: ArgoCD
                       url: https://argo.x.pmcd.io
                     - title: Traefik
@@ -106,12 +141,15 @@ configMap:
                       url: https://grafana.x.pmcd.io
                     - title: Prometheus
                       url: https://prometheus.x.pmcd.io
-
+                    - title: PiHole
+                      url: https://pihole.x.pmcd.io
 
                 - type: monitor
                   cache: 1m
                   title: Media Services
                   sites:
+                    - title: Jellyfin
+                      url: https://jellyfin.x.pmcd.io
                     - title: Seerr
                       url: https://seerr.x.pmcd.io
                     - title: Sonarr
@@ -120,15 +158,24 @@ configMap:
                       url: https://radarr.x.pmcd.io
                     - title: Lidarr
                       url: https://lidarr.x.pmcd.io
+                    - title: Readarr
+                      url: https://readarr.x.pmcd.io
+                    - title: Bazarr
+                      url: https://bazarr.x.pmcd.io
                     - title: Prowlarr
                       url: https://prowlarr.x.pmcd.io
+                    - title: SABnzbd
+                      url: https://sabnzbd.x.pmcd.io
                     - title: Agregarr
                       url: https://agregarr.x.pmcd.io
                     - title: Tautulli
                       url: https://tautulli.x.pmcd.io
+                    - title: Notifiarr
+                      url: https://notifiarr.x.pmcd.io
+                    - title: Dispatcharr
+                      url: https://dispatcharr.x.pmcd.io
                     - title: Youtube-DL
                       url: https://youtubedl.x.pmcd.io
-
 
             - size: full
               widgets:
@@ -140,7 +187,6 @@ configMap:
                   feeds:
                     - url: ${RSS_404MEDIA}
                       title: 404 Media
-
 
                 - type: hacker-news
 
@@ -164,6 +210,11 @@ configMap:
                   location: Kansas City, United States
                   units: imperial
 
+                - type: dns-stats
+                  service: pihole
+                  url: https://pihole.x.pmcd.io
+                  password: ${WEBPASSWORD}
+
                 - type: stocks
                   stocks:
                     - symbol: SPY
@@ -182,6 +233,110 @@ configMap:
                       name: AMD
                     - symbol: RDDT
                       name: Reddit
+
+        - name: Bookmarks
+          columns:
+            - size: small
+              widgets:
+                - type: bookmarks
+                  groups:
+                    - title: Home & Automation
+                      links:
+                        - title: Home Assistant
+                          url: https://ha.pmcd.dev
+                        - title: N8N
+                          url: https://n8n.x.pmcd.io
+                        - title: Octoprint
+                          url: https://octoprint.x.pmcd.io
+                        - title: ISS Tracker
+                          url: https://iss.x.pmcd.io
+
+                    - title: Personal Apps
+                      links:
+                        - title: Mealie
+                          url: https://mealie.x.pmcd.io
+                        - title: Homebox
+                          url: https://homebox.x.pmcd.io
+                        - title: Outline
+                          url: https://outline.x.pmcd.io
+                        - title: Immich
+                          url: https://immich.x.pmcd.io
+                        - title: Reedme
+                          url: https://reedme.x.pmcd.io
+
+            - size: full
+              widgets:
+                - type: bookmarks
+                  groups:
+                    - title: Infrastructure
+                      links:
+                        - title: ArgoCD
+                          url: https://argo.x.pmcd.io
+                        - title: Grafana
+                          url: https://grafana.x.pmcd.io
+                        - title: Prometheus
+                          url: https://prometheus.x.pmcd.io
+                        - title: Longhorn
+                          url: https://longhorn.x.pmcd.io
+                        - title: Uptime Kuma
+                          url: https://status.x.pmcd.io
+                        - title: Traefik
+                          url: https://traefik.x.pmcd.io
+                        - title: Dozzle
+                          url: https://logs.x.pmcd.io
+                        - title: PiHole
+                          url: https://pihole.x.pmcd.io
+                        - title: PocketID
+                          url: https://auth.pmcd.dev
+                        - title: Tronbyt
+                          url: https://tronbyt.x.pmcd.io
+
+                    - title: Media
+                      links:
+                        - title: Jellyfin
+                          url: https://jellyfin.x.pmcd.io
+                        - title: Seerr (Requests)
+                          url: https://requests.x.pmcd.io
+                        - title: Tautulli
+                          url: https://tautulli.x.pmcd.io
+                        - title: Medialyze
+                          url: https://medialyze.x.pmcd.io
+
+                    - title: Media Management
+                      links:
+                        - title: Sonarr
+                          url: https://sonarr.x.pmcd.io
+                        - title: Radarr
+                          url: https://radarr.x.pmcd.io
+                        - title: Lidarr
+                          url: https://lidarr.x.pmcd.io
+                        - title: Readarr
+                          url: https://readarr.x.pmcd.io
+                        - title: Bazarr
+                          url: https://bazarr.x.pmcd.io
+                        - title: Prowlarr
+                          url: https://prowlarr.x.pmcd.io
+                        - title: Agregarr
+                          url: https://agregarr.x.pmcd.io
+                        - title: SABnzbd
+                          url: https://sabnzbd.x.pmcd.io
+                        - title: Notifiarr
+                          url: https://notifiarr.x.pmcd.io
+                        - title: Dispatcharr
+                          url: https://dispatcharr.x.pmcd.io
+                        - title: Youtube-DL
+                          url: https://youtubedl.x.pmcd.io
+
+            - size: small
+              widgets:
+                - type: bookmarks
+                  groups:
+                    - title: Network
+                      links:
+                        - title: Unifi Toolkit
+                          url: https://unifi-toolkit.x.pmcd.io
+                        - title: Homebox Companion
+                          url: https://homebox-companion.x.pmcd.io
 
 imagePullSecrets:
   - name: ghcr-registry-cred
