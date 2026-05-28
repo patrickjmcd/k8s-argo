@@ -200,6 +200,11 @@ configMap:
                   location: Kansas City, United States
                   units: imperial
 
+                - type: dns-stats
+                  service: pihole
+                  url: https://pihole.x.pmcd.io
+                  password: ${PIHOLE_PASSWORD}
+
                 - type: stocks
                   stocks:
                     - symbol: SPY
