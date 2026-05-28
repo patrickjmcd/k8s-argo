@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: jellyfin
   namespace: media
+  labels:
+    kubernetes.io/service-name: jellyfin
 spec:
   clusterIP: None
   ports:

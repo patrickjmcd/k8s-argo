@@ -17,12 +17,9 @@ data:
       "panels": [
         {
           "type": "state-timeline",
-          "title": "Jellyfin Playback",
+          "title": "Playback Sessions",
           "id": 1,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
           "fieldConfig": {
             "defaults": {
@@ -65,70 +62,150 @@ data:
           ],
           "transformations": [
             { "id": "seriesToRows", "options": {} },
+            { "id": "extractFields", "options": { "keepTime": false, "replace": false, "source": "Metric" } },
+            { "id": "filterByValue", "options": { "filters": [{ "config": { "id": "isNotNull", "options": {} }, "fieldName": "user_name" }], "match": "any", "type": "include" } },
+            { "id": "calculateField", "options": { "alias": "Item", "mode": "reduceRow", "reduce": { "include": ["item_index_clean"], "reducer": "firstNotNull" } } },
+            { "id": "calculateField", "options": { "alias": "Name", "mode": "reduceRow", "reduce": { "include": ["user_name"], "reducer": "firstNotNull" } } },
+            { "id": "calculateField", "options": { "alias": "Temp", "mode": "reduceRow", "reduce": { "include": ["Item"], "reducer": "firstNotNull" }, "replaceFields": false } },
+            { "id": "filterByValue", "options": { "filters": [{ "config": { "id": "regex", "options": { "value": "(Movie|Episode)" } }, "fieldName": "item_type" }], "match": "any", "type": "include" } },
+            { "id": "filterByValue", "options": { "filters": [{ "config": { "id": "notEqual", "options": { "value": 1 } }, "fieldName": "Value" }], "match": "any", "type": "include" } },
+            { "id": "partitionByValues", "options": { "fields": ["Name"] } },
+            { "id": "filterFieldsByName", "options": { "include": { "pattern": "Temp|Time (.*)" } } },
+            { "id": "renameByRegex", "options": { "regex": "Temp (.*)", "renamePattern": "$1" } }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Network Throughput",
+          "id": 2,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "binBps",
+              "custom": { "lineInterpolation": "smooth", "fillOpacity": 10 }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Sent" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+              { "matcher": { "id": "byName", "options": "Received" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+            ]
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "none" }
+          },
+          "targets": [
             {
-              "id": "extractFields",
-              "options": { "keepTime": false, "replace": false, "source": "Metric" }
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "rate(dotnet_sockets_bytes_sent_total{job=\"jellyfin\"}[5m])",
+              "legendFormat": "Sent",
+              "range": true,
+              "refId": "A"
             },
             {
-              "id": "filterByValue",
-              "options": {
-                "filters": [{ "config": { "id": "isNotNull", "options": {} }, "fieldName": "user_name" }],
-                "match": "any",
-                "type": "include"
-              }
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "rate(dotnet_sockets_bytes_received_total{job=\"jellyfin\"}[5m])",
+              "legendFormat": "Received",
+              "range": true,
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Memory",
+          "id": 3,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": { "lineInterpolation": "smooth", "fillOpacity": 10 }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Working Set" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+              { "matcher": { "id": "byName", "options": "GC Heap" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+            ]
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "none" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "process_working_set_bytes{job=\"jellyfin\"}",
+              "legendFormat": "Working Set",
+              "range": true,
+              "refId": "A"
             },
             {
-              "id": "calculateField",
-              "options": {
-                "alias": "Item",
-                "mode": "reduceRow",
-                "reduce": { "include": ["item_index_clean"], "reducer": "firstNotNull" }
-              }
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "dotnet_gc_heap_size_bytes{job=\"jellyfin\"}",
+              "legendFormat": "GC Heap",
+              "range": true,
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU Usage",
+          "id": 4,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "custom": { "lineInterpolation": "smooth", "fillOpacity": 10 }
             },
+            "overrides": []
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "single", "sort": "none" }
+          },
+          "targets": [
             {
-              "id": "calculateField",
-              "options": {
-                "alias": "Name",
-                "mode": "reduceRow",
-                "reduce": { "include": ["user_name"], "reducer": "firstNotNull" }
-              }
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "rate(process_cpu_seconds_total{job=\"jellyfin\"}[5m])",
+              "legendFormat": "CPU",
+              "range": true,
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Active HTTP Connections",
+          "id": 5,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "lineInterpolation": "smooth", "fillOpacity": 10 }
             },
+            "overrides": []
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "single", "sort": "none" }
+          },
+          "targets": [
             {
-              "id": "calculateField",
-              "options": {
-                "alias": "Temp",
-                "mode": "reduceRow",
-                "reduce": { "include": ["Item"], "reducer": "firstNotNull" },
-                "replaceFields": false
-              }
-            },
-            {
-              "id": "filterByValue",
-              "options": {
-                "filters": [{ "config": { "id": "regex", "options": { "value": "(Movie|Episode)" } }, "fieldName": "item_type" }],
-                "match": "any",
-                "type": "include"
-              }
-            },
-            {
-              "id": "filterByValue",
-              "options": {
-                "filters": [{ "config": { "id": "notEqual", "options": { "value": 1 } }, "fieldName": "Value" }],
-                "match": "any",
-                "type": "include"
-              }
-            },
-            {
-              "id": "partitionByValues",
-              "options": { "fields": ["Name"] }
-            },
-            {
-              "id": "filterFieldsByName",
-              "options": { "include": { "pattern": "Temp|Time (.*)" } }
-            },
-            {
-              "id": "renameByRegex",
-              "options": { "regex": "Temp (.*)", "renamePattern": "$1" }
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "microsoft_aspnetcore_server_kestrel_current_connections{job=\"jellyfin\"}",
+              "legendFormat": "Connections",
+              "range": true,
+              "refId": "A"
             }
           ]
         }
