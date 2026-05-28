@@ -36,7 +36,7 @@ spec:
               mountPath: /config
       containers:
         - name: json-exporter
-          image: ghcr.io/prometheus-community/json-exporter:v0.6.0
+          image: quay.io/prometheuscommunity/json-exporter:v0.7.0
           args:
             - --config.file=/etc/json_exporter/config.yml
           ports:
