@@ -79,7 +79,7 @@ data:
           "title": "Network Throughput",
           "id": 2,
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
           "fieldConfig": {
             "defaults": {
               "unit": "binBps",
@@ -98,7 +98,7 @@ data:
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
               "editorMode": "code",
-              "expr": "rate(dotnet_sockets_bytes_sent_total{job=\"jellyfin\"}[5m])",
+              "expr": "rate(dotnet_sockets_bytes_sent_total{job=\"jellyfin\"}[$__rate_interval])",
               "legendFormat": "Sent",
               "range": true,
               "refId": "A"
@@ -106,7 +106,7 @@ data:
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
               "editorMode": "code",
-              "expr": "rate(dotnet_sockets_bytes_received_total{job=\"jellyfin\"}[5m])",
+              "expr": "rate(dotnet_sockets_bytes_received_total{job=\"jellyfin\"}[$__rate_interval])",
               "legendFormat": "Received",
               "range": true,
               "refId": "B"
@@ -118,7 +118,7 @@ data:
           "title": "Memory",
           "id": 3,
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
           "fieldConfig": {
             "defaults": {
               "unit": "bytes",
@@ -157,7 +157,7 @@ data:
           "title": "CPU Usage",
           "id": 4,
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
@@ -174,7 +174,7 @@ data:
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
               "editorMode": "code",
-              "expr": "rate(process_cpu_seconds_total{job=\"jellyfin\"}[5m])",
+              "expr": "system_runtime_cpu_usage{job=\"jellyfin\"}",
               "legendFormat": "CPU",
               "range": true,
               "refId": "A"
@@ -186,7 +186,7 @@ data:
           "title": "Active HTTP Connections",
           "id": 5,
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
           "fieldConfig": {
             "defaults": {
               "unit": "short",
