@@ -188,12 +188,14 @@ spec:
             resources:
               requests:
                 cpu: 23m
-                memory: 259Mi
+                memory: 300Mi
               limits:
-                memory: 263Mi
+                memory: 512Mi
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io
+              feature_toggles:
+                kubernetesDashboards: false
             persistence:
               type: pvc
               enabled: true
