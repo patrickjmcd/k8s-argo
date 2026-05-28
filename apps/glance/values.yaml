@@ -46,6 +46,16 @@ onePassword:
 envFrom:
   - secretRef:
       name: glance-1pw
+  - secretRef:
+      name: glance-pihole-1pw
+
+extraObjects:
+  - apiVersion: onepassword.com/v1
+    kind: OnePasswordItem
+    metadata:
+      name: glance-pihole-1pw
+    spec:
+      itemPath: "vaults/Kubernetes/items/pihole"
 
 command:
   - "/app/glance"
@@ -203,7 +213,7 @@ configMap:
                 - type: dns-stats
                   service: pihole
                   url: https://pihole.x.pmcd.io
-                  password: ${PIHOLE_PASSWORD}
+                  password: ${WEBPASSWORD}
 
                 - type: stocks
                   stocks:
