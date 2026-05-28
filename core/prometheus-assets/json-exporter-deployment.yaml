@@ -48,7 +48,7 @@ spec:
               mountPath: /etc/json_exporter
           readinessProbe:
             httpGet:
-              path: /health
+              path: /metrics
               port: 7979
             initialDelaySeconds: 5
             periodSeconds: 30
