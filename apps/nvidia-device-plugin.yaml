@@ -22,7 +22,7 @@ spec:
   sources:
     - chart: nvidia-device-plugin
       repoURL: https://nvidia.github.io/k8s-device-plugin
-      targetRevision: 0.19.1
+      targetRevision: 0.19.2
       helm:
         valuesObject:
           nodeSelector:
