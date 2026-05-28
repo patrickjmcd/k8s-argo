@@ -5,21 +5,3 @@ metadata:
   namespace: media
 spec:
   itemPath: "vaults/Kubernetes/items/jellyfin"
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: jellyfin
-  namespace: media
-spec:
-  selector:
-    matchLabels:
-      kubernetes.io/service-name: jellyfin
-  endpoints:
-    - port: http
-      path: /metrics
-      interval: 60s
-      authorization:
-        credentials:
-          name: jellyfin-1pw
-          key: api-key

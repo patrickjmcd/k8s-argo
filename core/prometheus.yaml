@@ -76,7 +76,17 @@ spec:
               serviceMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
+              secrets:
+                - jellyfin-json-exporter-1pw
               additionalScrapeConfigs:
+                - job_name: jellyfin
+                  metrics_path: /metrics
+                  scrape_interval: 60s
+                  authorization:
+                    credentials_file: /etc/prometheus/secrets/jellyfin-json-exporter-1pw/api-key
+                  static_configs:
+                    - targets:
+                        - 192.168.1.210:8096
                 - job_name: jellyfin-sessions
                   metrics_path: /probe
                   params:
