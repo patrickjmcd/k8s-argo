@@ -7,4 +7,5 @@ resources:
   - backup-cronjob.yaml
   - grants-job.yaml
   - outline-ownership-fix.yaml
+  - n8n-ownership-fix.yaml
   - restore-test-cronjob.yaml
