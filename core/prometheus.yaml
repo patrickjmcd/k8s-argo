@@ -41,31 +41,33 @@ spec:
               retentionSize: 8GiB
               nodeSelector:
                 kubernetes.io/arch: arm64
-              startupProbe:
-                httpGet:
-                  path: /-/healthy
-                  port: 9090
-                  scheme: HTTP
-                failureThreshold: 360
-                periodSeconds: 15
-                timeoutSeconds: 10
-                successThreshold: 1
-              livenessProbe:
-                httpGet:
-                  path: /-/healthy
-                  port: 9090
-                  scheme: HTTP
-                failureThreshold: 20
-                periodSeconds: 15
-                timeoutSeconds: 10
-                successThreshold: 1
+              containers:
+                - name: prometheus
+                  startupProbe:
+                    httpGet:
+                      path: /-/ready
+                      port: 9090
+                      scheme: HTTP
+                    failureThreshold: 40
+                    periodSeconds: 15
+                    timeoutSeconds: 10
+                    successThreshold: 1
+                  livenessProbe:
+                    httpGet:
+                      path: /-/healthy
+                      port: 9090
+                      scheme: HTTP
+                    failureThreshold: 10
+                    periodSeconds: 15
+                    timeoutSeconds: 10
+                    successThreshold: 1
               resources:
                 requests:
                   cpu: 200m
                   memory: 1Gi
                 limits:
                   cpu: 1000m
-                  memory: 3Gi
+                  memory: 5Gi
               podMonitorSelector: { }
               podMonitorSelectorNilUsesHelmValues: false
               podMonitorNamespaceSelector:
