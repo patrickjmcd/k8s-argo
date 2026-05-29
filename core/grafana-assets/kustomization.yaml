@@ -4,5 +4,6 @@ resources:
   - namespace.yaml
   - httproute.yaml
   - dashboard-jellyfin.yaml
+  - dashboard-k8s-global.yaml
 
 
