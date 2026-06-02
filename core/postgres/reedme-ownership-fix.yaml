@@ -57,6 +57,12 @@ spec:
                    AND NOT EXISTS (
                      SELECT 1 FROM pg_depend
                      WHERE objid = c.oid AND deptype = 'e'
+                   )
+                   AND NOT (
+                     c.relkind = 'S' AND EXISTS (
+                       SELECT 1 FROM pg_depend
+                       WHERE objid = c.oid AND deptype = 'a'
+                     )
                    )" \
                 | psql -h shared-postgres-rw -U "$PGUSER" -d reedme -1 -v ON_ERROR_STOP=1
           resources:
