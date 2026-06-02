@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: reedme-ownership-fix
+  namespace: postgres
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: fix-ownership
+          image: postgres:18-alpine
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-superuser
+                  key: password
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-superuser
+                  key: username
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              set -o pipefail
+              ATTEMPTS=0
+              until psql -h shared-postgres-rw -U "$PGUSER" -d postgres -tAc \
+                "SELECT 1 FROM pg_database WHERE datname='reedme'" 2>/dev/null | grep -q 1; do
+                ATTEMPTS=$((ATTEMPTS + 1))
+                if [ "$ATTEMPTS" -ge 30 ]; then
+                  echo "Timed out waiting for reedme database after 30 attempts"
+                  exit 1
+                fi
+                echo "Waiting for reedme database... (attempt ${ATTEMPTS}/30)"; sleep 5
+              done
+              psql -h shared-postgres-rw -U "$PGUSER" -d reedme -tAc \
+                "SELECT format(
+                   CASE c.relkind
+                     WHEN 'S' THEN 'ALTER SEQUENCE public.%I OWNER TO reedme;'
+                     WHEN 'v' THEN 'ALTER VIEW public.%I OWNER TO reedme;'
+                     WHEN 'm' THEN 'ALTER MATERIALIZED VIEW public.%I OWNER TO reedme;'
+                     ELSE 'ALTER TABLE public.%I OWNER TO reedme;'
+                   END, c.relname)
+                 FROM pg_class c
+                 JOIN pg_namespace n ON n.oid = c.relnamespace
+                 JOIN pg_roles r ON r.oid = c.relowner
+                 WHERE n.nspname = 'public'
+                   AND c.relkind IN ('r', 'S', 'v', 'm', 'p')
+                   AND NOT EXISTS (
+                     SELECT 1 FROM pg_depend
+                     WHERE objid = c.oid AND deptype = 'e'
+                   )" \
+                | psql -h shared-postgres-rw -U "$PGUSER" -d reedme -1 -v ON_ERROR_STOP=1
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi

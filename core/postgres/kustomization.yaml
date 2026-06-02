@@ -8,4 +8,5 @@ resources:
   - grants-job.yaml
   - outline-ownership-fix.yaml
   - n8n-ownership-fix.yaml
+  - reedme-ownership-fix.yaml
   - restore-test-cronjob.yaml
