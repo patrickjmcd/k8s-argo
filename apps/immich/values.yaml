@@ -24,6 +24,15 @@ server:
     main:
       containers:
         main:
+          probes:
+            liveness:
+              spec:
+                timeoutSeconds: 10
+                failureThreshold: 10
+            readiness:
+              spec:
+                timeoutSeconds: 10
+                failureThreshold: 10
           resources:
             requests:
               cpu: 100m
