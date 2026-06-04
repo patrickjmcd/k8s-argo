@@ -1,0 +1,449 @@
+# Pull-through cache mirrors for docker.io, ghcr.io, registry.k8s.io, and quay.io.
+# All four services share MetalLB IP 192.168.8.201 on different ports (5001-5004).
+# Adjust the IP if .201 is already allocated in your cluster.
+#
+# After ArgoCD syncs this, restart k3s on each node for registries.yaml to take effect:
+#   kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+#   ssh <node> sudo systemctl restart k3s        # server nodes
+#   ssh <node> sudo systemctl restart k3s-agent  # agent nodes
+#   kubectl uncordon <node>
+
+# ── docker.io ──────────────────────────────────────────────────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-io-mirror-config
+  namespace: registry-mirror
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      level: warn
+    storage:
+      cache:
+        blobdescriptor: inmemory
+      filesystem:
+        rootdirectory: /var/lib/registry
+      delete:
+        enabled: false
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+    proxy:
+      remoteurl: https://registry-1.docker.io
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docker-io-mirror-data
+  namespace: registry-mirror
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-io-mirror
+  namespace: registry-mirror
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-io-mirror
+  template:
+    metadata:
+      labels:
+        app: docker-io-mirror
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+            - name: config
+              mountPath: /etc/docker/registry
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: docker-io-mirror-data
+        - name: config
+          configMap:
+            name: docker-io-mirror-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-io-mirror
+  namespace: registry-mirror
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.8.201"
+    metallb.universe.tf/allow-shared-ip: "registry-mirrors"
+spec:
+  type: LoadBalancer
+  selector:
+    app: docker-io-mirror
+  ports:
+    - name: registry
+      port: 5001
+      targetPort: 5000
+      protocol: TCP
+
+# ── ghcr.io ────────────────────────────────────────────────────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ghcr-mirror-config
+  namespace: registry-mirror
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      level: warn
+    storage:
+      cache:
+        blobdescriptor: inmemory
+      filesystem:
+        rootdirectory: /var/lib/registry
+      delete:
+        enabled: false
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+    proxy:
+      remoteurl: https://ghcr.io
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ghcr-mirror-data
+  namespace: registry-mirror
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ghcr-mirror
+  namespace: registry-mirror
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ghcr-mirror
+  template:
+    metadata:
+      labels:
+        app: ghcr-mirror
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+            - name: config
+              mountPath: /etc/docker/registry
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ghcr-mirror-data
+        - name: config
+          configMap:
+            name: ghcr-mirror-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ghcr-mirror
+  namespace: registry-mirror
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.8.201"
+    metallb.universe.tf/allow-shared-ip: "registry-mirrors"
+spec:
+  type: LoadBalancer
+  selector:
+    app: ghcr-mirror
+  ports:
+    - name: registry
+      port: 5002
+      targetPort: 5000
+      protocol: TCP
+
+# ── registry.k8s.io ────────────────────────────────────────────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-mirror-config
+  namespace: registry-mirror
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      level: warn
+    storage:
+      cache:
+        blobdescriptor: inmemory
+      filesystem:
+        rootdirectory: /var/lib/registry
+      delete:
+        enabled: false
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+    proxy:
+      remoteurl: https://registry.k8s.io
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: k8s-mirror-data
+  namespace: registry-mirror
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-mirror
+  namespace: registry-mirror
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-mirror
+  template:
+    metadata:
+      labels:
+        app: k8s-mirror
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+            - name: config
+              mountPath: /etc/docker/registry
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: k8s-mirror-data
+        - name: config
+          configMap:
+            name: k8s-mirror-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-mirror
+  namespace: registry-mirror
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.8.201"
+    metallb.universe.tf/allow-shared-ip: "registry-mirrors"
+spec:
+  type: LoadBalancer
+  selector:
+    app: k8s-mirror
+  ports:
+    - name: registry
+      port: 5003
+      targetPort: 5000
+      protocol: TCP
+
+# ── quay.io ────────────────────────────────────────────────────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quay-mirror-config
+  namespace: registry-mirror
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      level: warn
+    storage:
+      cache:
+        blobdescriptor: inmemory
+      filesystem:
+        rootdirectory: /var/lib/registry
+      delete:
+        enabled: false
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+    proxy:
+      remoteurl: https://quay.io
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: quay-mirror-data
+  namespace: registry-mirror
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quay-mirror
+  namespace: registry-mirror
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quay-mirror
+  template:
+    metadata:
+      labels:
+        app: quay-mirror
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+            - name: config
+              mountPath: /etc/docker/registry
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: quay-mirror-data
+        - name: config
+          configMap:
+            name: quay-mirror-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quay-mirror
+  namespace: registry-mirror
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.8.201"
+    metallb.universe.tf/allow-shared-ip: "registry-mirrors"
+spec:
+  type: LoadBalancer
+  selector:
+    app: quay-mirror
+  ports:
+    - name: registry
+      port: 5004
+      targetPort: 5000
+      protocol: TCP

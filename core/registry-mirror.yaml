@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: registry-mirror
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  destination:
+    namespace: registry-mirror
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    path: core/registry-mirror
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
