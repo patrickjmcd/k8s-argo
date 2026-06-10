@@ -53,11 +53,8 @@ spec:
             - name: local-dns-config
               mountPath: /etc/dnsmasq.d
           livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "dig +time=2 +tries=1 pi.hole @127.0.0.1 | grep -q NOERROR"
+            tcpSocket:
+              port: 53
             initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 5
