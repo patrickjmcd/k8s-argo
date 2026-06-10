@@ -9,4 +9,5 @@ resources:
   - outline-ownership-fix.yaml
   - n8n-ownership-fix.yaml
   - reedme-ownership-fix.yaml
+  - dispatcharr-ownership-fix.yaml
   - restore-test-cronjob.yaml
