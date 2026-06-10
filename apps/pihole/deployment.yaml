@@ -44,6 +44,8 @@ spec:
               value: "true"
             - name: FTLCONF_database_maxDBdays
               value: "28"
+            - name: FTLCONF_dns_networkNames
+              value: "false"
           envFrom:
             - secretRef:
                 name: pihole-1pw
