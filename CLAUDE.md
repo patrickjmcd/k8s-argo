@@ -230,6 +230,19 @@ IP pool: `192.168.8.200–192.168.8.210`. Traefik LoadBalancer gets `.200`. L2 a
 - **Jetson Nano**: `jetson-nano-kube0` — GPU workloads (NVIDIA device plugin)
 - **x86 VMs**: `kube-leader`, `kube-worker-{1-4}` — provisioned via Terraform on Proxmox
 
+## Node Bootstrap Requirements (RPi nodes)
+
+When adding a new Raspberry Pi node (Pi 4 or Pi 5, Debian trixie, kernel 6.12.x), apply this before joining the cluster:
+
+**Conntrack checksum fix** — RPi 6.12.x kernels have TX checksum offload enabled on veth/cni interfaces. With `nf_conntrack_checksum=1` (default), the kernel re-validates checksums on forwarded packets and marks them invalid, causing conntrack `clash_resolve` storms that poison DNS reply tracking and silently drop UDP responses.
+
+```bash
+echo 'net.netfilter.nf_conntrack_checksum=0' | sudo tee /etc/sysctl.d/99-conntrack.conf
+sudo sysctl -w net.netfilter.nf_conntrack_checksum=0
+```
+
+Verify with: `sudo sysctl net.netfilter.nf_conntrack_checksum` → should be `0`.
+
 ## Conventions
 
 - Always use `ServerSideApply=true` in syncOptions

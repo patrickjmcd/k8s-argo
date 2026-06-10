@@ -42,6 +42,8 @@ spec:
               value: "pihole.x.pmcd.io"
             - name: FTLCONF_misc_etc_dnsmasq_d
               value: "true"
+            - name: FTLCONF_database_maxDBdays
+              value: "28"
           envFrom:
             - secretRef:
                 name: pihole-1pw
@@ -50,6 +52,16 @@ spec:
               mountPath: /etc/pihole
             - name: local-dns-config
               mountPath: /etc/dnsmasq.d
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "dig +time=2 +tries=1 pi.hole @127.0.0.1 | grep -q NOERROR"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             tcpSocket:
               port: 80
