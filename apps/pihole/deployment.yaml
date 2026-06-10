@@ -46,6 +46,10 @@ spec:
               value: "28"
             - name: FTLCONF_dns_networkNames
               value: "false"
+            - name: FTLCONF_dns_rateLimit_count
+              value: "1000"
+            - name: FTLCONF_dns_rateLimit_interval
+              value: "60"
           envFrom:
             - secretRef:
                 name: pihole-1pw
@@ -55,11 +59,16 @@ spec:
             - name: local-dns-config
               mountPath: /etc/dnsmasq.d
           livenessProbe:
-            tcpSocket:
-              port: 53
+            exec:
+              command:
+                - dig
+                - +time=2
+                - +tries=1
+                - x.pmcd.io
+                - "@127.0.0.1"
             initialDelaySeconds: 60
             periodSeconds: 30
-            timeoutSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 3
           readinessProbe:
             tcpSocket:
