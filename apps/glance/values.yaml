@@ -213,7 +213,7 @@ configMap:
                 - type: dns-stats
                   service: pihole
                   url: https://pihole.x.pmcd.io
-                  password: ${WEBPASSWORD}
+                  password: ${FTLCONF_webserver_api_password}
 
                 - type: custom-api
                   title: Cardinals
