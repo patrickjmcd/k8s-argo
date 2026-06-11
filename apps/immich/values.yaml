@@ -20,6 +20,16 @@ immich:
 
 server:
   enabled: true
+  defaultPodOptions:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: NotIn
+                  values:
+                    - jetson-nano-kube0
   controllers:
     main:
       containers:
