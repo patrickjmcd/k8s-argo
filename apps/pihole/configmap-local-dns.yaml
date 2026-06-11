@@ -5,3 +5,5 @@ metadata:
 data:
   local-dns.conf: |
     address=/x.pmcd.io/192.168.8.200
+    address=/pics.pmcd.dev/192.168.8.200
+    address=/jellyfin.pmcd.dev/192.168.8.200
