@@ -58,9 +58,9 @@ spec:
               value: "true"
             - name: FTLCONF_database_maxDBdays
               value: "28"
-            - name: FTLCONF_dns_networkNames
+            - name: FTLCONF_resolver_networkNames
               value: "false"
-            - name: FTLCONF_dns_refreshNames
+            - name: FTLCONF_resolver_refreshNames
               value: "NONE"
             - name: FTLCONF_dns_rateLimit_count
               value: "1000"
@@ -74,6 +74,18 @@ spec:
               mountPath: /etc/pihole
             - name: local-dns-config
               mountPath: /etc/dnsmasq.d
+          startupProbe:
+            exec:
+              command:
+                - dig
+                - +time=2
+                - +tries=1
+                - x.pmcd.io
+                - "@127.0.0.1"
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 50
           livenessProbe:
             exec:
               command:
@@ -82,7 +94,6 @@ spec:
                 - +tries=1
                 - x.pmcd.io
                 - "@127.0.0.1"
-            initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 3
             failureThreshold: 3
