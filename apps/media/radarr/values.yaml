@@ -1,6 +1,6 @@
 image:
   repository: linuxserver/radarr
-  tag: "6.1.1"
+  tag: "6.2.1"
 
 service:
   port: 80
