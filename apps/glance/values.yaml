@@ -211,7 +211,7 @@ configMap:
                   units: imperial
 
                 - type: dns-stats
-                  service: pihole
+                  service: pihole-v6
                   url: https://pihole.x.pmcd.io
                   password: ${WEBPASSWORD}
 
