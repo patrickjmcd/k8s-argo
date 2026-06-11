@@ -18,7 +18,7 @@ spec:
     spec:
       initContainers:
         - name: patch-pihole-config
-          image: busybox:1.36
+          image: busybox:1.38
           command:
             - sh
             - -c
