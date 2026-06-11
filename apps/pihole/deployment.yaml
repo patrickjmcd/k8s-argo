@@ -60,6 +60,8 @@ spec:
               value: "true"
             - name: FTLCONF_database_maxDBdays
               value: "28"
+            - name: FTLCONF_database_dbfile
+              value: "/var/ftl/pihole-FTL.db"
             - name: FTLCONF_resolver_resolveIPv4
               value: "false"
             - name: FTLCONF_resolver_resolveIPv6
@@ -80,6 +82,8 @@ spec:
               mountPath: /etc/pihole
             - name: local-dns-config
               mountPath: /etc/dnsmasq.d
+            - name: ftl-db
+              mountPath: /var/ftl
           startupProbe:
             exec:
               command:
@@ -123,3 +127,5 @@ spec:
         - name: local-dns-config
           configMap:
             name: pihole-local-dns
+        - name: ftl-db
+          emptyDir: {}
