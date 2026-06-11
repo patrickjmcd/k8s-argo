@@ -25,6 +25,8 @@ spec:
             - |
               TOML=/etc/pihole/pihole.toml
               [ -f "$TOML" ] || exit 0
+              sed -i 's/^\( *resolveIPv4\) = .*/\1 = false/' "$TOML"
+              sed -i 's/^\( *resolveIPv6\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *networkNames\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *refreshNames\) = .*/\1 = "NONE"/' "$TOML"
           volumeMounts:
@@ -58,6 +60,10 @@ spec:
               value: "true"
             - name: FTLCONF_database_maxDBdays
               value: "28"
+            - name: FTLCONF_resolver_resolveIPv4
+              value: "false"
+            - name: FTLCONF_resolver_resolveIPv6
+              value: "false"
             - name: FTLCONF_resolver_networkNames
               value: "false"
             - name: FTLCONF_resolver_refreshNames
@@ -107,9 +113,9 @@ spec:
           resources:
             requests:
               cpu: 20m
-              memory: 128Mi
-            limits:
               memory: 256Mi
+            limits:
+              memory: 600Mi
       volumes:
         - name: pihole-data
           persistentVolumeClaim:
