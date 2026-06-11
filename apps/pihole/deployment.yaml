@@ -38,6 +38,8 @@ spec:
               sed -i 's/^\( *resolveIPv6\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *networkNames\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *refreshNames\) = .*/\1 = "NONE"/' "$TOML"
+              sed -i 's|^\( *database\) = "/etc/pihole/pihole-FTL.db"|\1 = "/var/ftl/pihole-FTL.db"|' "$TOML"
+              sed -i 's|^\( *tmp_db\) = "/etc/pihole/pihole-tmp.db"|\1 = "/var/ftl/pihole-tmp.db"|' "$TOML"
           volumeMounts:
             - name: pihole-data
               mountPath: /etc/pihole
@@ -69,8 +71,10 @@ spec:
               value: "true"
             - name: FTLCONF_database_maxDBdays
               value: "28"
-            - name: FTLCONF_database_dbfile
+            - name: FTLCONF_files_database
               value: "/var/ftl/pihole-FTL.db"
+            - name: FTLCONF_files_tmp_db
+              value: "/var/ftl/pihole-tmp.db"
             - name: FTLCONF_resolver_resolveIPv4
               value: "false"
             - name: FTLCONF_resolver_resolveIPv6
