@@ -16,6 +16,20 @@ spec:
       labels:
         app: pihole
     spec:
+      initContainers:
+        - name: patch-pihole-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              TOML=/etc/pihole/pihole.toml
+              [ -f "$TOML" ] || exit 0
+              sed -i 's/^\( *networkNames\) = .*/\1 = false/' "$TOML"
+              sed -i 's/^\( *refreshNames\) = .*/\1 = "NONE"/' "$TOML"
+          volumeMounts:
+            - name: pihole-data
+              mountPath: /etc/pihole
       containers:
         - name: pihole
           image: pihole/pihole:2026.05.0
@@ -46,6 +60,8 @@ spec:
               value: "28"
             - name: FTLCONF_dns_networkNames
               value: "false"
+            - name: FTLCONF_dns_refreshNames
+              value: "NONE"
             - name: FTLCONF_dns_rateLimit_count
               value: "1000"
             - name: FTLCONF_dns_rateLimit_interval
