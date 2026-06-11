@@ -16,6 +16,15 @@ spec:
       labels:
         app: pihole
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - jetson-nano-kube0
       initContainers:
         - name: patch-pihole-config
           image: busybox:1.38
