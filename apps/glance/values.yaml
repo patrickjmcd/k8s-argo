@@ -215,6 +215,30 @@ configMap:
                   url: https://pihole.x.pmcd.io
                   password: ${WEBPASSWORD}
 
+                - type: custom-api
+                  title: Cardinals
+                  cache: 1m
+                  url: https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=138&hydrate=linescore
+                  template: |
+                    {{ $dates := .JSON.Array "dates" }}
+                    {{ if eq (len $dates) 0 }}
+                      <p class="color-subdue">No game today</p>
+                    {{ else }}
+                      {{ range .JSON.Array "dates.0.games" }}
+                        <div class="flex justify-between">
+                          <span>{{ .String "teams.away.team.name" }}</span>
+                          <span class="color-highlight">{{ .Int "teams.away.score" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span>{{ .String "teams.home.team.name" }}</span>
+                          <span class="color-highlight">{{ .Int "teams.home.score" }}</span>
+                        </div>
+                        <p class="color-subdue size-h4">
+                          {{ .String "status.detailedState" }}{{ if eq (.String "status.abstractGameState") "Live" }} · Inning {{ .Int "linescore.currentInning" }}{{ end }}
+                        </p>
+                      {{ end }}
+                    {{ end }}
+
                 - type: stocks
                   stocks:
                     - symbol: SPY
