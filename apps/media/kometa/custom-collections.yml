@@ -1,10 +1,255 @@
 collections:
+
+  # ── Scooby-Doo ─────────────────────────────────────────────────────────────
   Scooby-Doo:
     plex_search:
       any:
         title:
           - Scooby
-    sort_title: "!001_Scooby-Doo"
     collection_order: release
     sync_mode: sync
     summary: "Every Scooby-Doo series and movie."
+
+  # ── Franchises ──────────────────────────────────────────────────────────────
+  James Bond:
+    plex_search:
+      any:
+        title:
+          - Goldfinger
+          - Moonraker
+          - Octopussy
+          - Thunderball
+          - GoldenEye
+          - "Quantum of Solace"
+          - "No Time to Die"
+          - "Die Another Day"
+          - "Tomorrow Never Dies"
+          - "World Is Not Enough"
+          - "Licence to Kill"
+          - "Living Daylights"
+          - "Dr. No"
+          - "Casino Royale"
+          - "Russia with Love"
+          - "Diamonds Are Forever"
+          - "Golden Gun"
+          - "Eyes Only"
+          - "Spy Who Loved"
+          - "Live and Let Die"
+          - "View to a Kill"
+          - "Only Live Twice"
+          - "Majesty's Secret"
+          - "Never Say Never"
+          - Spectre
+    collection_order: release
+    sync_mode: sync
+    summary: "The complete James Bond film series."
+
+  Indiana Jones:
+    plex_search:
+      any:
+        title:
+          - "Indiana Jones"
+          - "Raiders of the Lost Ark"
+    collection_order: release
+    sync_mode: sync
+
+  The Hunger Games:
+    plex_search:
+      any:
+        title:
+          - "Hunger Games"
+    collection_order: release
+    sync_mode: sync
+
+  Shrek:
+    plex_search:
+      any:
+        title:
+          - Shrek
+    collection_order: release
+    sync_mode: sync
+
+  Home Alone:
+    plex_search:
+      any:
+        title:
+          - "Home Alone"
+    collection_order: release
+    sync_mode: sync
+
+  Despicable Me:
+    plex_search:
+      any:
+        title:
+          - "Despicable Me"
+          - Minions
+    collection_order: release
+    sync_mode: sync
+
+  Jumanji:
+    plex_search:
+      any:
+        title:
+          - Jumanji
+    collection_order: release
+    sync_mode: sync
+
+  "Ocean's":
+    plex_search:
+      any:
+        title:
+          - "Ocean's"
+    collection_order: release
+    sync_mode: sync
+
+  Paddington:
+    plex_search:
+      any:
+        title:
+          - Paddington
+    collection_order: release
+    sync_mode: sync
+
+  The Mighty Ducks:
+    plex_search:
+      any:
+        title:
+          - "Mighty Ducks"
+    collection_order: release
+    sync_mode: sync
+
+  Pitch Perfect:
+    plex_search:
+      any:
+        title:
+          - "Pitch Perfect"
+    collection_order: release
+    sync_mode: sync
+
+  The Santa Clause:
+    plex_search:
+      any:
+        title:
+          - "Santa Clause"
+    collection_order: release
+    sync_mode: sync
+
+  Kung Fu Panda:
+    plex_search:
+      any:
+        title:
+          - "Kung Fu Panda"
+    collection_order: release
+    sync_mode: sync
+
+  Jurassic Park:
+    plex_search:
+      any:
+        title:
+          - Jurassic
+    collection_order: release
+    sync_mode: sync
+
+  Batman:
+    plex_search:
+      any:
+        title:
+          - Batman
+          - "Dark Knight"
+    collection_order: release
+    sync_mode: sync
+
+  Ghostbusters:
+    plex_search:
+      any:
+        title:
+          - Ghostbusters
+    collection_order: release
+    sync_mode: sync
+
+  Top Gun:
+    plex_search:
+      any:
+        title:
+          - "Top Gun"
+    collection_order: release
+    sync_mode: sync
+
+  Beetlejuice:
+    plex_search:
+      any:
+        title:
+          - Beetlejuice
+    collection_order: release
+    sync_mode: sync
+
+  Twister:
+    plex_search:
+      any:
+        title:
+          - Twister
+    collection_order: release
+    sync_mode: sync
+
+  Moana:
+    plex_search:
+      any:
+        title:
+          - Moana
+    collection_order: release
+    sync_mode: sync
+
+  Hocus Pocus:
+    plex_search:
+      any:
+        title:
+          - "Hocus Pocus"
+    collection_order: release
+    sync_mode: sync
+
+  Wayne's World:
+    plex_search:
+      any:
+        title:
+          - "Wayne's World"
+    collection_order: release
+    sync_mode: sync
+
+  # ── Music ───────────────────────────────────────────────────────────────────
+  Taylor Swift:
+    plex_search:
+      any:
+        title:
+          - "Taylor Swift"
+    collection_order: release
+    sync_mode: sync
+    summary: "Taylor Swift concert films and documentaries."
+
+  Music Films:
+    plex_search:
+      any:
+        genre:
+          - Music
+    collection_order: release
+    sync_mode: sync
+    summary: "Concert films, music documentaries, and music-driven stories."
+
+  # ── TV Shows ─────────────────────────────────────────────────────────────────
+  Yellowstone Universe:
+    plex_search:
+      any:
+        title:
+          - Yellowstone
+          - "1883"
+          - "1923"
+    collection_order: release
+    sync_mode: sync
+    summary: "The Yellowstone universe: Yellowstone, 1883, and 1923."
+
+  Planet Earth:
+    plex_search:
+      any:
+        title:
+          - "Planet Earth"
+    collection_order: release
+    sync_mode: sync
