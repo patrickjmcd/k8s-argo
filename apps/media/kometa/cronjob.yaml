@@ -13,6 +13,21 @@ spec:
     spec:
       template:
         spec:
+          initContainers:
+            - name: render-config
+              image: alpine
+              command:
+                - sh
+                - -c
+                - apk add --no-cache gettext -q && envsubst < /template/config.template.yml > /rendered/config.yml
+              envFrom:
+                - secretRef:
+                    name: kometa-1pw
+              volumeMounts:
+                - name: config-template
+                  mountPath: /template
+                - name: rendered-config
+                  mountPath: /rendered
           containers:
             - name: kometa
               image: kometa
@@ -28,14 +43,16 @@ spec:
               volumeMounts:
                 - name: config
                   mountPath: /config
-                - name: kometa-config
+                - name: rendered-config
                   mountPath: /config/config.yml
                   subPath: config.yml
           volumes:
             - name: config
               persistentVolumeClaim:
                 claimName: longhorn-kometa-config
-            - configMap:
-                name: kometa-config
-              name: kometa-config
+            - name: config-template
+              configMap:
+                name: kometa-config-template
+            - name: rendered-config
+              emptyDir: {}
           restartPolicy: OnFailure
