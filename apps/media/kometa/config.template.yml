@@ -64,33 +64,15 @@ libraries:
       - default: content_rating_us_show
         template_variables:
           builder_level: season
-      - default: content_rating_us_show
-        template_variables:
-          builder_level: episode
       - default: commonsense                                # Common Sense Media age badge on show poster
-      - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. on show and episode
-      - default: audio_codec
-        template_variables:
-          builder_level: episode
-      - default: episode_info                               # S##E## information in bottom right on episode
-        template_variables:
-          builder_level: episode
-      - default: resolution                                 # 4K HDR, 1080P FHD, etc. on show, episode, and season
-      - default: resolution
-        template_variables:
-          builder_level: episode
+      - default: audio_codec                                # FLAC, DTS-X, TrueHD, etc. on show poster
+      - default: resolution                                 # 4K HDR, 1080P FHD, etc. on show and season
       - default: resolution
         template_variables:
           builder_level: season
       - default: status                                     # Airing, Returning, Ended, Canceled on show
-      - default: versions                                   # Will show duplicates for that media item on show and episode
-      - default: versions
-        template_variables:
-          builder_level: episode
-      - default: video_format                               # Remux, DVD, Blu-Ray, etc. in bottom left on show, episode, and season
-      - default: video_format
-        template_variables:
-          builder_level: episode
+      - default: versions                                   # Duplicate indicator on show poster
+      - default: video_format                               # Remux, DVD, Blu-Ray, etc. on show poster
     settings:
       asset_directory:
         - config/assets
