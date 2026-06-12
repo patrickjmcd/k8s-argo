@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-hosts-override
+  namespace: pihole
+data:
+  local-overrides: |
+    # Override AAAA for split-horizon domains to prevent Cloudflare IPv6 proxy
+    # from intercepting large uploads. fd00::1 is non-routable; clients fall
+    # back to IPv4 via Happy Eyeballs.
+    fd00::1 pics.pmcd.dev

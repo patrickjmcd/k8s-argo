@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - configmap-local-dns.yaml
+  - configmap-hosts-override.yaml
   - service-dns-tcp.yaml
   - service-dns-udp.yaml
   - service-web.yaml

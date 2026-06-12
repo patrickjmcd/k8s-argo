@@ -101,6 +101,9 @@ spec:
               mountPath: /etc/dnsmasq.d
             - name: ftl-db
               mountPath: /var/ftl
+            - name: hosts-override
+              mountPath: /etc/pihole/hosts/local-overrides
+              subPath: local-overrides
           startupProbe:
             exec:
               command:
@@ -144,5 +147,8 @@ spec:
         - name: local-dns-config
           configMap:
             name: pihole-local-dns
+        - name: hosts-override
+          configMap:
+            name: pihole-hosts-override
         - name: ftl-db
           emptyDir: {}
