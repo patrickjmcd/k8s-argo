@@ -45,7 +45,7 @@ libraries:
       - default: basic                                      # Some basic chart collections
       - default: network
         template_variables:
-          minimum_items: 5
+          minimum_items: 3
       - default: content_rating_cs                           # Little Kids, Older Kids, Teens — built from Common Sense ratings
     remove_overlays: false                          # Set to true if you want to remove overlays
     reapply_overlays: false                         # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
