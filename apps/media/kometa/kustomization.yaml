@@ -5,6 +5,9 @@ resources:
   - storage.yaml
   - onepassword.yaml
 
+generatorOptions:
+  disableNameSuffixHash: true
+
 configMapGenerator:
   - name: kometa-config-template
     files:
