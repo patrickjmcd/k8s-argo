@@ -46,6 +46,9 @@ spec:
                 - name: rendered-config
                   mountPath: /config/config.yml
                   subPath: config.yml
+                - name: config-template
+                  mountPath: /config/custom-collections.yml
+                  subPath: custom-collections.yml
           volumes:
             - name: config
               persistentVolumeClaim:

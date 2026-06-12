@@ -12,6 +12,7 @@ configMapGenerator:
   - name: kometa-config-template
     files:
       - config.template.yml
+      - custom-collections.yml
 
 images:
   - name: kometa

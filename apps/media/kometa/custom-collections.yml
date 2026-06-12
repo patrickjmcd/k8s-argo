@@ -1,0 +1,10 @@
+collections:
+  Scooby-Doo:
+    plex_search:
+      any:
+        title:
+          - Scooby
+    sort_title: "!001_Scooby-Doo"
+    collection_order: release
+    sync_mode: sync
+    summary: "Every Scooby-Doo series and movie."
