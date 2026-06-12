@@ -20,6 +20,14 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: metallb-frr-k8s-statuscleaner
+      namespace: metallb-system
+      jqPathExpressions:
+        - .spec.template.spec.affinity
+        - .spec.template.spec.tolerations
   sources:
     - path: core/metallb-system
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
