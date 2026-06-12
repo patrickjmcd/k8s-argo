@@ -53,6 +53,6 @@ serviceMonitor:
   path: /metrics
   basicAuth:
     enabled: true
-    secretName: uptime-kuma-api-key
+    secretName: uptime-kuma-1pw
     usernameKey: username
     passwordKey: password

@@ -25,3 +25,6 @@ spec:
         releaseName: uptime-kuma
         valueFiles:
           - $values/apps/uptime-kuma/values.yaml
+    - path: apps/uptime-kuma
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
