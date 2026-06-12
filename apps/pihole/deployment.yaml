@@ -40,6 +40,8 @@ spec:
               sed -i 's/^\( *refreshNames\) = .*/\1 = "NONE"/' "$TOML"
               sed -i 's|^\( *database\) = "/etc/pihole/pihole-FTL.db"|\1 = "/var/ftl/pihole-FTL.db"|' "$TOML"
               sed -i 's|^\( *tmp_db\) = "/etc/pihole/pihole-tmp.db"|\1 = "/var/ftl/pihole-tmp.db"|' "$TOML"
+              sed -i 's|^\( *gravity\) = "/etc/pihole/gravity.db"|\1 = "/var/ftl/gravity.db"|' "$TOML"
+              cp /etc/pihole/gravity.db /var/ftl/gravity.db 2>/dev/null || true
           volumeMounts:
             - name: pihole-data
               mountPath: /etc/pihole
@@ -75,6 +77,8 @@ spec:
               value: "/var/ftl/pihole-FTL.db"
             - name: FTLCONF_files_tmp_db
               value: "/var/ftl/pihole-tmp.db"
+            - name: FTLCONF_files_gravity
+              value: "/var/ftl/gravity.db"
             - name: FTLCONF_resolver_resolveIPv4
               value: "false"
             - name: FTLCONF_resolver_resolveIPv6
