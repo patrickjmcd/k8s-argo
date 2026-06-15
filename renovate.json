@@ -32,6 +32,10 @@
   ],
   "packageRules": [
     {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
       "matchPackageNames": [
         "argo-cd"
       ],
