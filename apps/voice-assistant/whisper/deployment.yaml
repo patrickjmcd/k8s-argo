@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: wyoming-whisper
-          image: rhasspy/wyoming-whisper:3.1.0
+          image: rhasspy/wyoming-whisper:3.2.0
           args:
             - --uri
             - tcp://0.0.0.0:10300
