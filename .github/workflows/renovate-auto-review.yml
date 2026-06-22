@@ -3,16 +3,25 @@ name: Renovate Auto-Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to review
+        required: true
+        type: string
 
 permissions:
   contents: write
   pull-requests: write
 
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+
 jobs:
   # Patch updates: auto-merge immediately, no Claude needed
   auto-merge-patch:
     if: |
-      github.actor == 'renovate[bot]' &&
+      (github.actor == 'renovate[bot]' || github.event_name == 'workflow_dispatch') &&
       contains(github.event.pull_request.labels.*.name, 'patch')
     runs-on: ubuntu-latest
     steps:
@@ -20,37 +29,46 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} \
+          gh pr merge ${{ env.PR_NUMBER }} \
             --squash \
             --auto \
-            --repo ${{ github.repository }} \
-            --subject "${{ github.event.pull_request.title }}"
+            --repo ${{ github.repository }}
 
   # Minor and major updates: Claude reviews and fixes if needed
   auto-review:
     if: |
-      github.actor == 'renovate[bot]' &&
+      (github.actor == 'renovate[bot]' || github.event_name == 'workflow_dispatch') &&
       !contains(github.event.pull_request.labels.*.name, 'patch')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get PR diff and labels
+      - name: Get PR info
         id: pr-info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "diff<<EOF" >> $GITHUB_OUTPUT
-          git diff origin/${{ github.base_ref }}...HEAD >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' | tr '\n' ',')
+          PR=$(gh pr view ${{ env.PR_NUMBER }} --repo ${{ github.repository }} --json headRefName,baseRefName,title,labels)
+          HEAD=$(echo "$PR" | jq -r '.headRefName')
+          BASE=$(echo "$PR" | jq -r '.baseRefName')
+          TITLE=$(echo "$PR" | jq -r '.title')
+          LABELS=$(echo "$PR" | jq -r '.labels[].name' | tr '\n' ',')
+          echo "head=$HEAD" >> $GITHUB_OUTPUT
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "labels=$LABELS" >> $GITHUB_OUTPUT
-          echo "PR labels: $LABELS"
+          echo "PR: #${{ env.PR_NUMBER }} $TITLE (labels: $LABELS)"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr-info.outputs.head }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          git diff origin/${{ steps.pr-info.outputs.base }}...HEAD >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Claude review and fix
         id: claude
@@ -63,12 +81,12 @@ jobs:
             You are reviewing a Renovate dependency update PR for a GitOps Kubernetes homelab repository.
 
             ## PR Info
-            - Title: ${{ github.event.pull_request.title }}
+            - Title: ${{ steps.pr-info.outputs.title }}
             - Labels: ${{ steps.pr-info.outputs.labels }}
 
             ## Diff
             ```
-            ${{ steps.pr-info.outputs.diff }}
+            ${{ steps.diff.outputs.diff }}
             ```
 
             ## Your task
@@ -109,17 +127,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} \
+          gh pr merge ${{ env.PR_NUMBER }} \
             --squash \
             --auto \
-            --subject "${{ github.event.pull_request.title }}"
+            --repo ${{ github.repository }}
 
       - name: Comment if needs review
         if: contains(steps.claude.outputs.response, 'NEEDS_HUMAN_REVIEW')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} \
+          gh pr comment ${{ env.PR_NUMBER }} \
+            --repo ${{ github.repository }} \
             --body "🤖 **Claude review**: This PR needs human attention before merging.
 
             ${{ steps.claude.outputs.response }}"
