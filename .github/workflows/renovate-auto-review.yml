@@ -78,6 +78,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           timeout_minutes: 15
           allowed_bots: renovate
+          model: claude-sonnet-4-6
           direct_prompt: |
             You are reviewing a Renovate dependency update PR for a GitOps Kubernetes homelab repository.
 
