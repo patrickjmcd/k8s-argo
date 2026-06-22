@@ -118,8 +118,26 @@ jobs:
             If there is something you cannot fix automatically that requires human attention, end with:
             NEEDS_HUMAN_REVIEW: <brief reason>
 
+      - name: Parse Claude result
+        id: result
+        run: |
+          OUTPUT_FILE="/home/runner/work/_temp/claude-execution-output.json"
+          if [ -f "$OUTPUT_FILE" ]; then
+            RESULT=$(python3 -c "import sys,json; d=json.load(open('$OUTPUT_FILE')); print(d.get('result', ''))")
+          else
+            RESULT="${{ steps.claude.outputs.response }}"
+          fi
+          echo "text<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          if echo "$RESULT" | grep -q "MERGE_APPROVED"; then
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "approved=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Merge if approved
-        if: contains(steps.claude.outputs.response, 'MERGE_APPROVED')
+        if: steps.result.outputs.approved == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -129,7 +147,7 @@ jobs:
             --repo ${{ github.repository }}
 
       - name: Comment if needs review
-        if: contains(steps.claude.outputs.response, 'NEEDS_HUMAN_REVIEW')
+        if: steps.result.outputs.approved == 'false' && contains(steps.result.outputs.text, 'NEEDS_HUMAN_REVIEW')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -137,4 +155,4 @@ jobs:
             --repo ${{ github.repository }} \
             --body "🤖 **Claude review**: This PR needs human attention before merging.
 
-            ${{ steps.claude.outputs.response }}"
+            ${{ steps.result.outputs.text }}"
