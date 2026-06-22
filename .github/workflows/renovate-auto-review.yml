@@ -3,25 +3,19 @@ name: Renovate Auto-Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: PR number to review
-        required: true
-        type: string
 
 permissions:
   contents: write
   pull-requests: write
 
 env:
-  PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
   # Patch updates: auto-merge immediately, no Claude needed
   auto-merge-patch:
     if: |
-      (github.actor == 'renovate[bot]' || github.event_name == 'workflow_dispatch') &&
+      github.actor == 'renovate[bot]' &&
       contains(github.event.pull_request.labels.*.name, 'patch')
     runs-on: ubuntu-latest
     steps:
@@ -37,7 +31,7 @@ jobs:
   # Minor and major updates: Claude reviews and fixes if needed
   auto-review:
     if: |
-      (github.actor == 'renovate[bot]' || github.event_name == 'workflow_dispatch') &&
+      github.actor == 'renovate[bot]' &&
       !contains(github.event.pull_request.labels.*.name, 'patch')
     runs-on: ubuntu-latest
     steps:
@@ -79,7 +73,6 @@ jobs:
           timeout_minutes: 15
           allowed_bots: renovate
           model: claude-sonnet-4-6
-          mode: agent
           direct_prompt: |
             You are reviewing a Renovate dependency update PR for a GitOps Kubernetes homelab repository.
 
