@@ -2,6 +2,7 @@ collections:
 
   # ── Scooby-Doo ─────────────────────────────────────────────────────────────
   Scooby-Doo:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -12,6 +13,7 @@ collections:
 
   # ── Franchises ──────────────────────────────────────────────────────────────
   James Bond:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -45,6 +47,7 @@ collections:
     summary: "The complete James Bond film series."
 
   Indiana Jones:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -54,6 +57,7 @@ collections:
     sync_mode: sync
 
   The Hunger Games:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -62,6 +66,7 @@ collections:
     sync_mode: sync
 
   Shrek:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -70,6 +75,7 @@ collections:
     sync_mode: sync
 
   Home Alone:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -78,6 +84,7 @@ collections:
     sync_mode: sync
 
   Despicable Me:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -87,6 +94,7 @@ collections:
     sync_mode: sync
 
   Jumanji:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -95,6 +103,7 @@ collections:
     sync_mode: sync
 
   "Ocean's":
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -103,6 +112,7 @@ collections:
     sync_mode: sync
 
   Paddington:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -111,6 +121,7 @@ collections:
     sync_mode: sync
 
   The Mighty Ducks:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -119,6 +130,7 @@ collections:
     sync_mode: sync
 
   Pitch Perfect:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -127,6 +139,7 @@ collections:
     sync_mode: sync
 
   The Santa Clause:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -135,6 +148,7 @@ collections:
     sync_mode: sync
 
   Kung Fu Panda:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -143,6 +157,7 @@ collections:
     sync_mode: sync
 
   Jurassic Park:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -151,6 +166,7 @@ collections:
     sync_mode: sync
 
   Batman:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -160,6 +176,7 @@ collections:
     sync_mode: sync
 
   Ghostbusters:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -168,6 +185,7 @@ collections:
     sync_mode: sync
 
   Top Gun:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -176,6 +194,7 @@ collections:
     sync_mode: sync
 
   Beetlejuice:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -184,6 +203,7 @@ collections:
     sync_mode: sync
 
   Twister:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -192,6 +212,7 @@ collections:
     sync_mode: sync
 
   Moana:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -200,6 +221,7 @@ collections:
     sync_mode: sync
 
   Hocus Pocus:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -207,7 +229,8 @@ collections:
     collection_order: release
     sync_mode: sync
 
-  Wayne's World:
+  "Wayne's World":
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -217,6 +240,7 @@ collections:
 
   # ── Music ───────────────────────────────────────────────────────────────────
   Taylor Swift:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -226,6 +250,7 @@ collections:
     summary: "Taylor Swift concert films and documentaries."
 
   Music Films:
+    ignore_blank_results: true
     plex_search:
       any:
         genre:
@@ -236,6 +261,7 @@ collections:
 
   # ── TV Shows ─────────────────────────────────────────────────────────────────
   Yellowstone Universe:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
@@ -247,6 +273,7 @@ collections:
     summary: "The Yellowstone universe: Yellowstone, 1883, and 1923."
 
   Planet Earth:
+    ignore_blank_results: true
     plex_search:
       any:
         title:
