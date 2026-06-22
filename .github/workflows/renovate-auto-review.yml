@@ -51,7 +51,7 @@ jobs:
           echo "labels=$LABELS" >> $GITHUB_OUTPUT
           echo "PR: #${{ env.PR_NUMBER }} $TITLE (labels: $LABELS)"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ steps.pr-info.outputs.head }}
           fetch-depth: 0
