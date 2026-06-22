@@ -1,0 +1,105 @@
+name: Renovate Auto-Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-review:
+    if: github.actor == 'renovate[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get PR diff and labels
+        id: pr-info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          git diff origin/${{ github.base_ref }}...HEAD >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' | tr '\n' ',')
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+          echo "PR labels: $LABELS"
+
+      - name: Claude review and fix
+        id: claude
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          timeout_minutes: 15
+          prompt: |
+            You are reviewing a Renovate dependency update PR for a GitOps Kubernetes homelab repository.
+
+            ## PR Info
+            - Title: ${{ github.event.pull_request.title }}
+            - Labels: ${{ steps.pr-info.outputs.labels }}
+
+            ## Diff
+            ```
+            ${{ steps.pr-info.outputs.diff }}
+            ```
+
+            ## Your task
+
+            1. **Analyze the update**: Identify what is being updated (app name, old version → new version).
+
+            2. **Check for breaking changes**: Look up the changelog/release notes for this version bump. Pay attention to:
+               - Renamed config keys or values
+               - Removed fields
+               - Changed defaults that could affect this repo's configuration
+               - API version changes for CRDs
+
+            3. **Check our config**: Look at the relevant values files, kustomization.yaml, or deployment manifests in this repo to see if we use any of the breaking change patterns.
+
+            4. **Fix if needed**: If there are breaking changes that affect our config, make the necessary edits to the relevant files in the repo RIGHT NOW. Commit the changes with a clear message explaining what you changed and why.
+
+            5. **Report**: Output a brief summary:
+               - What was updated
+               - Whether breaking changes exist and if they affect us
+               - What fixes you made (if any)
+               - Whether it's safe to merge
+
+            ## Context about this repo
+            - GitOps repo for a k3s homelab cluster managed by ArgoCD
+            - Apps defined under `apps/` and `core/` as ArgoCD Application manifests
+            - Helm values are in `apps/<name>/values.yaml` or inline `valuesObject` in the Application yaml
+            - Kustomize apps are under `apps/<name>/` or `core/<name>/`
+            - Common breaking change patterns to watch for: renamed helm values keys, changed image tag formats, new required fields, CRD version bumps
+
+            If the update is safe (or you've already fixed any issues), end your response with exactly:
+            MERGE_APPROVED
+
+            If there is something you cannot fix automatically that requires human attention, end with:
+            NEEDS_HUMAN_REVIEW: <brief reason>
+
+      - name: Merge if approved
+        if: contains(steps.claude.outputs.response, 'MERGE_APPROVED')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --squash \
+            --auto \
+            --subject "${{ github.event.pull_request.title }}"
+
+      - name: Comment if needs review
+        if: contains(steps.claude.outputs.response, 'NEEDS_HUMAN_REVIEW')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "🤖 **Claude review**: This PR needs human attention before merging.
+
+            ${{ steps.claude.outputs.response }}"
