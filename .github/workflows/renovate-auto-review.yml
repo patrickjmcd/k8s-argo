@@ -79,6 +79,7 @@ jobs:
           timeout_minutes: 15
           allowed_bots: renovate
           model: claude-sonnet-4-6
+          mode: agent
           direct_prompt: |
             You are reviewing a Renovate dependency update PR for a GitOps Kubernetes homelab repository.
 
