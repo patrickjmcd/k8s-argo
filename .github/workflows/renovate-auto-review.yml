@@ -9,8 +9,28 @@ permissions:
   pull-requests: write
 
 jobs:
+  # Patch updates: auto-merge immediately, no Claude needed
+  auto-merge-patch:
+    if: |
+      github.actor == 'renovate[bot]' &&
+      contains(github.event.pull_request.labels.*.name, 'patch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-merge patch update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --squash \
+            --auto \
+            --repo ${{ github.repository }} \
+            --subject "${{ github.event.pull_request.title }}"
+
+  # Minor and major updates: Claude reviews and fixes if needed
   auto-review:
-    if: github.actor == 'renovate[bot]'
+    if: |
+      github.actor == 'renovate[bot]' &&
+      !contains(github.event.pull_request.labels.*.name, 'patch')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
