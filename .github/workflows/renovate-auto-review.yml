@@ -77,6 +77,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           timeout_minutes: 15
+          allowed_bots: renovate
           direct_prompt: |
             You are reviewing a Renovate dependency update PR for a GitOps Kubernetes homelab repository.
 
