@@ -17,7 +17,7 @@ configMapGenerator:
 images:
   - name: kometa
     newName: registry.gitlab.com/linuxserver.io/docker-kometa/kometa
-    newTag: 2.4.2
+    newTag: 2.4.3
   - name: alpine
     newName: alpine
     newTag: "3.24"
