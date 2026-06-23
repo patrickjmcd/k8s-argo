@@ -98,10 +98,10 @@ spec:
 
           resources:
             limits:
-              memory: 768Mi
+              memory: 1536Mi
             requests:
               cpu: 15m
-              memory: 363Mi
+              memory: 512Mi
           volumeMounts:
             - mountPath: /data
               name: data
