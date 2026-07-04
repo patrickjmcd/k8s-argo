@@ -9,4 +9,4 @@ resources:
 images:
   - name: bazarr
     newName: linuxserver/bazarr
-    newTag: 1.5.6
+    newTag: 1.6.0
