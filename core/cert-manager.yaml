@@ -30,7 +30,7 @@ spec:
       - CreateNamespace=true
   sources:
     - chart: cert-manager
-      targetRevision: v1.20.2
+      targetRevision: v1.20.3
       repoURL: https://charts.jetstack.io
       helm:
         valuesObject:
