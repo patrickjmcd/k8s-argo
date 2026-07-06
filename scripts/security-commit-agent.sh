@@ -23,7 +23,10 @@ if [[ "${SECURITY_AGENT_BYPASS:-}" == "1" ]]; then
   exit 0
 fi
 
-mapfile -t staged_files < <(git diff --cached --name-only --diff-filter=ACMR)
+staged_files=()
+while IFS= read -r line; do
+  staged_files+=("${line}")
+done < <(git diff --cached --name-only --diff-filter=ACMR)
 if [[ "${#staged_files[@]}" -eq 0 ]]; then
   exit 0
 fi
