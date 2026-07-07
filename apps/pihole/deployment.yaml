@@ -47,7 +47,7 @@ spec:
               mountPath: /etc/pihole
       containers:
         - name: pihole
-          image: pihole/pihole:2026.06.0
+          image: pihole/pihole:2026.07.1
           ports:
             - name: dns-tcp
               containerPort: 53
