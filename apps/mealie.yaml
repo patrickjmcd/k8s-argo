@@ -13,7 +13,12 @@ spec:
     name: in-cluster
   project: apps
   syncPolicy:
-    automated: { }
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
   sources:
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
