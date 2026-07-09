@@ -28,18 +28,45 @@ spec:
           args:
             - |
               set -e
-              CONTAINERD_CONFIG=/host/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+              # k3s regenerates config.toml from config.toml.tmpl on every
+              # start, so the persistent template - not the generated file -
+              # is what must be edited.
+              CONTAINERD_TMPL=/host/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
 
-              if grep -q "nvidia" "${CONTAINERD_CONFIG}" 2>/dev/null; then
+              # containerd 2.x renamed the CRI plugin ID from
+              # io.containerd.grpc.v1.cri (1.x) to io.containerd.cri.v1.runtime.
+              # `nvidia-ctk runtime configure` (as of v1.16.2) always emits the
+              # old 1.x schema regardless of the actual containerd version, so
+              # its output is silently ignored on containerd 2.x - write the
+              # correct schema directly instead of relying on it.
+              #
+              # SystemdCgroup must be false here: this node's kubelet passes
+              # cgroupfs-style paths, and nvidia-container-runtime fails
+              # sandbox creation ("expected cgroupsPath to be of format
+              # slice:prefix:name") if SystemdCgroup=true, even though the
+              # plain runc handler on the same node uses SystemdCgroup=true
+              # without issue. Deliberately NOT setting default_runtime_name:
+              # doing so previously forced every pod on the node (including
+              # kyverno's controllers) through nvidia-container-runtime and
+              # broke them. nvidia must stay opt-in via RuntimeClass only.
+              if grep -q 'io.containerd.cri.v1.runtime".containerd.runtimes.nvidia' "${CONTAINERD_TMPL}" 2>/dev/null; then
                 echo "NVIDIA runtime already configured, skipping"
                 exit 0
               fi
 
-              echo "Configuring NVIDIA container runtime for k3s..."
-              nsenter -t 1 -m -u -i -n -p -- \
-                nvidia-ctk runtime configure \
-                  --runtime=containerd \
-                  --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+              echo "Configuring NVIDIA container runtime for k3s (containerd 2.x schema)..."
+              # host-root is mounted read-only, so write via nsenter into the
+              # host's own namespace rather than through the /host bind mount.
+              cat <<'TOML' | nsenter -t 1 -m -u -i -n -p -- tee /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl > /dev/null
+              version = 3
+
+              [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.nvidia]
+                runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.nvidia.options]
+                BinaryName = "/usr/bin/nvidia-container-runtime"
+                SystemdCgroup = false
+              TOML
 
               echo "Restarting k3s-agent..."
               nsenter -t 1 -m -u -i -n -p -- \
