@@ -203,6 +203,8 @@ Cert-manager issues certs via Let's Encrypt DNS-01 (Cloudflare). Certs live in `
 
 Default storage class. Used for databases and stateful apps. Excludes Jetson Nano nodes. PVC name convention: `longhorn-<release>-data`.
 
+**Jetson Nano can never attach Longhorn volumes, not just host replicas.** Its L4T/Tegra kernel (5.15.148-tegra, L4T R36.4.x) was built without `CONFIG_ISCSI_TCP` — `iscsi_tcp` doesn't exist as a loadable module, so Longhorn's iSCSI frontend fails outright when it tries to attach anything there (`allowScheduling: false` on that node only stops it from hosting *replicas*; it doesn't stop a pod with a Longhorn PVC from being scheduled there via nodeSelector and failing to attach). This is a structural kernel limitation, not a config bug — fixing it for real would mean cross-compiling a custom L4T kernel. Any workload placed on `jetson-nano-kube0` (e.g. for GPU access) must use a `hostPath` volume instead, same pattern as `apps/voice-assistant/piper` and `apps/voice-assistant/openwakeword`.
+
 ### SMB (network storage)
 
 For media and shared files. CSI driver in `csi-smb-provisioner` namespace. PV name: `smb-<release>`, PVC: `smb-<release>-claim`. Credentials in `csi-smb-provisioner` namespace from 1Password.
@@ -227,7 +229,7 @@ IP pool: `192.168.8.200–192.168.8.210`. Traefik LoadBalancer gets `.200`. L2 a
 ## Hardware
 
 - **Pi 5 nodes**: `pi5-kube0`, `pi5-kube1`, `pi5-kube2` — general workloads, Frigate has Coral USB TPU on `pi5-kube1`
-- **Jetson Nano**: `jetson-nano-kube0` — GPU workloads (NVIDIA device plugin)
+- **Jetson Nano**: `jetson-nano-kube0` — GPU workloads (NVIDIA device plugin). Least memory of any node (7.8Gi) and cannot attach Longhorn volumes (see Storage section) — keep it to stateless/GPU-only workloads with `hostPath` storage, not databases or other critical singletons.
 - **x86 VMs**: `kube-leader`, `kube-worker-{1-4}` — provisioned via Terraform on Proxmox
 
 ## Node Bootstrap Requirements (RPi nodes)
