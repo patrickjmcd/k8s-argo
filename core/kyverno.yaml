@@ -37,6 +37,50 @@ spec:
           webhookLabels:
             app.kubernetes.io/managed-by: argocd
 
+          # Kyverno's admission webhook gates all pod creation cluster-wide -
+          # it must never land on jetson-nano-kube0 (least memory, no HA,
+          # history of going unresponsive under load).
+          admissionController:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
+          backgroundController:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
+          cleanupController:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
+          reportsController:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - jetson-nano-kube0
+
 
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
