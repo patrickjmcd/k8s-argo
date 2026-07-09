@@ -15,44 +15,35 @@ spec:
       labels:
         app: wyoming-whisper
     spec:
-      runtimeClassName: nvidia
-      nodeSelector:
-        nvidia.com/gpu: "true"
-      tolerations:
-        - key: nvidia.com/gpu
-          operator: Exists
-          effect: NoSchedule
-        - effect: NoExecute
-          key: node.kubernetes.io/not-ready
-          operator: Exists
-          tolerationSeconds: 30
-        - effect: NoExecute
-          key: node.kubernetes.io/unreachable
-          operator: Exists
-          tolerationSeconds: 30
       containers:
         - name: wyoming-whisper
-          # Jetson-native build (L4T R36.4.x) with CUDA support - the official
-          # rhasspy/wyoming-whisper image has no arm64/CUDA variant. Requires
-          # the nvidia RuntimeClass (see apps/nvidia-runtime-config).
-          image: dustynv/wyoming-whisper:2.3.0-r36.4.0
-          env:
-            - name: WHISPER_PORT
-              value: "10300"
-            - name: WHISPER_MODEL
-              value: "base-int8"
-            - name: WHISPER_LANGUAGE
-              value: "en"
+          image: rhasspy/wyoming-whisper:3.3.1
+          args:
+            - --uri
+            - tcp://0.0.0.0:10300
+            - --model
+            - base-int8
+            - --language
+            - en
+            - --device
+            - cpu
+            - --compute-type
+            - int8
+            - --data-dir
+            - /data
+            - --download-dir
+            - /data
           ports:
             - name: wyoming
               containerPort: 10300
               protocol: TCP
           resources:
             requests:
-              cpu: 250m
-              memory: 1Gi
+              cpu: 15m
+              memory: 488Mi
             limits:
-              memory: 3Gi
+              cpu: 15m
+              memory: 549Mi
           volumeMounts:
             - name: data
               mountPath: /data
