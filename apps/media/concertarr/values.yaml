@@ -1,0 +1,67 @@
+image:
+  repository: ghcr.io/patrickjmcd/concertarr
+  tag: "v0.1.0"
+
+service:
+  port: 80
+  containerPort: 8000
+
+resources:
+  requests:
+    cpu: 15m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /healthz
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /healthz
+    initialDelaySeconds: 30
+    failureThreshold: 5
+    periodSeconds: 30
+    timeoutSeconds: 5
+  startup:
+    enabled: true
+    type: httpGet
+    path: /healthz
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - concertarr.x.pmcd.io
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 1Gi
+  mountPath: /app/data
+
+imagePullSecrets:
+  - name: ghcr-registry-cred
+
+env:
+  TZ: America/Chicago
+  CONCERTARR_MEDIA_ROOT: /mnt/media/concerts
+  CONCERTARR_POLL_INTERVAL_MINUTES: "180"
+  CONCERTARR_PREFERRED_FORMATS: "Flac,VBR MP3,MP3,Ogg Vorbis"
+
+extraVolumes:
+  - name: media
+    persistentVolumeClaim:
+      claimName: smb-media-claim
+
+extraVolumeMounts:
+  - mountPath: /mnt/media
+    name: media

@@ -16,6 +16,7 @@ spec:
           - name: hdhr2xmltv
           - name: seerr
           - name: medialyze
+          - name: concertarr
   template:
     metadata:
       name: '{{name}}'
