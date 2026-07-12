@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/patrickjmcd/concertarr
-  tag: "v0.1.0"
+  tag: "64d402d"
 
 service:
   port: 80
@@ -47,9 +47,6 @@ persistence:
   type: longhorn
   size: 1Gi
   mountPath: /app/data
-
-imagePullSecrets:
-  - name: ghcr-registry-cred
 
 env:
   TZ: America/Chicago
