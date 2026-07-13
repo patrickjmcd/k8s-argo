@@ -39,10 +39,10 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 15m
+              cpu: 1500m
               memory: 488Mi
             limits:
-              cpu: 15m
+              cpu: 1500m
               memory: 549Mi
           volumeMounts:
             - name: data
