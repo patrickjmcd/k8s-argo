@@ -122,7 +122,7 @@ settings:
   overlay_artwork_filetype: jpg
   overlay_artwork_quality: 75
 webhooks:                            # Can be individually specified per library as well
-  error: notifiarr
+  error:
   version: notifiarr
   run_start:
   run_end:
