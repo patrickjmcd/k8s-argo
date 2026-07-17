@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/patrickjmcd/concertarr
-  tag: "ff43990"
+  tag: "d7018ef"
 
 service:
   port: 80
