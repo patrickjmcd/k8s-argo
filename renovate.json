@@ -27,6 +27,16 @@
       "/cronjobs/.+\\.yaml$/"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^apps/immich/values\\.yaml$/"],
+      "matchStrings": [
+        "# renovate: depName=(?<depName>.*?)\\s*\\n\\s*tag: (?<currentValue>.*)"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
   "ignoreDeps": [
     "ghcr.io/patrickjmcd/lake-info"
   ],
