@@ -13,21 +13,31 @@ metadata:
     policies.kyverno.io/category: Resiliency
     policies.kyverno.io/description: >-
       Reduces the default 300s eviction window to 30s for unreachable/not-ready
-      nodes. Pods without explicit tolerations for these taints will be rescheduled
-      within ~30s of a node going unreachable instead of waiting 5 minutes.
-      Uses JSON patch appends so existing custom tolerations (control-plane,
-      dedicated=heavy, etc.) are preserved — strategic-merge on tolerations
-      is atomic and would replace the whole list.
+      nodes. The API server's DefaultTolerationSeconds admission plugin runs
+      before mutating webhooks and injects both tolerations at 300s onto any
+      pod that doesn't declare them, so at webhook time tolerationSeconds=300
+      on these keys is the fingerprint of "pod didn't declare it" — this
+      policy rewrites exactly that value to 30. Pods declaring any other
+      value (the repo convention is an explicit 30) are left alone, as are
+      tolerations without tolerationSeconds (DaemonSet forever-tolerations).
+      All patches are targeted JSON patches; nothing ever replaces the
+      tolerations list, so custom tolerations (control-plane,
+      dedicated=heavy, etc.) always survive. CREATE only: pod updates permit
+      only toleration additions, so mutating on UPDATE would get the whole
+      request rejected by validation.
 spec:
   background: false
   rules:
-    # Pods with no tolerations at all: create the array with both entries.
+    # Safety net if DefaultTolerationSeconds is ever disabled: pods arriving
+    # with no tolerations at all get the array created with both entries.
     - name: create-tolerations-array
       match:
         any:
           - resources:
               kinds:
                 - Pod
+              operations:
+                - CREATE
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
@@ -46,14 +56,16 @@ spec:
                 operator: Exists
                 effect: NoExecute
                 tolerationSeconds: 30
-    # Pods that already have tolerations: append each entry only if its key
-    # is missing, leaving everything else in the list untouched.
+    # Same safety net for pods that have tolerations but are missing one of
+    # the pair: append only the missing entry, leaving the rest untouched.
     - name: append-not-ready-toleration
       match:
         any:
           - resources:
               kinds:
                 - Pod
+              operations:
+                - CREATE
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
@@ -77,6 +89,8 @@ spec:
           - resources:
               kinds:
                 - Pod
+              operations:
+                - CREATE
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
@@ -94,3 +108,41 @@ spec:
               operator: Exists
               effect: NoExecute
               tolerationSeconds: 30
+    # The rule that does the real work: DefaultTolerationSeconds has already
+    # added the pair at 300s to any pod that didn't declare them, so shorten
+    # exactly those to 30s. tolerationSeconds values other than 300 are
+    # explicit declarations and are preserved; entries without
+    # tolerationSeconds (tolerate-forever) are never touched.
+    - name: shorten-default-eviction-window
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      preconditions:
+        all:
+          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
+            operator: GreaterThan
+            value: 0
+      mutate:
+        foreach:
+          - list: request.object.spec.tolerations
+            preconditions:
+              all:
+                - key: "{{ element.key || '' }}"
+                  operator: AnyIn
+                  value:
+                    - node.kubernetes.io/not-ready
+                    - node.kubernetes.io/unreachable
+                - key: "{{ element.effect || '' }}"
+                  operator: Equals
+                  value: NoExecute
+                - key: "{{ element.tolerationSeconds || `0` }}"
+                  operator: Equals
+                  value: 300
+            patchesJson6902: |-
+              - op: replace
+                path: /spec/tolerations/{{elementIndex}}/tolerationSeconds
+                value: 30
