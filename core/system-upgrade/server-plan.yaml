@@ -22,11 +22,11 @@ spec:
   tolerations:
     - key: "node-role.kubernetes.io/control-plane"
       operator: "Exists"
-    # Kyverno's node-failure-tolerations policy REPLACES the whole
-    # tolerations list on pods that lack these two, which strips the
-    # control-plane toleration above and leaves the upgrade pod
-    # unschedulable. Declaring them explicitly makes the policy skip
-    # this pod. Same pattern as apps/immich and core/prometheus.
+    # Kyverno's node-failure-tolerations policy now appends these two
+    # tolerations via targeted JSON patches (it used to replace the whole
+    # list, which stripped the control-plane toleration above). Declaring
+    # them explicitly is no longer required — kept as belt-and-suspenders.
+    # Same pattern as apps/immich and core/prometheus.
     - key: node.kubernetes.io/not-ready
       operator: Exists
       effect: NoExecute

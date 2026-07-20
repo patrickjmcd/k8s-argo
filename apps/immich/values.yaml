@@ -28,8 +28,8 @@ server:
         operator: Equal
         value: heavy
         effect: NoSchedule
-      # declared explicitly so the kyverno node-failure-tolerations mutation
-      # (which replaces the whole list) skips these pods
+      # the kyverno node-failure-tolerations mutation now appends these
+      # instead of replacing the list — kept as belt-and-suspenders
       - key: node.kubernetes.io/not-ready
         operator: Exists
         effect: NoExecute
@@ -68,8 +68,8 @@ machine-learning:
         operator: Equal
         value: heavy
         effect: NoSchedule
-      # declared explicitly so the kyverno node-failure-tolerations mutation
-      # (which replaces the whole list) skips these pods
+      # the kyverno node-failure-tolerations mutation now appends these
+      # instead of replacing the list — kept as belt-and-suspenders
       - key: node.kubernetes.io/not-ready
         operator: Exists
         effect: NoExecute

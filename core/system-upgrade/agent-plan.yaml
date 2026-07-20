@@ -12,9 +12,9 @@ spec:
   # Pinned, not channel-tracked — keep in lockstep with server-plan.yaml.
   # renovate: datasource=github-releases depName=k3s-io/k3s
   version: v1.35.6+k3s1
-  # Declared explicitly so Kyverno's node-failure-tolerations policy
-  # (which replaces the whole list otherwise) skips these pods —
-  # see server-plan.yaml.
+  # Kyverno's node-failure-tolerations policy now appends these instead
+  # of replacing the list, so declaring them is optional — kept as
+  # belt-and-suspenders. See server-plan.yaml.
   tolerations:
     - key: node.kubernetes.io/not-ready
       operator: Exists
