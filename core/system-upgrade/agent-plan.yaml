@@ -11,7 +11,7 @@ spec:
   concurrency: 1
   # Pinned, not channel-tracked — keep in lockstep with server-plan.yaml.
   # renovate: datasource=github-releases depName=k3s-io/k3s
-  version: v1.34.6+k3s1
+  version: v1.35.6+k3s1
   # Declared explicitly so Kyverno's node-failure-tolerations policy
   # (which replaces the whole list otherwise) skips these pods —
   # see server-plan.yaml.
