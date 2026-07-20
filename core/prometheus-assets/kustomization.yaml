@@ -9,5 +9,6 @@ resources:
   - json-exporter-1pw.yaml
   - json-exporter-config.yaml
   - json-exporter-deployment.yaml
+  - prometheus-usb-pv.yaml
 
 

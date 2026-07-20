@@ -38,9 +38,23 @@ spec:
           prometheus:
             prometheusSpec:
               scrapeInterval: 60s
-              retentionSize: 8GiB
+              retentionSize: 40GiB
               nodeSelector:
-                kubernetes.io/arch: arm64
+                node-type: heavy
+              tolerations:
+                - key: dedicated
+                  operator: Equal
+                  value: heavy
+                  effect: NoSchedule
+              storageSpec:
+                volumeClaimTemplate:
+                  spec:
+                    storageClassName: local-usb
+                    accessModes:
+                      - ReadWriteOnce
+                    resources:
+                      requests:
+                        storage: 50Gi
               containers:
                 - name: prometheus
                   startupProbe:
@@ -186,6 +200,11 @@ spec:
                 key: node.kubernetes.io/unreachable
                 operator: Exists
                 tolerationSeconds: 30
+              # media-server is tainted opt-in; node-exporter should still run there
+              - effect: NoSchedule
+                key: dedicated
+                operator: Equal
+                value: heavy
             resources:
               requests:
                 cpu: 23m

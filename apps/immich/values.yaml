@@ -21,15 +21,13 @@ immich:
 server:
   enabled: true
   defaultPodOptions:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: NotIn
-                  values:
-                    - jetson-nano-kube0
+    nodeSelector:
+      node-type: heavy
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: heavy
+        effect: NoSchedule
   controllers:
     main:
       containers:
@@ -53,15 +51,13 @@ server:
 machine-learning:
   enabled: true
   defaultPodOptions:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: NotIn
-                  values:
-                    - jetson-nano-kube0
+    nodeSelector:
+      node-type: heavy
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: heavy
+        effect: NoSchedule
   controllers:
     main:
       containers:
@@ -76,5 +72,7 @@ machine-learning:
     cache:
       enabled: true
       size: 10Gi
-      storageClass: longhorn
+      # Longhorn can't attach on the tainted media-server node (no longhorn
+      # daemonset there); NFS from the UNAS works on every node.
+      storageClass: nfs-csi
       accessMode: ReadWriteOnce
