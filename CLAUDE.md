@@ -238,6 +238,17 @@ IP pool: `192.168.8.200–192.168.8.210`. Traefik LoadBalancer gets `.200`. L2 a
   - Test with a disposable pod (`runtimeClassName: nvidia`, `NVIDIA_VISIBLE_DEVICES=all`) before pointing a real workload at it — check for `/dev/nvidia0`, `nvidiactl`, `nvhost-gpu`, `nvmap` inside the container.
 - **x86 VMs**: `kube-leader`, `kube-worker-{1-4}` — provisioned via Terraform on Proxmox
 
+## Node Bootstrap Requirements (all nodes)
+
+**CNI plugins** — the cluster runs flannel as a DaemonSet (`kube-flannel`), not k3s's built-in flannel, so k3s does NOT provide the standard CNI plugins. Every new node needs the base plugins (`loopback`, `bridge`, `portmap`, …) present in `/opt/cni/bin` before pods can start; the flannel DaemonSet only drops in the `flannel` binary itself. Symptom when missing: `FailedCreatePodSandBox … failed to find plugin "loopback" in path [/opt/cni/bin]`.
+
+```bash
+sudo apt-get install -y containernetworking-plugins
+sudo cp /usr/lib/cni/* /opt/cni/bin/
+```
+
+Also install the storage clients so CSI mounts work: `nfs-common` and `cifs-utils`.
+
 ## Node Bootstrap Requirements (RPi nodes)
 
 When adding a new Raspberry Pi node (Pi 4 or Pi 5, Debian trixie, kernel 6.12.x), apply this before joining the cluster:
