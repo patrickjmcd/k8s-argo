@@ -3,33 +3,41 @@ kind: ClusterPolicy
 metadata:
   name: node-failure-tolerations
   annotations:
-    kyverno.io/pod-controllers: none
+    # Autogen deliberately disabled: this policy mutates Pods at admission
+    # only. Letting autogen also mutate Deployment/Job/etc templates would
+    # make ArgoCD see permanent drift on controller specs and fight the
+    # webhook. (The old `kyverno.io/pod-controllers` annotation was the
+    # wrong name and silently left autogen enabled.)
+    pod-policies.kyverno.io/autogen-controllers: none
     policies.kyverno.io/title: Node Failure Fast Eviction
     policies.kyverno.io/category: Resiliency
     policies.kyverno.io/description: >-
       Reduces the default 300s eviction window to 30s for unreachable/not-ready
       nodes. Pods without explicit tolerations for these taints will be rescheduled
       within ~30s of a node going unreachable instead of waiting 5 minutes.
+      Uses JSON patch appends so existing custom tolerations (control-plane,
+      dedicated=heavy, etc.) are preserved — strategic-merge on tolerations
+      is atomic and would replace the whole list.
 spec:
-  validationFailureAction: Audit
   background: false
   rules:
-    - name: add-node-failure-tolerations
+    # Pods with no tolerations at all: create the array with both entries.
+    - name: create-tolerations-array
       match:
         any:
           - resources:
               kinds:
                 - Pod
-      # Don't overwrite pods that already declare these tolerations explicitly.
       preconditions:
         all:
-          - key: "{{ request.object.spec.tolerations[?key=='node.kubernetes.io/unreachable'] || '' }}"
+          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
             operator: Equals
-            value: ""
+            value: 0
       mutate:
-        patchStrategicMerge:
-          spec:
-            tolerations:
+        patchesJson6902: |-
+          - op: add
+            path: /spec/tolerations
+            value:
               - key: node.kubernetes.io/not-ready
                 operator: Exists
                 effect: NoExecute
@@ -38,3 +46,51 @@ spec:
                 operator: Exists
                 effect: NoExecute
                 tolerationSeconds: 30
+    # Pods that already have tolerations: append each entry only if its key
+    # is missing, leaving everything else in the list untouched.
+    - name: append-not-ready-toleration
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      preconditions:
+        all:
+          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
+            operator: GreaterThan
+            value: 0
+          - key: "{{ request.object.spec.tolerations[?key=='node.kubernetes.io/not-ready'] || '' }}"
+            operator: Equals
+            value: ""
+      mutate:
+        patchesJson6902: |-
+          - op: add
+            path: /spec/tolerations/-
+            value:
+              key: node.kubernetes.io/not-ready
+              operator: Exists
+              effect: NoExecute
+              tolerationSeconds: 30
+    - name: append-unreachable-toleration
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      preconditions:
+        all:
+          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
+            operator: GreaterThan
+            value: 0
+          - key: "{{ request.object.spec.tolerations[?key=='node.kubernetes.io/unreachable'] || '' }}"
+            operator: Equals
+            value: ""
+      mutate:
+        patchesJson6902: |-
+          - op: add
+            path: /spec/tolerations/-
+            value:
+              key: node.kubernetes.io/unreachable
+              operator: Exists
+              effect: NoExecute
+              tolerationSeconds: 30
