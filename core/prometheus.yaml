@@ -40,6 +40,9 @@ spec:
               scrapeInterval: 60s
               retentionSize: 40GiB
               nodeSelector:
+                # arch pinned explicitly: server-side apply merges this map with
+                # the previous arm64 selector instead of replacing it
+                kubernetes.io/arch: amd64
                 node-type: heavy
               tolerations:
                 - key: dedicated

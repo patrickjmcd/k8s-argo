@@ -10,5 +10,6 @@ resources:
   - json-exporter-config.yaml
   - json-exporter-deployment.yaml
   - prometheus-usb-pv.yaml
+  - local-usb.storageclass.yaml
 
 
