@@ -23,6 +23,10 @@ spec:
       operator: Exists
       effect: NoExecute
       tolerationSeconds: 30
+    # media-server is tainted dedicated=heavy:NoSchedule
+    - key: dedicated
+      operator: Exists
+      effect: NoSchedule
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
