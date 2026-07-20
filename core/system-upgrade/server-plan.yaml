@@ -21,5 +21,18 @@ spec:
   tolerations:
     - key: "node-role.kubernetes.io/control-plane"
       operator: "Exists"
+    # Kyverno's node-failure-tolerations policy REPLACES the whole
+    # tolerations list on pods that lack these two, which strips the
+    # control-plane toleration above and leaves the upgrade pod
+    # unschedulable. Declaring them explicitly makes the policy skip
+    # this pod. Same pattern as apps/immich and core/prometheus.
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 30
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 30
   upgrade:
     image: rancher/k3s-upgrade

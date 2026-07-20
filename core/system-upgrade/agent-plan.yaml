@@ -11,6 +11,18 @@ spec:
   concurrency: 1
   # Pinned, not channel-tracked — keep in lockstep with server-plan.yaml.
   version: v1.34.6+k3s1
+  # Declared explicitly so Kyverno's node-failure-tolerations policy
+  # (which replaces the whole list otherwise) skips these pods —
+  # see server-plan.yaml.
+  tolerations:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 30
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 30
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
