@@ -35,6 +35,14 @@
         "# renovate: depName=(?<depName>.*?)\\s*\\n\\s*tag: (?<currentValue>.*)"
       ],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^core/system-upgrade/(agent|server)-plan\\.yaml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s*\\n\\s*version: (?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\+k3s(?<build>\\d+)$"
     }
   ],
   "ignoreDeps": [
@@ -83,6 +91,16 @@
       ],
       "groupName": "Flannel",
       "automerge": false
+    },
+    {
+      "matchDepNames": [
+        "k3s-io/k3s"
+      ],
+      "groupName": "k3s",
+      "automerge": false,
+      "prBodyNotes": [
+        "Merging starts the node upgrade rollout immediately (ArgoCD auto-sync). Servers upgrade first, then agents, one node at a time. Never merge a minor-version jump larger than one; check no Proxmox host maintenance is in progress."
+      ]
     }
   ]
 }

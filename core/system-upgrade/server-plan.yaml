@@ -9,7 +9,8 @@ spec:
   concurrency: 1
   # Pinned, not channel-tracked: the stable channel jumped 1.34 -> 1.36,
   # which would skip a minor version (unsupported). Bump deliberately,
-  # one minor at a time.
+  # one minor at a time. Renovate proposes bumps; never automerge.
+  # renovate: datasource=github-releases depName=k3s-io/k3s
   version: v1.34.6+k3s1
   cordon: true
   nodeSelector:
