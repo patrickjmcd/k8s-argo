@@ -9,7 +9,8 @@ metadata:
 spec:
   serviceAccountName: system-upgrade
   concurrency: 1
-  channel: https://update.k3s.io/v1-release/channels/stable
+  # Pinned, not channel-tracked — keep in lockstep with server-plan.yaml.
+  version: v1.34.6+k3s1
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
