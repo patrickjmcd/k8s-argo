@@ -16,6 +16,18 @@ spec:
     storageClass: local-path
     size: 15Gi
 
+  # Never on the Jetson: least RAM in the cluster, fragile node, and this
+  # instance racked up 49 restarts there.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                  - jetson-nano-kube0
+
   primaryUpdateMethod: switchover
 ---
 apiVersion: postgresql.cnpg.io/v1
