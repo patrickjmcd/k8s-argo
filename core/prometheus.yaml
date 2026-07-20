@@ -46,6 +46,16 @@ spec:
                   operator: Equal
                   value: heavy
                   effect: NoSchedule
+                # declared explicitly so the kyverno node-failure-tolerations
+                # mutation (which replaces the whole list) skips this pod
+                - key: node.kubernetes.io/not-ready
+                  operator: Exists
+                  effect: NoExecute
+                  tolerationSeconds: 30
+                - key: node.kubernetes.io/unreachable
+                  operator: Exists
+                  effect: NoExecute
+                  tolerationSeconds: 30
               storageSpec:
                 volumeClaimTemplate:
                   spec:

@@ -28,6 +28,16 @@ server:
         operator: Equal
         value: heavy
         effect: NoSchedule
+      # declared explicitly so the kyverno node-failure-tolerations mutation
+      # (which replaces the whole list) skips these pods
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 30
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 30
   controllers:
     main:
       containers:
@@ -58,6 +68,16 @@ machine-learning:
         operator: Equal
         value: heavy
         effect: NoSchedule
+      # declared explicitly so the kyverno node-failure-tolerations mutation
+      # (which replaces the whole list) skips these pods
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 30
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 30
   controllers:
     main:
       containers:
