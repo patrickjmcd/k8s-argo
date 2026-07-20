@@ -98,8 +98,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            - name: vip_interface
-              value: ens18
+            # vip_interface intentionally unset: kube-vip auto-detects the
+            # default-route interface. Hardcoding ens18 (the VM NIC name) breaks
+            # VIP hosting on bare-metal control-plane nodes. Requirement: every
+            # control-plane node's default route must be on the VLAN-8 (.8)
+            # interface, since the VIP 192.168.8.10 lives there.
             - name: vip_cidr
               value: "32"
             - name: dns_mode
