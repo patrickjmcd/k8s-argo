@@ -54,6 +54,13 @@
       "automerge": true
     },
     {
+      "description": "ArgoCD native OCI sources use repoURL as the full chart path, but Renovate's argocd manager appends the chart name — strip the duplicate segment",
+      "matchPackageNames": [
+        "ghcr.io/containers/charts/kubernetes-mcp-server/kubernetes-mcp-server"
+      ],
+      "overridePackageName": "ghcr.io/containers/charts/kubernetes-mcp-server"
+    },
+    {
       "matchPackageNames": [
         "argo-cd"
       ],
