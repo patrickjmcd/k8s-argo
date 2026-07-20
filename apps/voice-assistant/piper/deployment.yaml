@@ -31,7 +31,7 @@ spec:
           tolerationSeconds: 30
       containers:
         - name: wyoming-piper
-          image: rhasspy/wyoming-piper:2.2.2
+          image: rhasspy/wyoming-piper:2.3.1
           args:
             - --uri
             - tcp://0.0.0.0:10200
