@@ -100,10 +100,18 @@ pvecm status               # confirm the node count dropped and it's still Quora
 ### 4. Wipe & install Debian 13, then bootstrap
 Install Debian 13, apply the networking above, then the standard node bootstrap
 (see CLAUDE.md "Node Bootstrap Requirements"):
+Use **Debian 13 (trixie)** — matches the Pis and the existing kube-worker-1, and it's
+the same base Proxmox already ran on this hardware (proven boot/EFI/NIC support).
 ```bash
 sudo apt-get update
 sudo apt-get install -y containernetworking-plugins nfs-common cifs-utils open-iscsi
 sudo cp /usr/lib/cni/* /opt/cni/bin/          # flannel runs as a DaemonSet; base CNI plugins must exist
+```
+Conntrack check (x86 trixie also runs the 6.12 kernel that needs the RPi fix on some
+NICs — verify, and apply if you see DNS/UDP flakiness after join):
+```bash
+sudo sysctl net.netfilter.nf_conntrack_checksum          # want 0
+# if 1: echo 'net.netfilter.nf_conntrack_checksum=0' | sudo tee /etc/sysctl.d/99-conntrack.conf && sudo sysctl -w net.netfilter.nf_conntrack_checksum=0
 ```
 
 ### 5. Join as a k3s **server**, matching the existing server config
