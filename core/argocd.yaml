@@ -101,7 +101,9 @@ spec:
             resources:
               requests:
                 cpu: 15m
-                memory: 300Mi
+                # VPA target ~105Mi; kept well above it so the 90% memory HPA
+                # threshold stays far from idle baseline
+                memory: 192Mi
               limits:
                 cpu: 200m
                 memory: 512Mi
@@ -119,10 +121,12 @@ spec:
                           operator: NotIn
                           values:
                             - jetson-nano-kube0
+            # VPA target: 671m / ~1.75Gi — the controller does all reconciliation
+            # and was requesting half its real usage.
             resources:
               requests:
-                cpu: 143m
-                memory: 1114Mi
+                cpu: 500m
+                memory: 1792Mi
               limits:
                 memory: 4Gi
 
@@ -158,8 +162,8 @@ spec:
             replicas: 1
             resources:
               requests:
-                cpu: 15m
-                memory: 100Mi
+                cpu: 23m
+                memory: 128Mi
               limits:
                 cpu: 100m
                 memory: 256Mi
