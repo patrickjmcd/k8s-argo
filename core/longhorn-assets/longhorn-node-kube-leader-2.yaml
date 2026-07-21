@@ -21,7 +21,8 @@ spec:
       path: /var/lib/longhorn/
       storageReserved: 4722035097
       tags: []
-  evictionRequested: false
+  # Phase 2: actively migrate existing replicas onto the NVMe Pis.
+  evictionRequested: true
   instanceManagerCPURequest: 0
   name: kube-leader-2
   tags: []
