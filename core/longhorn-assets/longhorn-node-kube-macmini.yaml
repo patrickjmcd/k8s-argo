@@ -10,9 +10,18 @@ metadata:
 spec:
   # etcd/control-plane node (bare-metal Mac Mini, SATA SSD): keep Longhorn
   # replicas off it so replica writes don't compete with etcd fsync.
-  # No disks block on purpose — this is a fresh install with a new disk UUID;
-  # let Longhorn register its own disk, node-level scheduling stays off.
+  # The disks block must be present — Replace=true without it deletes the
+  # auto-registered disk and the longhorn validating webhook denies that.
   allowScheduling: false
+  disks:
+    default-disk-816d35431a8152e1:
+      allowScheduling: false
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /var/lib/longhorn/
+      storageReserved: 144531822182
+      tags: []
   evictionRequested: false
   instanceManagerCPURequest: 0
   name: kube-macmini
