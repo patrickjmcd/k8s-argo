@@ -21,7 +21,8 @@ spec:
       path: /var/lib/longhorn/
       storageReserved: 12012114739
       tags: []
-  evictionRequested: false
+  # Phase 2c: drain replicas onto the NVMe Pis ahead of the pve13 conversion.
+  evictionRequested: true
   instanceManagerCPURequest: 0
   name: kube-leader
   tags: []
