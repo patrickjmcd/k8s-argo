@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-storage
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: homelab-storage
+      rules:
+        # The Beelink's USB drive silently dropped off the bus on 2026-07-21
+        # (re-enumerated sda -> sdb) and stayed unmounted for hours. It holds
+        # the Prometheus TSDB and the cluster backups, and `nofail` in fstab
+        # means nothing complains. Prometheus can't alert on its own storage
+        # vanishing, so watch the mount explicitly.
+        - alert: BeelinkUsbDriveUnmounted
+          expr: absent(node_filesystem_size_bytes{mountpoint="/mnt/usb"})
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Beelink /mnt/usb is not mounted"
+            description: >-
+              node-exporter reports no filesystem at /mnt/usb on media-server.
+              This drive holds the Prometheus TSDB and /mnt/usb/cluster-backups.
+              Fix: ssh patrickjmcd@192.168.1.210, check `lsblk` for the device
+              (it re-enumerates, e.g. sda -> sdb), then `sudo mount /mnt/usb`
+              and restart the Prometheus pod to clear stale file descriptors.
+              NOTE: also fires if media-server itself is down - check NodeDown first.
+
+        # Catch the drive filling up before it wedges Prometheus.
+        - alert: BeelinkUsbDriveLowSpace
+          expr: |
+            node_filesystem_avail_bytes{mountpoint="/mnt/usb"}
+              / node_filesystem_size_bytes{mountpoint="/mnt/usb"} < 0.10
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Beelink /mnt/usb below 10% free"
+            description: "Holds the Prometheus TSDB and cluster backups."

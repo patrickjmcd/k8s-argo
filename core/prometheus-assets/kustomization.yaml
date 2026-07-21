@@ -10,6 +10,7 @@ resources:
   - json-exporter-config.yaml
   - json-exporter-deployment.yaml
   - prometheus-usb-pv.yaml
+  - homelab-storage-rules.yaml
   - local-usb.storageclass.yaml
 
 
