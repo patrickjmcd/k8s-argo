@@ -1,7 +1,7 @@
 apiVersion: longhorn.io/v1beta2
 kind: Node
 metadata:
-  name: kube-worker-1
+  name: kube-leader-2
   namespace: longhorn-system
   finalizers:
     - longhorn.io
@@ -13,15 +13,15 @@ spec:
   # run here and can mount Longhorn volumes hosted elsewhere.
   allowScheduling: false
   disks:
-    default-disk-a8026458cd5c490c:
+    default-disk-c9bde521ad146345:
       allowScheduling: false
       diskDriver: ""
       diskType: filesystem
       evictionRequested: false
       path: /var/lib/longhorn/
-      storageReserved: 20226795110
+      storageReserved: 4722035097
       tags: []
   evictionRequested: false
   instanceManagerCPURequest: 0
-  name: kube-worker-1
+  name: kube-leader-2
   tags: []
