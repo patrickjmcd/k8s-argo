@@ -38,27 +38,34 @@ the next. They are 2 of the 3 etcd members — never have two of them out at onc
 The VMs being replaced live on **VLAN 8 only** (single NIC, `tag=8`, default route via
 `192.168.8.1`). Match that so kube-vip's auto-detect binds the VIP to the right interface.
 
-Keep the switch port as-is (it already trunks VLAN 8) and give the host a **VLAN-8
-tagged interface as its primary**, with the default route on it. Example netplan
-(`/etc/netplan/01-k3s.yaml`, adjust `enp2s0` to the real NIC):
+Keep the switch port as-is (it already trunks VLAN 8: untagged = 192.168.1.x for the
+old Proxmox mgmt, tagged = VLAN 8). The Debian installer will DHCP on the **untagged**
+side and come up as 192.168.1.x — that's fine for installing; you add the VLAN-8
+interface afterwards and make it primary.
 
-```yaml
-network:
-  version: 2
-  ethernets:
-    enp2s0:
-      dhcp4: false
-  vlans:
-    enp2s0.8:
-      id: 8
-      link: enp2s0
-      addresses: [192.168.8.23/24]   # .21 for the mini
-      routes:
-        - to: default
-          via: 192.168.8.1
-      nameservers:
-        addresses: [192.168.8.204, 192.168.8.254]   # cluster + secondary pihole
+**Debian uses `ifupdown`, not netplan** (netplan is Ubuntu). Find the real NIC name
+with `ip -br link`, then `/etc/network/interfaces`:
+
 ```
+auto lo
+iface lo inet loopback
+
+# physical NIC: no IP of its own
+auto enp2s0
+iface enp2s0 inet manual
+
+# VLAN 8 = the cluster network, and the default route lives here
+auto enp2s0.8
+iface enp2s0.8 inet static
+    address 192.168.8.21/24        # .23 for pve13
+    gateway 192.168.8.1
+    dns-nameservers 192.168.8.204 192.168.8.254
+    vlan-raw-device enp2s0
+```
+
+Needs the `vlan` package: `sudo apt-get install -y vlan` (loads 8021q).
+Apply with `sudo systemctl restart networking` — or reboot, which is safer since
+you're changing the interface you're connected over.
 
 Manage/SSH the host via its VLAN-8 IP (192.168.8.23 / .21) — reachable from the Mac.
 Verify before installing k3s: `ip route | grep default` shows the route on `enp2s0.8`,
