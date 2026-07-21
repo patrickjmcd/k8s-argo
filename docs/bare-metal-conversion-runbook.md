@@ -84,8 +84,25 @@ kubectl delete node <kube-leader|kube-worker-1>   # k3s managed-etcd controller 
 kubectl get nodes            # the node is gone
 # on a surviving server: k3s etcd-snapshot ls, and check `etcdctl member list` shows 2 members
 ```
-You are now on **2/3 etcd — quorate but zero fault tolerance.** Do not reboot the mini
-or Trigkey until this host is fully back.
+**CRITICAL — verify the etcd member actually went away.** On the 2026-07-21 mini
+conversion `kubectl delete node` did NOT remove it, and the stale member (still holding
+the same peer URL the new node needs) made the rejoin fail forever with
+`etcdserver: unhealthy cluster`. Check, and remove by hand if needed:
+```bash
+# on a surviving server (k3s ships no etcdctl - fetch one matching the etcd version):
+V=v3.6.12; curl -sL https://github.com/etcd-io/etcd/releases/download/$V/etcd-$V-linux-amd64.tar.gz \
+  | tar xz -C /tmp --strip-components=1 etcd-$V-linux-amd64/etcdctl
+E="sudo /tmp/etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=/var/lib/rancher/k3s/server/tls/etcd/server-ca.crt \
+  --cert=/var/lib/rancher/k3s/server/tls/etcd/server-client.crt \
+  --key=/var/lib/rancher/k3s/server/tls/etcd/server-client.key"
+$E member list -w table          # the removed node must NOT be listed
+$E member remove <ID>            # if it still is
+$E endpoint health --cluster -w table   # all remaining must be healthy before continuing
+```
+
+You are now on **2/3 etcd — quorate but zero fault tolerance.** Do not reboot the other
+servers until this host is fully back.
 
 ### 2. Shut down (don't destroy yet) the guest — it's the rollback
 ```bash
@@ -162,7 +179,22 @@ k3sup runs its install via `sudo`, so the SSH user must be in the `sudo` group.
 Node name defaults to the hostname — set the hostname to `kube-leader` / `kube-worker-1`
 before install if you want to keep the existing names (labels/refs stay valid).
 
-### 6. Dissolve the Proxmox cluster (during the MINI pass only)
+### 5b. Longhorn: point the node manifest at the NEW hostname
+If the rebuilt host gets a different hostname (the mini became `kube-macmini`), the old
+`core/longhorn-assets/longhorn-node-<old>.yaml` is stale and the new node comes up with
+Longhorn's default `allowScheduling: true` — i.e. replicas start landing on the etcd
+disk you just freed. Rename the manifest and update `kustomization.yaml`.
+
+**The manifest MUST include the `disks` block** (copy the auto-registered disk key,
+path and `storageReserved` from the live CR after the node joins):
+```bash
+kubectl get nodes.longhorn.io -n longhorn-system <node> -o jsonpath='{.spec.disks}'
+```
+With `Replace=true` and no `disks` block, ArgoCD tries to delete the auto-registered
+disk, the `validator.longhorn.io` webhook denies it, and **the entire longhorn
+Application stops syncing** — silently leaving the etcd node schedulable.
+
+### 6. Dissolve the Proxmox cluster (during the FINAL pass only)
 After the mini leaves, `pve` is the only Proxmox host. Don't limp along on
 `pvecm expected 1` — make it a clean standalone node:
 ```bash
