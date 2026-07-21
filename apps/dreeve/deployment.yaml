@@ -34,13 +34,18 @@ spec:
             - { name: data, mountPath: /var/www/storage/database, subPath: database }
             - { name: data, mountPath: /var/www/storage/files,    subPath: files }
             - { name: data, mountPath: /var/www/watch,            subPath: watch }
+          # NOTE: do NOT probe Caddy's admin endpoint (:2019). It binds to
+          # localhost only, so kubelet probing the pod IP gets ECONNREFUSED.
+          # Upstream's compose healthcheck works only because curl runs inside
+          # the container. Probe the real app port instead.
+          # Generous startup budget: the web container runs db migrations
+          # (app:db:migrate) before frankenphp starts listening.
           startupProbe:
-            # Caddy admin endpoint - same signal the upstream compose healthcheck uses.
-            httpGet: { path: /metrics, port: 2019 }
-            failureThreshold: 30
+            httpGet: { path: /, port: 8080 }
+            failureThreshold: 40
             periodSeconds: 10
           readinessProbe:
-            httpGet: { path: /metrics, port: 2019 }
+            httpGet: { path: /, port: 8080 }
             periodSeconds: 30
             timeoutSeconds: 5
           resources:
