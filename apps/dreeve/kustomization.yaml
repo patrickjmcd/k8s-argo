@@ -18,6 +18,10 @@ configMapGenerator:
       - IMPORT_MODE=stravaApi
       - APP_URL=https://strava.x.pmcd.io
       - TZ=America/Chicago
-      # Served behind traefik, so the app needs to know its public origin.
-      - PROXY_HOST=https://strava.x.pmcd.io
-      - PROXY_PORT=8080
+      # Deliberately NOT setting PROXY_HOST/PROXY_PORT. Those drive a second
+      # Caddy server block ({$PROXY_HOST}:{$PROXY_PORT}) that reverse-proxies
+      # to localhost:8080 - meant for when Caddy is the public-facing proxy.
+      # Here traefik terminates TLS and forwards to the pod on 8080, which the
+      # default ":8080" block already serves. Setting them either breaks Caddy
+      # parsing (https + non-443 port) or creates a proxy loop. APP_URL alone
+      # tells the app its public origin.
