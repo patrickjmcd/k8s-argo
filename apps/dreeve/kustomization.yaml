@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+  - storage.yaml
+  - 1password.secret.yaml
+
+images:
+  - name: dreeve
+    newName: ghcr.io/dreeveapp/dreeve
+    newTag: "v5.0.2"
+
+configMapGenerator:
+  - name: dreeve-config
+    literals:
+      - IMPORT_MODE=stravaApi
+      - APP_URL=https://strava.x.pmcd.io
+      - TZ=America/Chicago
+      # Served behind traefik, so the app needs to know its public origin.
+      - PROXY_HOST=https://strava.x.pmcd.io
+      - PROXY_PORT=8080

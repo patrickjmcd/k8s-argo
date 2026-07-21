@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-dreeve-data
+spec:
+  # RWO is correct here: app + daemon are two containers in ONE pod, so a
+  # single node always holds the mount. They MUST share these volumes - the
+  # upstream docs are explicit that both containers use the same SQLite db,
+  # build dir and watch folder.
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi

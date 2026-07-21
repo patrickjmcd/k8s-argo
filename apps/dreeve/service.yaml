@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dreeve
+spec:
+  selector:
+    app: dreeve
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

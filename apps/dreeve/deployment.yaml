@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dreeve
+  labels:
+    app: dreeve
+spec:
+  replicas: 1
+  # SQLite on a RWO volume: never run two pods at once.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dreeve
+  template:
+    metadata:
+      labels:
+        app: dreeve
+    spec:
+      containers:
+        # Web UI + admin panel.
+        - name: app
+          image: dreeve
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: dreeve-config
+            - secretRef:
+                name: dreeve-1pw
+          volumeMounts: &dreeveVolumes
+            - { name: data, mountPath: /var/www/build,            subPath: build }
+            - { name: data, mountPath: /var/www/storage/database, subPath: database }
+            - { name: data, mountPath: /var/www/storage/files,    subPath: files }
+            - { name: data, mountPath: /var/www/watch,            subPath: watch }
+          startupProbe:
+            # Caddy admin endpoint - same signal the upstream compose healthcheck uses.
+            httpGet: { path: /metrics, port: 2019 }
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: { path: /metrics, port: 2019 }
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+        # Recurring background tasks (imports, stats rebuilds). Must mount the
+        # SAME volumes as `app` - they share one SQLite database.
+        - name: daemon
+          image: dreeve
+          command: ["bin/console", "app:daemon:run"]
+          envFrom:
+            - configMapRef:
+                name: dreeve-config
+            - secretRef:
+                name: dreeve-1pw
+          volumeMounts: *dreeveVolumes
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "test -f /var/www/storage/database/dreeve.db"]
+            initialDelaySeconds: 120
+            periodSeconds: 60
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-dreeve-data
