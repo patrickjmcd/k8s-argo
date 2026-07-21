@@ -1,0 +1,19 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: kube-macmini
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  # etcd/control-plane node (bare-metal Mac Mini, SATA SSD): keep Longhorn
+  # replicas off it so replica writes don't compete with etcd fsync.
+  # No disks block on purpose — this is a fresh install with a new disk UUID;
+  # let Longhorn register its own disk, node-level scheduling stays off.
+  allowScheduling: false
+  evictionRequested: false
+  instanceManagerCPURequest: 0
+  name: kube-macmini
+  tags: []
