@@ -60,6 +60,25 @@ spec:
                      WHERE objid = c.oid AND deptype = 'e'
                    )" \
                 | psql -h shared-postgres-rw -U "$PGUSER" -d outline -1 -v ON_ERROR_STOP=1
+              # Types (enums, domains, composites) live in pg_type, not pg_class.
+              # Outline migrations run ALTER TYPE ... ADD VALUE, which requires ownership.
+              psql -h shared-postgres-rw -U "$PGUSER" -d outline -tAc \
+                "SELECT format('ALTER TYPE public.%I OWNER TO outline;', t.typname)
+                 FROM pg_type t
+                 JOIN pg_namespace n ON n.oid = t.typnamespace
+                 JOIN pg_roles r ON r.oid = t.typowner
+                 WHERE n.nspname = 'public'
+                   AND t.typtype IN ('e', 'd', 'c')
+                   AND r.rolname = current_user
+                   AND NOT EXISTS (
+                     SELECT 1 FROM pg_class c
+                     WHERE c.reltype = t.oid AND c.relkind <> 'c'
+                   )
+                   AND NOT EXISTS (
+                     SELECT 1 FROM pg_depend
+                     WHERE objid = t.oid AND deptype = 'e'
+                   )" \
+                | psql -h shared-postgres-rw -U "$PGUSER" -d outline -1 -v ON_ERROR_STOP=1
           resources:
             requests:
               cpu: 10m

@@ -36,29 +36,32 @@ spec:
         valuesObject:
           crds:
             enabled: true
+          # No CPU limits on any cert-manager component. A 15m limit is 1.5ms of CPU
+          # per 100ms CFS period, which throttled all three (18-35%) despite each
+          # averaging 1-3m. The webhook is on the API admission path, so throttling it
+          # stalls any request touching cert-manager resources. Memory limits are kept
+          # but given real headroom -- they were previously pinned 1Mi above requests,
+          # one spike away from an OOMKill (cainjector idles at 91Mi of its old 122Mi).
           resources:
             requests:
-              cpu: 15m
-              memory: 105Mi
+              cpu: 20m
+              memory: 128Mi
             limits:
-              cpu: 15m
-              memory: 106Mi
+              memory: 256Mi
           cainjector:
             resources:
               requests:
-                cpu: 15m
-                memory: 121Mi
+                cpu: 20m
+                memory: 128Mi
               limits:
-                cpu: 15m
-                memory: 122Mi
+                memory: 320Mi
           webhook:
             resources:
               requests:
-                cpu: 15m
-                memory: 100Mi
+                cpu: 20m
+                memory: 64Mi
               limits:
-                cpu: 15m
-                memory: 100Mi
+                memory: 192Mi
     - path: core/cert-manager
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main

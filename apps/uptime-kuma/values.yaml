@@ -7,11 +7,14 @@ service:
 
 resources:
   requests:
-    cpu: 35m
-    memory: 283Mi
-  limits:
-    cpu: 49m
+    cpu: 50m
     memory: 288Mi
+  limits:
+    # cpu deliberately unset so it inherits the chart default (500m). The old 49m
+    # limit was 4.9ms per 100ms CFS period and throttled 17.6% of periods against
+    # uptime-kuma's bursty monitor checks; 500m gives a 50ms quota with plenty of
+    # headroom while still capping a runaway.
+    memory: 384Mi
 
 probes:
   readiness:

@@ -133,9 +133,9 @@ spec:
                 - job_name: pve
                   static_configs:
                     - targets:
-                        - 192.168.1.10
+                        # .10 (proxmox-mini) and .13 (pve13) were converted to bare-metal
+                        # k3s servers (kube-macmini / kube-n3160) — no longer Proxmox hosts.
                         - 192.168.1.12
-                        - 192.168.1.13
                   metrics_path: /pve
                   params:
                     module: [default]

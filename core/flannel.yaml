@@ -106,11 +106,16 @@ spec:
           #
           resources:
             requests:
-              cpu: 49m
+              cpu: 100m
               memory: 100Mi
             limits:
-              cpu: 49m
-              memory: 100Mi
+              # Deliberately no CPU limit. Flannel's work is bursty (netlink events,
+              # route programming, subnet lease renewal) and sits on the pod-networking
+              # critical path. A 49m limit = 4.9ms of CPU per 100ms CFS period, which
+              # this DaemonSet blew through instantly: 53-94% throttling on every node
+              # despite averaging only 5-29m. Eviction protection comes from
+              # priorityClassName: system-node-critical, not from Guaranteed QoS.
+              memory: 256Mi
           tolerations:
             - effect: NoExecute
               operator: Exists
