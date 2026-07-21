@@ -22,7 +22,10 @@ the next. They are 2 of the 3 etcd members — never have two of them out at onc
 
 - [x] All agents' `K3S_URL` point at the kube-vip VIP `https://192.168.8.10:6443`, not any single node's IP. (verify: `grep K3S_URL /etc/systemd/system/k3s-agent.service.env` on any agent)
 - [x] kube-vip DaemonSet auto-detects its interface (no hardcoded `ens18`) — so a bare-metal node can host the VIP. **Requirement:** the new host's default route must be on its VLAN-8 interface (see networking below).
-- [x] k3s upgrade rollout finished — every node on `v1.34.6+k3s1`. Pin the install to this version.
+- [ ] **Pin the install to whatever the cluster is running RIGHT NOW — this drifts.**
+      Check first: `kubectl get nodes -o wide` and use that exact version.
+      (Was v1.34.6+k3s1 when written; **v1.36.2+k3s1** as of 2026-07-21.)
+      Joining at the wrong version is the easiest way to break this.
 - [x] etcd snapshot copied off-cluster (Beelink `/mnt/usb/cluster-backups/`), plus vzdump of the VM on nfs-backup.
 - [x] Synology RAID healthy (nfs-backup target has redundancy again).
 - [ ] Take a fresh etcd snapshot the day of: `k3s etcd-snapshot save --name pre-convert-<host>` on kube-leader-2, copy it off-box.
@@ -125,7 +128,7 @@ sudo cat /var/lib/rancher/k3s/server/token    # capture the server token
 On the new host, place that same `/etc/rancher/k3s/config.yaml`, then:
 ```bash
 curl -sfL https://get.k3s.io | \
-  INSTALL_K3S_VERSION=v1.34.6+k3s1 \
+  INSTALL_K3S_VERSION=<CURRENT CLUSTER VERSION - verify with kubectl get nodes> \
   K3S_TOKEN='<server-token>' \
   sh -s - server \
     --server https://192.168.8.10:6443 \
