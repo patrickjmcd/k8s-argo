@@ -220,7 +220,43 @@ Kyverno mutates pods automatically:
 - **pi5-preference**: Scheduling preference for Pi 5 nodes
 - **goldilocks-namespace-label**: Auto-labels namespaces for VPA recommendations
 
+Audit-only (never blocks admission):
+- **cpu-limit-guard**: Flags containers with a CPU limit under 100m. See "Resource requests and limits" below. Findings: `kubectl get polr -A | grep cpu-limit-guard`
+
 If Kyverno webhook gets stuck (failurePolicy=Fail + context deadline exceeded), temporarily patch to `Ignore`, fix root cause, then Kyverno restores `Fail`.
+
+## Resource requests and limits
+
+**Goldilocks CPU numbers go in `requests`, never `limits`.** Its figures are VPA
+recommendations, which describe requests; the dashboard's "Guaranteed" column just
+mirrors the target into limits too. Applying them as limits forms a ratchet — the
+limit caps observed usage, the recommender then recommends the cap, and it gets
+reapplied as the limit — so the recommendation collapses to a point estimate and
+can never climb back.
+
+A CPU limit is a quota per 100ms scheduling period: 100m = 10ms, 15m = 1.5ms. A
+bursty process needs a few contiguous ms per event, exhausts a small quota
+immediately, and stalls until the next period — while its *average* usage still
+reads well under the limit. **Low average utilisation is not evidence that a CPU
+limit is safe.**
+
+This caused a real outage-adjacent incident in July 2026: flannel at 49m throttled
+53–94% on every node while averaging 5–29m, and all three cert-manager components
+at 15m throttled 18–35% while averaging 1–3m — both on critical paths (pod
+networking, API admission). By then cert-manager's recommendation had collapsed to
+`lowerBound == target == upperBound == 15m`, while argocd-repo-server under a roomy
+500m limit still showed a healthy 15m/35m/49m spread. Once collapsed, the
+dashboard's "Burstable" column is no help either — it reads lowerBound/upperBound,
+by then the same number.
+
+Rules of thumb:
+- Latency-sensitive or critical-path components (CNI, webhooks, CSI): **no CPU
+  limit**. Eviction protection comes from `priorityClassName`, not Guaranteed QoS.
+- Everything else: a CPU limit only as a deliberate runaway guard, sized well above
+  observed peak — not derived from average usage.
+- Memory is incompressible and not period-scheduled, so memory limits stay correct.
+  Give them real headroom; don't pin them a few Mi above requests, which is one
+  spike away from an OOMKill.
 
 ## MetalLB
 
