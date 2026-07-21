@@ -115,6 +115,7 @@ the same base Proxmox already ran on this hardware (proven boot/EFI/NIC support)
 ```bash
 sudo apt-get update
 sudo apt-get install -y containernetworking-plugins nfs-common cifs-utils open-iscsi
+sudo mkdir -p /opt/cni/bin
 sudo cp /usr/lib/cni/* /opt/cni/bin/          # flannel runs as a DaemonSet; base CNI plugins must exist
 ```
 Conntrack check (x86 trixie also runs the 6.12 kernel that needs the RPi fix on some
@@ -132,16 +133,32 @@ The existing servers run with a specific config (flannel-backend=none, disables,
 sudo cat /etc/rancher/k3s/config.yaml         # capture this
 sudo cat /var/lib/rancher/k3s/server/token    # capture the server token
 ```
-On the new host, place that same `/etc/rancher/k3s/config.yaml`, then:
-```bash
-curl -sfL https://get.k3s.io | \
-  INSTALL_K3S_VERSION=<CURRENT CLUSTER VERSION - verify with kubectl get nodes> \
-  K3S_TOKEN='<server-token>' \
-  sh -s - server \
-    --server https://192.168.8.10:6443 \
-    --node-ip 192.168.8.23              # .21 for the mini
-# (flannel-backend=none, disables, etc. come from config.yaml)
+**WARNING: `config.yaml` is only half the config.** As of 2026-07-21 it contains just
+`disable: servicelb`. The rest lives in the systemd unit's ExecStart — check it:
+`systemctl cat k3s | grep -A20 ExecStart`. On kube-leader-2 that is:
 ```
+--server https://192.168.8.23:6443     # <- NOTE: points at kube-leader, not the VIP. Repoint survivors to the VIP.
+--flannel-backend=none                 # REQUIRED - flannel runs as a DaemonSet
+--disable=traefik
+--node-taint node-role.kubernetes.io/control-plane:NoSchedule
+```
+Omitting `--flannel-backend=none` makes the node start its own flannel and fight the
+DaemonSet. Pass every one of these explicitly.
+
+**With k3sup** (preferred here — `--server-url` keeps the join pointed at the VIP
+while SSHing to a real server for the token):
+```bash
+k3sup join --server \
+  --host 192.168.8.21 --user <user> \
+  --server-host 192.168.8.32 --server-user pi \
+  --server-url https://192.168.8.10:6443 \
+  --k3s-version <CURRENT CLUSTER VERSION> \
+  --ssh-key ~/.ssh/swarm \
+  --k3s-extra-args '--flannel-backend=none --disable=traefik --disable=servicelb --node-taint node-role.kubernetes.io/control-plane:NoSchedule --node-ip 192.168.8.21'
+```
+k3sup runs its install via `sudo`, so the SSH user must be in the `sudo` group.
+(Debian only installs sudo if you leave the root password blank at install; otherwise:
+`su -` → `apt-get install -y sudo` → `usermod -aG sudo <user>` → re-login.)
 Node name defaults to the hostname — set the hostname to `kube-leader` / `kube-worker-1`
 before install if you want to keep the existing names (labels/refs stay valid).
 

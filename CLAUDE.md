@@ -244,6 +244,7 @@ IP pool: `192.168.8.200–192.168.8.210`. Traefik LoadBalancer gets `.200`. L2 a
 
 ```bash
 sudo apt-get install -y containernetworking-plugins
+sudo mkdir -p /opt/cni/bin
 sudo cp /usr/lib/cni/* /opt/cni/bin/
 ```
 
