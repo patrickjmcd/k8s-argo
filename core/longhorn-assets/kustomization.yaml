@@ -8,7 +8,7 @@ resources:
   - longhorn-node-pi4-kube0.yaml
   - longhorn-node-pi4-kube1.yaml
   - longhorn-node-kube-macmini.yaml
-  - longhorn-node-kube-leader.yaml
+  - longhorn-node-kube-n3160.yaml
   - longhorn-node-kube-leader-2.yaml
   - longhorn-node-pi5-kube0.yaml
   - longhorn-node-pi5-kube1.yaml

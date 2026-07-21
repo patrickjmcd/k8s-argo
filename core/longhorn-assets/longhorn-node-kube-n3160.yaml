@@ -1,0 +1,29 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: kube-n3160
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  # etcd/control-plane node (bare-metal N3160, SATA SSD): keep Longhorn
+  # replicas off it so replica writes don't compete with etcd fsync.
+  # disks block is REQUIRED — Replace=true without it makes ArgoCD delete the
+  # auto-registered disk, which validator.longhorn.io denies, deadlocking the
+  # entire longhorn Application sync.
+  allowScheduling: false
+  disks:
+    default-disk-7ee15a344ebaa392:
+      allowScheduling: false
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /var/lib/longhorn/
+      storageReserved: 72536044339
+      tags: []
+  evictionRequested: false
+  instanceManagerCPURequest: 0
+  name: kube-n3160
+  tags: []
