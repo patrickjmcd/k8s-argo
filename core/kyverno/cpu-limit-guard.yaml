@@ -80,3 +80,16 @@ spec:
                   - key: "{{ element.resources.limits.cpu }}"
                     operator: LessThan
                     value: "100m"
+          # initContainers get their own pass -- several apps here are
+          # initContainer-based (ia-ignition, lidarr, notifiarr, sabnzbd) and a
+          # throttled init container stalls every startup behind it.
+          - list: "request.object.spec.initContainers || `[]`"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ element.resources.limits.cpu || '' }}"
+                    operator: NotEquals
+                    value: ""
+                  - key: "{{ element.resources.limits.cpu }}"
+                    operator: LessThan
+                    value: "100m"
