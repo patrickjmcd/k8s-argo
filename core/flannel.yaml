@@ -21,7 +21,7 @@ spec:
   source:
     chart: flannel
     repoURL: https://flannel-io.github.io/flannel/
-    targetRevision: v0.28.7
+    targetRevision: v0.28.8
     helm:
       releaseName: flannel
       valuesObject:
@@ -34,7 +34,7 @@ spec:
           # kube-flannel image
           image:
             repository: ghcr.io/flannel-io/flannel
-            tag: v0.28.7
+            tag: v0.28.8
           image_cni:
             repository: ghcr.io/flannel-io/flannel-cni-plugin
             tag: v1.9.0-flannel1
