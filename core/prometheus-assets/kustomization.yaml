@@ -11,6 +11,7 @@ resources:
   - json-exporter-deployment.yaml
   - prometheus-usb-pv.yaml
   - homelab-storage-rules.yaml
+  - argocd-servicemonitor.yaml
   - local-usb.storageclass.yaml
 
 

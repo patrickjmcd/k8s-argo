@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-metrics
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack
+spec:
+  # Prometheus only discovers ServiceMonitors in namespaces labelled
+  # prometheus=enabled; the prometheus ns qualifies, so scrape argocd's
+  # metrics services from here rather than relabelling the argocd namespace.
+  namespaceSelector:
+    matchNames:
+      - argocd
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: argocd
+  endpoints:
+    # matches argocd-metrics (app controller) + argocd-server-metrics; both
+    # expose a port named "metrics". Services without it are simply skipped.
+    - port: metrics
+      interval: 60s

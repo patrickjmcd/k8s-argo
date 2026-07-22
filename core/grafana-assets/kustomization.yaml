@@ -6,4 +6,20 @@ resources:
   - dashboard-jellyfin.yaml
   - dashboard-k8s-global.yaml
 
+# Grafana sidecar discovers dashboards by this label; generated here so the
+# large JSON stays in .json files rather than inline YAML.
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
 
+configMapGenerator:
+  - name: grafana-dashboard-longhorn        # grafana.com ID 16888
+    files:
+      - dashboards/longhorn.json
+  - name: grafana-dashboard-node-exporter-full   # grafana.com ID 1860
+    files:
+      - dashboards/node-exporter-full.json
+  - name: grafana-dashboard-argocd          # grafana.com ID 14584
+    files:
+      - dashboards/argocd.json
