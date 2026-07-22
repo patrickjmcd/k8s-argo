@@ -204,6 +204,17 @@ spec:
             affinity: null
             hostNetwork: false
             hostPID: false
+            prometheus:
+              monitor:
+                relabelings:
+                  # node-exporter's default `instance` label is the pod IP:port,
+                  # so every node-based alert (built-in Node* rules + the custom
+                  # homelab-storage rules) shows an IP address instead of a
+                  # hostname. Rewrite `instance` to the Kubernetes node name so
+                  # alerts (and the node dashboards) display node names.
+                  - action: replace
+                    sourceLabels: [__meta_kubernetes_pod_node_name]
+                    targetLabel: instance
             tolerations:
               - effect: NoExecute
                 key: node.kubernetes.io/not-ready
