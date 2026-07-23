@@ -41,9 +41,10 @@ spec:
             #   rtl_eeprom -d 0 -s 978
             - name: DUMP978_RTLSDR_DEVICE
               value: "978"
-            # If 978 reception is weak, replace with a fixed dB value (e.g. "40").
+            # dump978 needs a NUMERIC dB gain (it rejects "autogain", unlike
+            # readsb). 40.2 is a valid rtl-sdr step; tune if 978 is weak/overloaded.
             - name: DUMP978_SDR_GAIN
-              value: "autogain"
+              value: "40.2"
             - name: LAT
               valueFrom:
                 secretKeyRef:
