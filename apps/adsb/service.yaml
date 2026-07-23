@@ -1,0 +1,41 @@
+---
+# Named "ultrafeeder" so piaware's BEASTHOST=ultrafeeder resolves in-namespace.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ultrafeeder
+  labels:
+    app: ultrafeeder
+spec:
+  type: ClusterIP
+  selector:
+    app: ultrafeeder
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: beast-out
+      port: 30005
+      targetPort: 30005
+    - name: beast-in
+      port: 31004
+      targetPort: 31004
+---
+# Named "dump978" so ultrafeeder's URL_978 and the uat_in connector resolve.
+apiVersion: v1
+kind: Service
+metadata:
+  name: dump978
+  labels:
+    app: dump978
+spec:
+  type: ClusterIP
+  selector:
+    app: dump978
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: uat-raw
+      port: 30978
+      targetPort: 30978

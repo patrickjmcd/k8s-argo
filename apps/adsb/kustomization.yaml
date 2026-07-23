@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: adsb
+
+resources:
+  - deployment-ultrafeeder.yaml
+  - deployment-piaware.yaml
+  - deployment-dump978.yaml
+  - service.yaml
+  - httproute.yaml
+  - storage.yaml
+  - 1password.secret.yaml
+
+# Pin images (repo convention: never use `latest`). These are the exact
+# builds currently running on pi3-piaware-plus. Bump deliberately.
+images:
+  - name: ultrafeeder
+    newName: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
+    newTag: latest-build-871
+  - name: piaware
+    newName: ghcr.io/sdr-enthusiasts/docker-piaware
+    newTag: latest-build-640
+  # dump978 publishes commit-SHA tags (no build numbers). Bump deliberately.
+  - name: dump978
+    newName: ghcr.io/sdr-enthusiasts/docker-dump978
+    newTag: "33502c2"

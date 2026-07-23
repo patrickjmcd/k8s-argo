@@ -1,0 +1,59 @@
+---
+# FlightAware feeder. No SDR of its own — it reads decoded beast data from
+# ultrafeeder over the cluster network and does MLAT. Can run on any node.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piaware
+  labels:
+    app: piaware
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: piaware
+  template:
+    metadata:
+      labels:
+        app: piaware
+    spec:
+      containers:
+        - name: piaware
+          image: piaware
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080 # piaware status page
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            - name: BEASTHOST
+              value: "ultrafeeder" # resolves to the ultrafeeder Service
+            - name: BEASTPORT
+              value: "30005"
+            - name: MLAT_RESULTS_BEASTHOST
+              value: "ultrafeeder"
+            - name: MLAT_RESULTS_BEASTPORT
+              value: "31004"
+            # --- sensitive values, sourced from 1Password (adsb-1pw) ---
+            - name: FEEDER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: FEEDER_ID
+            - name: LAT
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: LAT
+            - name: LONG
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: LON
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              memory: "256Mi"

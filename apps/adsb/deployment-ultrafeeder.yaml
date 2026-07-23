@@ -1,0 +1,115 @@
+---
+# readsb + tar1090 + all the aggregator feeds, decoding 1090 MHz ADS-B
+# from an RTL-SDR plugged into pi5-kube1 (same node as Frigate's Coral).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ultrafeeder
+  labels:
+    app: ultrafeeder
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # single USB device — never run two pods against it
+  selector:
+    matchLabels:
+      app: ultrafeeder
+  template:
+    metadata:
+      labels:
+        app: ultrafeeder
+    spec:
+      # Pin to the node the SDR + antenna are physically attached to.
+      nodeSelector:
+        kubernetes.io/hostname: pi5-kube1
+      containers:
+        - name: ultrafeeder
+          image: ultrafeeder
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true # required for raw USB (RTL-SDR) access # security-agent: ignore
+          ports:
+            - name: http
+              containerPort: 80 # tar1090 map UI
+            - name: beast-out
+              containerPort: 30005 # beast output (piaware reads this)
+            - name: beast-in
+              containerPort: 31004 # beast input (piaware MLAT results back)
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            - name: READSB_DEVICE_TYPE
+              value: "rtlsdr"
+            # Serial of the 1090 stick. Flash it first with:
+            #   rtl_eeprom -d 0 -s 1090
+            # or set this to 00000001 to use the stick's default serial as-is.
+            - name: READSB_RTLSDR_DEVICE
+              value: "1090"
+            - name: READSB_GAIN
+              value: "autogain"
+            - name: READSB_ALT
+              value: "295"
+            - name: READSB_MAX_RANGE
+              value: "300"
+            - name: TAR1090_SITENAME
+              value: "mcd-adsb-station"
+            - name: TAR1090_PAGETITLE
+              value: "mcd-adsb-station"
+            - name: TAR1090_ENABLE_AC_DB
+              value: "true"
+            # 978 UAT: dump978 decodes it and ultrafeeder ingests via the
+            # `adsb,dump978,30978,uat_in` entry in ULTRAFEEDER_CONFIG.
+            - name: ENABLE_978
+              value: "yes"
+            - name: URL_978
+              value: "http://dump978/skyaware978"
+            # --- sensitive values, sourced from 1Password (adsb-1pw) ---
+            - name: READSB_LAT
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: LAT
+            - name: READSB_LON
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: LON
+            - name: ULTRAFEEDER_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: ULTRAFEEDER_CONFIG
+          volumeMounts:
+            - name: globe-history
+              mountPath: /var/globe_history
+            - name: dev-bus-usb
+              mountPath: /dev/bus/usb
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              # No CPU limit (repo policy: readsb is steady + latency-sensitive).
+              # Memory limit has real headroom over the request.
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+      volumes:
+        - name: globe-history
+          persistentVolumeClaim:
+            claimName: adsb-globe-history
+        - name: dev-bus-usb
+          hostPath:
+            path: /dev/bus/usb
+            type: Directory

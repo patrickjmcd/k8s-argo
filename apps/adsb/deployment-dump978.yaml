@@ -1,0 +1,76 @@
+---
+# dump978 owns the SECOND RTL-SDR and decodes 978 MHz UAT. ultrafeeder ingests
+# its output over the cluster network (adsb,dump978,30978,uat_in in
+# ULTRAFEEDER_CONFIG) and proxies its map at /skyaware978.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dump978
+  labels:
+    app: dump978
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # single USB device
+  selector:
+    matchLabels:
+      app: dump978
+  template:
+    metadata:
+      labels:
+        app: dump978
+    spec:
+      # Same node as the 1090 stick — both SDRs live on pi5-kube1.
+      nodeSelector:
+        kubernetes.io/hostname: pi5-kube1
+      containers:
+        - name: dump978
+          image: dump978
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true # required for raw USB (RTL-SDR) access # security-agent: ignore
+          ports:
+            - name: http
+              containerPort: 80 # SkyAware978 map + healthcheck
+            - name: uat-raw
+              containerPort: 30978 # raw UAT out (readsb uat_in)
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            # Serial of the 978 stick. Flash it first with:
+            #   rtl_eeprom -d 0 -s 978
+            - name: DUMP978_RTLSDR_DEVICE
+              value: "978"
+            # If 978 reception is weak, replace with a fixed dB value (e.g. "40").
+            - name: DUMP978_SDR_GAIN
+              value: "autogain"
+            - name: LAT
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: LAT
+            - name: LON
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-1pw
+                  key: LON
+          volumeMounts:
+            - name: dev-bus-usb
+              mountPath: /dev/bus/usb
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "128Mi"
+            limits:
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: dev-bus-usb
+          hostPath:
+            path: /dev/bus/usb
+            type: Directory

@@ -1,0 +1,14 @@
+---
+# tar1090 heatmap / range / history state. Small; Longhorn (replicated) is fine
+# on a Pi 5 node. The pod is pinned to pi5-kube1, so the volume lives there.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: adsb-globe-history
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi
