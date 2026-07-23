@@ -64,11 +64,14 @@ spec:
               memory: "128Mi"
             limits:
               memory: "256Mi"
+          # Gate readiness on the raw UAT data port (what ultrafeeder actually
+          # consumes), not the optional SkyAware978 web UI on :80 — that server
+          # doesn't come up in this image tag, and probing it kept the pod
+          # out of the Service, breaking ultrafeeder's uat_in ingest.
           readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 30
+            tcpSocket:
+              port: 30978
+            initialDelaySeconds: 20
             periodSeconds: 15
       volumes:
         - name: dev-bus-usb
