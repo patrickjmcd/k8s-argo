@@ -45,6 +45,14 @@ spec:
             # watching connections and message counts while you learn.
             monitor:
               enabled: true
+          # prometheus-nats-exporter sidecar: scrapes :8222 and exposes Prometheus
+          # metrics (gnatsd_*) on :7777. We wire our own ServiceMonitor in
+          # apps/nats/metrics.yaml to match the repo's monitoring convention.
+          promExporter:
+            enabled: true
+            port: 7777
+            podMonitor:
+              enabled: false
     # 2) Extra resources we own (LAN LoadBalancer so the upstairs Pi can reach it).
     - path: apps/nats
       repoURL: https://github.com/patrickjmcd/k8s-argo.git

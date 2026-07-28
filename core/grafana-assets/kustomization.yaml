@@ -23,3 +23,6 @@ configMapGenerator:
   - name: grafana-dashboard-argocd          # grafana.com ID 14584
     files:
       - dashboards/argocd.json
+  - name: grafana-dashboard-nats            # grafana.com ID 2279 (gnatsd_* metrics)
+    files:
+      - dashboards/nats.json

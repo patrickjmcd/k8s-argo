@@ -1,0 +1,37 @@
+---
+# Routes to the prometheus-nats-exporter sidecar (:7777) on the NATS pod.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats-metrics
+  labels:
+    app: nats-metrics
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: nats
+    app.kubernetes.io/instance: nats
+    app.kubernetes.io/component: nats
+  ports:
+    - name: metrics
+      port: 7777
+      targetPort: 7777
+      protocol: TCP
+---
+# Prometheus Operator scrapes NATS metrics from the exporter.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nats
+  labels:
+    name: nats
+spec:
+  selector:
+    matchLabels:
+      app: nats-metrics
+  namespaceSelector:
+    matchNames:
+      - nats
+  endpoints:
+    - port: metrics
+      interval: 30s
