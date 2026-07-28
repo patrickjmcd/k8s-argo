@@ -5,6 +5,9 @@ metadata:
 data:
   local-dns.conf: |
     address=/x.pmcd.io/192.168.8.200
+    # NATS runs on its own MetalLB LoadBalancer, not Traefik — override the
+    # wildcard for just this name (dnsmasq resolves by longest match).
+    address=/nats.x.pmcd.io/192.168.8.205
     address=/pics.pmcd.dev/192.168.8.200
     host-record=pics.pmcd.dev,192.168.8.200
     address=/jellyfin.pmcd.dev/192.168.8.200
