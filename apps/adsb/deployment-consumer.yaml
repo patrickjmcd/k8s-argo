@@ -1,0 +1,40 @@
+---
+# Bridges NATS -> readsb. Subscribes to adsb.beast.1090 and writes the bytes
+# into ultrafeeder:30004. Plain python:slim + pip install nats-py at startup
+# (keeps it dependency-light; no custom image to build/push).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-nats-consumer
+  labels:
+    app: adsb-nats-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adsb-nats-consumer
+  template:
+    metadata:
+      labels:
+        app: adsb-nats-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: python:3.13-slim
+          command:
+            - sh
+            - -c
+            - "pip install --quiet --no-cache-dir nats-py && exec python /app/consumer.py"
+          volumeMounts:
+            - name: script
+              mountPath: /app
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              memory: "128Mi"
+      volumes:
+        - name: script
+          configMap:
+            name: adsb-nats-consumer

@@ -6,14 +6,14 @@ namespace: adsb
 resources:
   - deployment-ultrafeeder.yaml
   - deployment-piaware.yaml
-  - deployment-dump978.yaml
+  - configmap-consumer.yaml
+  - deployment-consumer.yaml
   - service.yaml
   - httproute.yaml
   - storage.yaml
   - 1password.secret.yaml
 
-# Pin images (repo convention: never use `latest`). These are the exact
-# builds currently running on pi3-piaware-plus. Bump deliberately.
+# Pin images (repo convention: never use `latest`).
 images:
   - name: ultrafeeder
     newName: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
@@ -21,7 +21,3 @@ images:
   - name: piaware
     newName: ghcr.io/sdr-enthusiasts/docker-piaware
     newTag: latest-build-640
-  # dump978 publishes commit-SHA tags (no build numbers). Bump deliberately.
-  - name: dump978
-    newName: ghcr.io/sdr-enthusiasts/docker-dump978
-    newTag: "33502c2"

@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adsb-nats-consumer
+data:
+  consumer.py: |
+    #!/usr/bin/env python3
+    """
+    NATS -> readsb consumer (runs in the cluster).
+
+    Subscribes to the Beast subject the upstairs Pi publishes to, and writes the
+    raw bytes into the cluster ultrafeeder's readsb Beast input (:30004). readsb
+    then decodes/merges and ultrafeeder feeds the aggregators + MLAT.
+
+      subject  adsb.beast.1090  -->  ultrafeeder:30004  (readsb Beast in)
+
+    An asyncio.Queue decouples the NATS callback from the TCP writer so a brief
+    readsb reconnect doesn't block message delivery. Core NATS is at-most-once,
+    so under backpressure we drop (a live feed never wants stale replay).
+    """
+    import asyncio
+    import nats
+
+    NATS_URL = "nats://nats.nats.svc.cluster.local:4222"
+    SUBJECT = "adsb.beast.1090"
+    TARGET_HOST = "ultrafeeder"
+    TARGET_PORT = 30004          # readsb Beast input
+    QUEUE_MAX = 20000
+    RETRY_SECS = 3
+    STATS_EVERY_SECS = 30
+
+    queue: asyncio.Queue = asyncio.Queue(maxsize=QUEUE_MAX)
+    stats = {"recv": 0, "written": 0, "dropped": 0, "bytes": 0}
+
+
+    async def on_msg(msg):
+        stats["recv"] += 1
+        try:
+            queue.put_nowait(msg.data)
+        except asyncio.QueueFull:
+            stats["dropped"] += 1
+
+
+    async def writer_task():
+        """Hold one TCP connection to readsb, draining the queue into it."""
+        while True:
+            writer = None
+            try:
+                _, writer = await asyncio.open_connection(TARGET_HOST, TARGET_PORT)
+                print(f"[tcp] connected to {TARGET_HOST}:{TARGET_PORT}", flush=True)
+                while True:
+                    data = await queue.get()
+                    writer.write(data)
+                    await writer.drain()
+                    stats["written"] += 1
+                    stats["bytes"] += len(data)
+            except Exception as e:
+                print(f"[tcp] error: {e}; retrying in {RETRY_SECS}s", flush=True)
+            finally:
+                if writer is not None:
+                    try:
+                        writer.close()
+                    except Exception:
+                        pass
+            await asyncio.sleep(RETRY_SECS)
+
+
+    async def report():
+        last = (0, 0)
+        while True:
+            await asyncio.sleep(STATS_EVERY_SECS)
+            dw = stats["written"] - last[0]
+            db = stats["bytes"] - last[1]
+            last = (stats["written"], stats["bytes"])
+            print(
+                f"[stats] wrote +{dw} msgs / +{db} B in {STATS_EVERY_SECS}s "
+                f"| recv={stats['recv']} dropped={stats['dropped']} qlen={queue.qsize()}",
+                flush=True,
+            )
+
+
+    async def main():
+        nc = await nats.connect(
+            NATS_URL, name="adsb-cluster-consumer",
+            reconnect_time_wait=2, max_reconnect_attempts=-1,
+        )
+        print(f"[nats] connected to {NATS_URL}, subscribing to {SUBJECT}", flush=True)
+        await nc.subscribe(SUBJECT, cb=on_msg)
+        await asyncio.gather(writer_task(), report())
+
+
+    if __name__ == "__main__":
+        asyncio.run(main())
