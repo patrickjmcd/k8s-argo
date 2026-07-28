@@ -264,7 +264,7 @@ IP pool: `192.168.8.200–192.168.8.210`. Traefik LoadBalancer gets `.200`. L2 a
 
 ## Hardware
 
-- **Pi 5 nodes**: `pi5-kube0`, `pi5-kube1`, `pi5-kube2` — general workloads, Frigate has Coral USB TPU on `pi5-kube1`
+- **Pi 5 nodes**: `pi5-kube0`, `pi5-kube1`, `pi5-kube2` — general workloads
 - **Jetson Nano**: `jetson-nano-kube0` — GPU workloads (NVIDIA device plugin). Least memory of any node (7.8Gi) and cannot attach Longhorn volumes (see Storage section) — keep it to stateless/GPU-only workloads with `hostPath` storage, not databases or other critical singletons.
 
 **GPU runtime (`nvidia` RuntimeClass)**: managed by `apps/nvidia-runtime-config` (writes containerd config on the node via a privileged DaemonSet init container — see that manifest for the full story). Two non-obvious requirements, both confirmed by hand:

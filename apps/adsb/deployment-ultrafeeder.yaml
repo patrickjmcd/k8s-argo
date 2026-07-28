@@ -1,6 +1,6 @@
 ---
 # readsb + tar1090 + all the aggregator feeds, decoding 1090 MHz ADS-B
-# from an RTL-SDR plugged into pi5-kube1 (same node as Frigate's Coral).
+# from an RTL-SDR plugged into pi5-kube1.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
