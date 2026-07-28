@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nats
+  labels:
+    # Prometheus only discovers ServiceMonitors in namespaces with this label
+    # (its serviceMonitorNamespaceSelector). Without it, metrics.yaml is ignored.
+    prometheus: enabled

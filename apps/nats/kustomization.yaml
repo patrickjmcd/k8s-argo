@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: nats
 
 resources:
+  - namespace.yaml
   - loadbalancer-service.yaml
   - monitor-service.yaml
   - httproute.yaml
