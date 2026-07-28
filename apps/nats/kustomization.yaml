@@ -5,3 +5,5 @@ namespace: nats
 
 resources:
   - loadbalancer-service.yaml
+  - monitor-service.yaml
+  - httproute.yaml

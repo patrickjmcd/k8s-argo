@@ -1,0 +1,20 @@
+---
+# ClusterIP for the NATS HTTP monitoring endpoint (8222). The chart only puts
+# 8222 on the headless service; this gives the HTTPRoute a clean backend.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats-monitor
+  labels:
+    app.kubernetes.io/name: nats
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: nats
+    app.kubernetes.io/instance: nats
+    app.kubernetes.io/component: nats
+  ports:
+    - name: monitor
+      port: 8222
+      targetPort: 8222
+      protocol: TCP

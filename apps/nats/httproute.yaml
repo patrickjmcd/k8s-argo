@@ -1,0 +1,25 @@
+---
+# NATS monitoring UI/JSON (varz, connz, subsz) at nats-monitor.x.pmcd.io.
+# Read-only server internals — fine on the LAN; front with auth if ever exposed.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nats-monitor
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: default
+  hostnames:
+    - nats-monitor.x.pmcd.io
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: nats-monitor
+          kind: Service
+          namespace: nats
+          port: 8222
