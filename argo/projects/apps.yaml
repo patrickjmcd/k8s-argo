@@ -15,6 +15,7 @@ spec:
     - https://helm.runix.net
     - https://nvidia.github.io/k8s-device-plugin
     - https://immich-app.github.io/immich-charts
+    - https://nats-io.github.io/k8s/helm/charts
   destinations:
     - namespace: "*"
       name: in-cluster

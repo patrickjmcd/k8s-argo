@@ -1,0 +1,22 @@
+---
+# Exposes the NATS client port (4222) on a MetalLB IP so the upstairs Pi
+# (192.168.1.x) can publish to it. The chart's own Service stays ClusterIP;
+# this is a second, LAN-facing Service we own.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats-lan
+  annotations:
+    # Request a stable IP from the MetalLB pool (.200 is Traefik; .201 free).
+    # Change if that address is already taken.
+    metallb.universe.tf/loadBalancerIPs: 192.168.8.201
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: nats
+    app.kubernetes.io/instance: nats
+  ports:
+    - name: client
+      port: 4222
+      targetPort: 4222
+      protocol: TCP

@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nats
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  project: apps
+  destination:
+    name: in-cluster
+    namespace: nats
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    # 1) The NATS server itself (single node; JetStream on for learning).
+    - chart: nats
+      repoURL: https://nats-io.github.io/k8s/helm/charts
+      targetRevision: 2.14.2
+      helm:
+        releaseName: nats
+        valuesObject:
+          config:
+            # Single server — no clustering needed for a homelab learning setup.
+            cluster:
+              enabled: false
+            # JetStream = NATS's persistence/streaming layer. Not needed for the
+            # live ADS-B firehose (that stays core pub/sub), but enabled so you
+            # can experiment with durable streams, consumers, and replay.
+            jetstream:
+              enabled: true
+              fileStore:
+                pvc:
+                  enabled: true
+                  size: 2Gi
+                  storageClassName: longhorn
+            # HTTP monitoring endpoint on :8222 (varz, connz, subsz) — great for
+            # watching connections and message counts while you learn.
+            monitor:
+              enabled: true
+    # 2) Extra resources we own (LAN LoadBalancer so the upstairs Pi can reach it).
+    - path: apps/nats
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
