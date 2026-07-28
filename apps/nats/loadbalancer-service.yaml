@@ -6,15 +6,18 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats-lan
-  annotations:
-    # Request a stable IP from the MetalLB pool (.200 is Traefik; .201 free).
-    # Change if that address is already taken.
-    metallb.universe.tf/loadBalancerIPs: 192.168.8.201
+  # No fixed IP — let MetalLB auto-assign a free address from the pool
+  # (.200 = Traefik, .201 = wyoming-whisper were taken). Read the assigned
+  # IP with: kubectl -n nats get svc nats-lan
 spec:
   type: LoadBalancer
   selector:
     app.kubernetes.io/name: nats
     app.kubernetes.io/instance: nats
+    # component distinguishes the server pod from the nats-box utility pod
+    # (both share name+instance) — without it the LB also targets nats-box,
+    # which doesn't listen on 4222.
+    app.kubernetes.io/component: nats
   ports:
     - name: client
       port: 4222
