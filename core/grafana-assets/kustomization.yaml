@@ -26,3 +26,6 @@ configMapGenerator:
   - name: grafana-dashboard-nats            # grafana.com ID 2279 (gnatsd_* metrics)
     files:
       - dashboards/nats.json
+  - name: grafana-dashboard-adsb            # home-built, from apps/adsb adsb-exporter
+    files:
+      - dashboards/adsb.json

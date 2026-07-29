@@ -4,10 +4,14 @@ kind: Kustomization
 namespace: adsb
 
 resources:
+  - namespace.yaml
   - deployment-ultrafeeder.yaml
   - deployment-piaware.yaml
   - configmap-consumer.yaml
   - deployment-consumer.yaml
+  - configmap-exporter.yaml
+  - deployment-exporter.yaml
+  - metrics.yaml
   - service.yaml
   - httproute.yaml
   - storage.yaml

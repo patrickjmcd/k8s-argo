@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adsb-exporter
+data:
+  exporter.py: |
+    #!/usr/bin/env python3
+    """
+    Prometheus exporter for the cluster ultrafeeder. readsb feeds graphs1090
+    (RRD), not Prometheus, so this scrapes its stats.json and re-exposes the key
+    numbers as Prometheus gauges for a Grafana dashboard.
+    """
+    import json
+    import time
+    import urllib.request
+    from prometheus_client import start_http_server, Gauge
+
+    STATS_URL = "http://ultrafeeder/data/stats.json"
+    INTERVAL = 15
+    PORT = 9105
+
+    up = Gauge("adsb_up", "stats.json scrape succeeded (1) or not (0)")
+    gain = Gauge("adsb_gain_db", "Current receiver gain (dB)")
+    aircraft = Gauge("adsb_aircraft", "Aircraft currently tracked", ["state"])
+    by_type = Gauge("adsb_aircraft_by_type", "Aircraft currently tracked, by message type", ["type"])
+    msg_rate = Gauge("adsb_message_rate_per_second", "Mode-S message rate (last 1 min)")
+    max_range = Gauge("adsb_max_range_nmi", "Max range observed (nmi, cumulative peak)")
+    signal = Gauge("adsb_signal_dbfs", "Mean signal level (dBFS, last 1 min)")
+    peak = Gauge("adsb_peak_signal_dbfs", "Peak signal level (dBFS, last 1 min)")
+    strong = Gauge("adsb_strong_signals", "Strong / near-overload signals (last 1 min)")
+
+
+    def num(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return 0.0
+
+
+    def scrape():
+        try:
+            with urllib.request.urlopen(STATS_URL, timeout=8) as r:
+                d = json.load(r)
+        except Exception as e:
+            up.set(0)
+            print(f"scrape failed: {e}", flush=True)
+            return
+        up.set(1)
+        gain.set(num(d.get("gain_db")))
+        aircraft.labels("with_position").set(num(d.get("aircraft_with_pos")))
+        aircraft.labels("without_position").set(num(d.get("aircraft_without_pos")))
+        for t, n in (d.get("aircraft_count_by_type") or {}).items():
+            by_type.labels(t).set(num(n))
+        l1 = d.get("last1min", {})
+        loc = l1.get("local", {})
+        msg_rate.set(num(l1.get("messages")) / 60.0)
+        strong.set(num(loc.get("strong_signals")))
+        # signal levels are negative dBFS; only set when present so "no traffic"
+        # doesn't read as a 0 dBFS (full-scale) spike.
+        if loc.get("signal") is not None:
+            signal.set(num(loc.get("signal")))
+        if loc.get("peak_signal") is not None:
+            peak.set(num(loc.get("peak_signal")))
+        max_range.set(num(d.get("total", {}).get("max_distance")) / 1852.0)
+
+
+    if __name__ == "__main__":
+        start_http_server(PORT)
+        print(f"adsb-exporter on :{PORT}, scraping {STATS_URL} every {INTERVAL}s", flush=True)
+        while True:
+            scrape()
+            time.sleep(INTERVAL)

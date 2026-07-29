@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adsb-exporter
+  labels:
+    app: adsb-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: adsb-exporter
+  ports:
+    - name: metrics
+      port: 9105
+      targetPort: 9105
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: adsb-exporter
+  labels:
+    name: adsb-exporter
+spec:
+  selector:
+    matchLabels:
+      app: adsb-exporter
+  namespaceSelector:
+    matchNames:
+      - adsb
+  endpoints:
+    - port: metrics
+      interval: 30s
