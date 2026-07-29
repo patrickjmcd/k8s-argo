@@ -5,11 +5,11 @@
     "adsb"
   ],
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "refresh": "5m",
   "time": {
-    "from": "now-7d",
+    "from": "now-30d",
     "to": "now"
   },
   "timezone": "browser",
@@ -30,7 +30,7 @@
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 8,
+        "w": 6,
         "h": 5
       },
       "targets": [
@@ -71,15 +71,65 @@
     },
     {
       "type": "stat",
+      "title": "Repeat visitors (2+ days)",
+      "description": "Aircraft seen overhead on two or more distinct local calendar days.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "adsb-postgres"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "adsb-postgres"
+          },
+          "rawSql": "SELECT count(*) FROM (SELECT hex FROM sightings GROUP BY hex HAVING count(DISTINCT (started_at AT TIME ZONE 'America/New_York')::date) >= 2) t",
+          "format": "table",
+          "refId": "A",
+          "editorMode": "code"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
       "title": "Helicopters (cat A7)",
       "datasource": {
         "type": "postgres",
         "uid": "adsb-postgres"
       },
       "gridPos": {
-        "x": 8,
+        "x": 12,
         "y": 0,
-        "w": 8,
+        "w": 6,
         "h": 5
       },
       "targets": [
@@ -120,15 +170,16 @@
     },
     {
       "type": "stat",
-      "title": "Total sightings (passes)",
+      "title": "Busiest day (unique aircraft)",
+      "description": "The most distinct aircraft recorded on any single local calendar day.",
       "datasource": {
         "type": "postgres",
         "uid": "adsb-postgres"
       },
       "gridPos": {
-        "x": 16,
+        "x": 18,
         "y": 0,
-        "w": 8,
+        "w": 6,
         "h": 5
       },
       "targets": [
@@ -137,7 +188,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT count(*) FROM sightings",
+          "rawSql": "SELECT max(c) FROM (SELECT count(DISTINCT hex) c FROM sightings GROUP BY (started_at AT TIME ZONE 'America/New_York')::date) t",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -169,7 +220,8 @@
     },
     {
       "type": "table",
-      "title": "Most frequently seen",
+      "title": "Most days seen",
+      "description": "Aircraft ranked by the number of distinct local calendar days they flew overhead — not by ping/pass count.",
       "datasource": {
         "type": "postgres",
         "uid": "adsb-postgres"
@@ -178,7 +230,7 @@
         "x": 0,
         "y": 5,
         "w": 12,
-        "h": 12
+        "h": 13
       },
       "targets": [
         {
@@ -186,7 +238,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT registration AS \"Reg\", last_flight AS \"Flight\", aircraft_type AS \"Type\", category AS \"Cat\", appearances AS \"Passes\", round(total_seconds/60.0,1) AS \"Min seen\", last_seen AS \"Last seen\" FROM aircraft ORDER BY appearances DESC, last_seen DESC LIMIT 40",
+          "rawSql": "SELECT a.registration AS \"Reg\", a.last_flight AS \"Flight\", a.aircraft_type AS \"Type\", a.category AS \"Cat\", count(DISTINCT (s.started_at AT TIME ZONE 'America/New_York')::date) AS \"Days seen\", count(*) AS \"Passes\", min(s.started_at) AS \"First seen\", max(s.ended_at) AS \"Last seen\" FROM aircraft a JOIN sightings s USING (hex) GROUP BY a.hex, a.registration, a.last_flight, a.aircraft_type, a.category ORDER BY \"Days seen\" DESC, \"Passes\" DESC LIMIT 40",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -197,7 +249,7 @@
         "cellHeight": "sm",
         "sortBy": [
           {
-            "displayName": "Passes",
+            "displayName": "Days seen",
             "desc": true
           }
         ]
@@ -214,7 +266,8 @@
     },
     {
       "type": "table",
-      "title": "Most frequent helicopters",
+      "title": "Most days seen — helicopters",
+      "description": "Rotorcraft (emitter category A7) ranked by distinct local calendar days seen.",
       "datasource": {
         "type": "postgres",
         "uid": "adsb-postgres"
@@ -223,7 +276,7 @@
         "x": 12,
         "y": 5,
         "w": 12,
-        "h": 12
+        "h": 13
       },
       "targets": [
         {
@@ -231,7 +284,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT registration AS \"Reg\", last_flight AS \"Flight\", aircraft_type AS \"Type\", category AS \"Cat\", appearances AS \"Passes\", round(total_seconds/60.0,1) AS \"Min seen\", last_seen AS \"Last seen\" FROM aircraft WHERE is_rotorcraft ORDER BY appearances DESC, last_seen DESC LIMIT 40",
+          "rawSql": "SELECT a.registration AS \"Reg\", a.last_flight AS \"Flight\", a.aircraft_type AS \"Type\", count(DISTINCT (s.started_at AT TIME ZONE 'America/New_York')::date) AS \"Days seen\", count(*) AS \"Passes\", min(s.started_at) AS \"First seen\", max(s.ended_at) AS \"Last seen\" FROM aircraft a JOIN sightings s USING (hex) WHERE a.is_rotorcraft GROUP BY a.hex, a.registration, a.last_flight, a.aircraft_type ORDER BY \"Days seen\" DESC, \"Passes\" DESC LIMIT 40",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -242,7 +295,7 @@
         "cellHeight": "sm",
         "sortBy": [
           {
-            "displayName": "Passes",
+            "displayName": "Days seen",
             "desc": true
           }
         ]
@@ -259,14 +312,14 @@
     },
     {
       "type": "timeseries",
-      "title": "Sightings per hour (last 7d)",
+      "title": "Unique aircraft per day (last 30d)",
       "datasource": {
         "type": "postgres",
         "uid": "adsb-postgres"
       },
       "gridPos": {
         "x": 0,
-        "y": 17,
+        "y": 18,
         "w": 24,
         "h": 8
       },
@@ -276,7 +329,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT date_trunc('hour', started_at) AS time, count(*) AS sightings FROM sightings WHERE started_at > now() - interval '7 days' GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT (date_trunc('day', started_at AT TIME ZONE 'America/New_York') AT TIME ZONE 'America/New_York') AS time, count(DISTINCT hex) AS \"unique aircraft\" FROM sightings WHERE started_at > now() - interval '30 days' GROUP BY 1 ORDER BY 1",
           "format": "time_series",
           "refId": "A",
           "editorMode": "code"
