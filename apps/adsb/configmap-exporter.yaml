@@ -6,16 +6,22 @@ data:
   exporter.py: |
     #!/usr/bin/env python3
     """
-    Prometheus exporter for the cluster ultrafeeder. readsb feeds graphs1090
-    (RRD), not Prometheus, so this scrapes its stats.json and re-exposes the key
-    numbers as Prometheus gauges for a Grafana dashboard.
+    Prometheus exporter for the ADS-B station. readsb feeds graphs1090 (RRD),
+    not Prometheus, so this scrapes stats.json and re-exposes the key numbers as
+    gauges for a Grafana dashboard.
+
+    Scrapes the upstairs Pi (the actual receiver) rather than the cluster
+    ultrafeeder: the cluster runs net-only with no SDR, so it has NO signal/gain
+    numbers. Those live on the Pi. The Pi's readsb has everything (aircraft,
+    rate, range, signal, gain), so it's the authoritative source for a station
+    dashboard.
     """
     import json
     import time
     import urllib.request
     from prometheus_client import start_http_server, Gauge
 
-    STATS_URL = "http://ultrafeeder/data/stats.json"
+    STATS_URL = "http://192.168.1.131:1090/data/stats.json"  # pi3-piaware-plus
     INTERVAL = 15
     PORT = 9105
 
