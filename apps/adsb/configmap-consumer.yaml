@@ -6,56 +6,58 @@ data:
   consumer.py: |
     #!/usr/bin/env python3
     """
-    NATS -> readsb consumer (runs in the cluster).
+    NATS -> readsb consumer (runs in the cluster). Bridges both bands:
 
-    Subscribes to the Beast subject the upstairs Pi publishes to, and writes the
-    raw bytes into the cluster ultrafeeder's readsb Beast input (:30004). readsb
-    then decodes/merges and ultrafeeder feeds the aggregators + MLAT.
+      adsb.beast.1090 --> connect out to ultrafeeder:30004  (readsb Beast input)
+      adsb.uat.978    --> serve on :30978, readsb connects in via its uat_in
+                          connector (ULTRAFEEDER_CONFIG: adsb,dump978,30978,uat_in;
+                          a Service named "dump978" points here)
 
-      subject  adsb.beast.1090  -->  ultrafeeder:30004  (readsb Beast in)
-
-    An asyncio.Queue decouples the NATS callback from the TCP writer so a brief
-    readsb reconnect doesn't block message delivery. Core NATS is at-most-once,
-    so under backpressure we drop (a live feed never wants stale replay).
+    1090 and 978 use opposite TCP directions only because that's how readsb
+    exposes them: it *listens* for Beast input, but *dials out* for UAT. So for
+    978 we act as the server (a stand-in for the Pi's dump978, relayed via NATS).
+    Raw byte chunks, order-preserved by core NATS; readsb parses the streams.
     """
     import asyncio
     import nats
 
     NATS_URL = "nats://nats.nats.svc.cluster.local:4222"
-    SUBJECT = "adsb.beast.1090"
-    TARGET_HOST = "ultrafeeder"
-    TARGET_PORT = 30004          # readsb Beast input
+    SUBJECT_1090 = "adsb.beast.1090"
+    SUBJECT_978 = "adsb.uat.978"
+    BEAST_TARGET = ("ultrafeeder", 30004)  # readsb Beast input (we dial out)
+    UAT_LISTEN_PORT = 30978                 # readsb dials in here for UAT
     QUEUE_MAX = 20000
     RETRY_SECS = 3
     STATS_EVERY_SECS = 30
 
-    queue: asyncio.Queue = asyncio.Queue(maxsize=QUEUE_MAX)
-    stats = {"recv": 0, "written": 0, "dropped": 0, "bytes": 0}
+    beast_q: asyncio.Queue = asyncio.Queue(maxsize=QUEUE_MAX)
+    uat_clients: set = set()  # connected readsb writers for the 978 stream
+    stats = {"beast_recv": 0, "beast_written": 0, "beast_dropped": 0,
+             "uat_recv": 0, "uat_clients": 0}
 
 
-    async def on_msg(msg):
-        stats["recv"] += 1
+    # ---- 1090: NATS -> queue -> dial out to readsb Beast input ----
+    async def on_beast(msg):
+        stats["beast_recv"] += 1
         try:
-            queue.put_nowait(msg.data)
+            beast_q.put_nowait(msg.data)
         except asyncio.QueueFull:
-            stats["dropped"] += 1
+            stats["beast_dropped"] += 1
 
 
-    async def writer_task():
-        """Hold one TCP connection to readsb, draining the queue into it."""
+    async def beast_writer():
         while True:
             writer = None
             try:
-                _, writer = await asyncio.open_connection(TARGET_HOST, TARGET_PORT)
-                print(f"[tcp] connected to {TARGET_HOST}:{TARGET_PORT}", flush=True)
+                _, writer = await asyncio.open_connection(*BEAST_TARGET)
+                print(f"[beast] connected to {BEAST_TARGET[0]}:{BEAST_TARGET[1]}", flush=True)
                 while True:
-                    data = await queue.get()
+                    data = await beast_q.get()
                     writer.write(data)
                     await writer.drain()
-                    stats["written"] += 1
-                    stats["bytes"] += len(data)
+                    stats["beast_written"] += 1
             except Exception as e:
-                print(f"[tcp] error: {e}; retrying in {RETRY_SECS}s", flush=True)
+                print(f"[beast] error: {e}; retrying in {RETRY_SECS}s", flush=True)
             finally:
                 if writer is not None:
                     try:
@@ -65,16 +67,50 @@ data:
             await asyncio.sleep(RETRY_SECS)
 
 
+    # ---- 978: NATS -> fan out to connected readsb clients ----
+    async def on_uat(msg):
+        stats["uat_recv"] += 1
+        dead = []
+        for w in uat_clients:
+            try:
+                w.write(msg.data)
+            except Exception:
+                dead.append(w)
+        for w in dead:
+            uat_clients.discard(w)
+
+
+    async def uat_client(reader, writer):
+        peer = writer.get_extra_info("peername")
+        print(f"[uat] readsb connected: {peer}", flush=True)
+        uat_clients.add(writer)
+        stats["uat_clients"] = len(uat_clients)
+        try:
+            while await reader.read(1024):  # only detect close; we push data
+                pass
+        except Exception:
+            pass
+        finally:
+            uat_clients.discard(writer)
+            stats["uat_clients"] = len(uat_clients)
+            try:
+                writer.close()
+            except Exception:
+                pass
+            print(f"[uat] readsb disconnected: {peer}", flush=True)
+
+
     async def report():
         last = (0, 0)
         while True:
             await asyncio.sleep(STATS_EVERY_SECS)
-            dw = stats["written"] - last[0]
-            db = stats["bytes"] - last[1]
-            last = (stats["written"], stats["bytes"])
+            db = stats["beast_written"] - last[0]
+            du = stats["uat_recv"] - last[1]
+            last = (stats["beast_written"], stats["uat_recv"])
             print(
-                f"[stats] wrote +{dw} msgs / +{db} B in {STATS_EVERY_SECS}s "
-                f"| recv={stats['recv']} dropped={stats['dropped']} qlen={queue.qsize()}",
+                f"[stats] beast +{db}/{STATS_EVERY_SECS}s (recv={stats['beast_recv']} "
+                f"drop={stats['beast_dropped']}) | uat +{du}/{STATS_EVERY_SECS}s "
+                f"(recv={stats['uat_recv']} clients={stats['uat_clients']})",
                 flush=True,
             )
 
@@ -84,9 +120,12 @@ data:
             NATS_URL, name="adsb-cluster-consumer",
             reconnect_time_wait=2, max_reconnect_attempts=-1,
         )
-        print(f"[nats] connected to {NATS_URL}, subscribing to {SUBJECT}", flush=True)
-        await nc.subscribe(SUBJECT, cb=on_msg)
-        await asyncio.gather(writer_task(), report())
+        print(f"[nats] connected; subscribing to {SUBJECT_1090} and {SUBJECT_978}", flush=True)
+        await nc.subscribe(SUBJECT_1090, cb=on_beast)
+        await nc.subscribe(SUBJECT_978, cb=on_uat)
+        server = await asyncio.start_server(uat_client, "0.0.0.0", UAT_LISTEN_PORT)
+        print(f"[uat] serving 978 on :{UAT_LISTEN_PORT}", flush=True)
+        await asyncio.gather(beast_writer(), report(), server.serve_forever())
 
 
     if __name__ == "__main__":

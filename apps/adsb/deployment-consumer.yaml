@@ -1,7 +1,7 @@
 ---
-# Bridges NATS -> readsb. Subscribes to adsb.beast.1090 and writes the bytes
-# into ultrafeeder:30004. Plain python:slim + pip install nats-py at startup
-# (keeps it dependency-light; no custom image to build/push).
+# Bridges NATS -> readsb for both bands: writes adsb.beast.1090 into
+# ultrafeeder:30004, and serves adsb.uat.978 on :30978 (readsb dials in via the
+# "dump978" Service). Plain python:slim + pip install nats-py at startup.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,6 +25,9 @@ spec:
             - sh
             - -c
             - "pip install --quiet --no-cache-dir nats-py && exec python /app/consumer.py"
+          ports:
+            - name: uat-978
+              containerPort: 30978 # readsb dials in here for the 978 stream
           volumeMounts:
             - name: script
               mountPath: /app

@@ -24,6 +24,24 @@ spec:
       port: 31004
       targetPort: 31004 # piaware MLAT results back
 ---
+# Named "dump978" so readsb's existing ULTRAFEEDER_CONFIG uat_in connector
+# (adsb,dump978,30978,uat_in) resolves — but it points at the consumer, which
+# relays the Pi's real dump978 output over NATS.
+apiVersion: v1
+kind: Service
+metadata:
+  name: dump978
+  labels:
+    app: adsb-nats-consumer
+spec:
+  type: ClusterIP
+  selector:
+    app: adsb-nats-consumer
+  ports:
+    - name: uat-978
+      port: 30978
+      targetPort: 30978
+---
 apiVersion: v1
 kind: Service
 metadata:
