@@ -110,6 +110,14 @@ spec:
         login: true
         inherit: true
         connectionLimit: -1
+      - name: adsb
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        # password set by CNPG from the 1Password-synced secret (adsb-postgres-1pw)
+        passwordSecret:
+          name: adsb-postgres-1pw
       - name: backup
         ensure: present
         login: true

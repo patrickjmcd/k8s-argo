@@ -195,3 +195,14 @@ spec:
   owner: dispatcharr
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: adsb
+  namespace: postgres
+spec:
+  name: adsb
+  owner: adsb
+  cluster:
+    name: shared-postgres

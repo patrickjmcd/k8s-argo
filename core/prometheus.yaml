@@ -272,6 +272,27 @@ spec:
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io
+            # ADS-B sightings DB (populated by apps/adsb adsb-recorder). Password
+            # injected as an env var from the 1Password-synced secret.
+            envValueFrom:
+              ADSB_DB_PASSWORD:
+                secretKeyRef:
+                  name: adsb-postgres-1pw
+                  key: password
+                  optional: true # don't block Grafana startup if the item isn't made yet
+            additionalDataSources:
+              - name: ADS-B (Postgres)
+                uid: adsb-postgres
+                type: postgres
+                access: proxy
+                url: shared-postgres-rw.postgres.svc.cluster.local:5432
+                database: adsb
+                user: adsb
+                jsonData:
+                  sslmode: disable
+                  postgresVersion: 1000
+                secureJsonData:
+                  password: $__env{ADSB_DB_PASSWORD}
             persistence:
               type: pvc
               enabled: true

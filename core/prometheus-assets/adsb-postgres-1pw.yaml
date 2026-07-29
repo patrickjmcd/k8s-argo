@@ -1,0 +1,8 @@
+# DB password for Grafana's ADS-B Postgres datasource (injected as an env var).
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: adsb-postgres-1pw
+  namespace: prometheus
+spec:
+  itemPath: "vaults/Kubernetes/items/adsb-postgres"

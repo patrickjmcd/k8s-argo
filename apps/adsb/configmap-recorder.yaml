@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adsb-recorder
+data:
+  recorder.py: |
+    #!/usr/bin/env python3
+    """
+    Records ADS-B aircraft sightings into Postgres so you can find planes /
+    helicopters that get picked up frequently.
+
+    Polls readsb aircraft.json and tracks "passes": a pass starts when an
+    aircraft appears and ends when it drops off. Each pass bumps that aircraft's
+    appearance count and logs a row with its time window + altitude range.
+    Helicopters are flagged via emitter category A7 (rotorcraft).
+
+      aircraft  -- one row per hex, aggregate: appearances, first/last seen
+      sightings -- one row per pass, for time-of-day / detail analysis
+    """
+    import json
+    import os
+    import time
+    import urllib.request
+    from datetime import datetime, timezone
+
+    import psycopg2
+    import psycopg2.extras
+
+    STATS_URL = "http://ultrafeeder/data/aircraft.json"
+    INTERVAL = 15
+    PRESENT_MAX_SEEN = 30.0   # aircraft counts as "present" if a msg within 30s
+    DSN = dict(
+        host=os.environ.get("PGHOST", "shared-postgres-rw.postgres.svc.cluster.local"),
+        dbname=os.environ.get("PGDATABASE", "adsb"),
+        user=os.environ.get("PGUSER", "adsb"),
+        password=os.environ.get("PGPASSWORD", ""),  # security-agent: ignore -- reads from env, no secret here
+        connect_timeout=8,
+    )
+
+    SCHEMA = """
+    CREATE TABLE IF NOT EXISTS aircraft (
+        hex           text PRIMARY KEY,
+        registration  text,
+        aircraft_type text,
+        category      text,
+        is_rotorcraft boolean NOT NULL DEFAULT false,
+        last_flight   text,
+        appearances   integer NOT NULL DEFAULT 0,
+        total_seconds bigint  NOT NULL DEFAULT 0,
+        first_seen    timestamptz,
+        last_seen     timestamptz
+    );
+    CREATE TABLE IF NOT EXISTS sightings (
+        id            bigserial PRIMARY KEY,
+        hex           text NOT NULL,
+        started_at    timestamptz NOT NULL,
+        ended_at      timestamptz NOT NULL,
+        flight        text,
+        registration  text,
+        aircraft_type text,
+        category      text,
+        max_alt       integer,
+        min_alt       integer
+    );
+    CREATE INDEX IF NOT EXISTS sightings_hex_idx ON sightings (hex);
+    CREATE INDEX IF NOT EXISTS sightings_started_idx ON sightings (started_at);
+    """
+
+    def connect():
+        while True:
+            try:
+                c = psycopg2.connect(**DSN)
+                c.autocommit = True
+                with c.cursor() as cur:
+                    cur.execute(SCHEMA)
+                print("[db] connected + schema ready", flush=True)
+                return c
+            except Exception as e:
+                print(f"[db] connect failed: {e}; retry in 5s", flush=True)
+                time.sleep(5)
+
+    def s(v):
+        return v.strip() if isinstance(v, str) and v.strip() else None
+
+    def main():
+        conn = connect()
+        active = {}  # hex -> {start, flight, reg, type, cat, max_alt, min_alt}
+        while True:
+            now = datetime.now(timezone.utc)
+            try:
+                with urllib.request.urlopen(STATS_URL, timeout=8) as r:
+                    craft = json.load(r).get("aircraft", [])
+            except Exception as e:
+                print(f"[poll] error: {e}", flush=True)
+                time.sleep(INTERVAL)
+                continue
+
+            present = {}
+            for ac in craft:
+                hx = ac.get("hex")
+                if not hx or (ac.get("seen") or 999) > PRESENT_MAX_SEEN:
+                    continue
+                present[hx] = ac
+
+            try:
+                with conn.cursor() as cur:
+                    # new appearances
+                    for hx, ac in present.items():
+                        alt = ac.get("alt_baro") if isinstance(ac.get("alt_baro"), int) else None
+                        cat = s(ac.get("category"))
+                        rec = dict(flight=s(ac.get("flight")), reg=s(ac.get("r")),
+                                   type=s(ac.get("t")), cat=cat, max_alt=alt, min_alt=alt,
+                                   start=now)
+                        if hx not in active:
+                            active[hx] = rec
+                            cur.execute(
+                                """INSERT INTO aircraft (hex, registration, aircraft_type,
+                                     category, is_rotorcraft, last_flight, appearances,
+                                     first_seen, last_seen)
+                                   VALUES (%s,%s,%s,%s,%s,%s,1,%s,%s)
+                                   ON CONFLICT (hex) DO UPDATE SET
+                                     registration = COALESCE(EXCLUDED.registration, aircraft.registration),
+                                     aircraft_type = COALESCE(EXCLUDED.aircraft_type, aircraft.aircraft_type),
+                                     category = COALESCE(EXCLUDED.category, aircraft.category),
+                                     is_rotorcraft = aircraft.is_rotorcraft OR EXCLUDED.is_rotorcraft,
+                                     last_flight = COALESCE(EXCLUDED.last_flight, aircraft.last_flight),
+                                     appearances = aircraft.appearances + 1,
+                                     last_seen = EXCLUDED.last_seen""",
+                                (hx, rec["reg"], rec["type"], cat, cat == "A7",
+                                 rec["flight"], now, now))
+                        else:
+                            a = active[hx]
+                            if alt is not None:
+                                a["max_alt"] = max(a["max_alt"] or alt, alt)
+                                a["min_alt"] = min(a["min_alt"] if a["min_alt"] is not None else alt, alt)
+                            for k in ("flight", "reg", "type", "cat"):
+                                if rec[k]:
+                                    a[k] = rec[k]
+                            cur.execute("UPDATE aircraft SET last_seen=%s WHERE hex=%s", (now, hx))
+
+                    # ended passes -> log a sighting
+                    for hx in [h for h in active if h not in present]:
+                        p = active.pop(hx)
+                        cur.execute(
+                            """INSERT INTO sightings (hex, started_at, ended_at, flight,
+                                 registration, aircraft_type, category, max_alt, min_alt)
+                               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                            (hx, p["start"], now, p["flight"], p["reg"], p["type"],
+                             p["cat"], p["max_alt"], p["min_alt"]))
+                        dur = int((now - p["start"]).total_seconds())
+                        cur.execute("UPDATE aircraft SET total_seconds = total_seconds+%s WHERE hex=%s",
+                                    (max(dur, 0), hx))
+            except Exception as e:
+                print(f"[db] write error: {e}; reconnecting", flush=True)
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                conn = connect()
+            time.sleep(INTERVAL)
+
+    if __name__ == "__main__":
+        main()

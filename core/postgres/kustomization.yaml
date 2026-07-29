@@ -4,6 +4,7 @@ resources:
   - storage.yaml
   - cluster.yaml
   - databases.yaml
+  - adsb-postgres-1pw.yaml
   - backup-cronjob.yaml
   - grants-job.yaml
   - outline-ownership-fix.yaml

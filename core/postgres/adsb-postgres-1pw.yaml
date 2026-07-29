@@ -1,0 +1,9 @@
+# Backs the adsb role's passwordSecret (CNPG sets the role password from this).
+# Same 1Password item the recorder + Grafana read.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: adsb-postgres-1pw
+  namespace: postgres
+spec:
+  itemPath: "vaults/Kubernetes/items/adsb-postgres"

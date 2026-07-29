@@ -12,6 +12,9 @@ resources:
   - configmap-exporter.yaml
   - deployment-exporter.yaml
   - metrics.yaml
+  - configmap-recorder.yaml
+  - deployment-recorder.yaml
+  - 1password.postgres.yaml
   - service.yaml
   - httproute.yaml
   - storage.yaml

@@ -9,6 +9,7 @@ resources:
   - json-exporter-1pw.yaml
   - json-exporter-config.yaml
   - json-exporter-deployment.yaml
+  - adsb-postgres-1pw.yaml
   - prometheus-usb-pv.yaml
   - homelab-storage-rules.yaml
   - argocd-servicemonitor.yaml

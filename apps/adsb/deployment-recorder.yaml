@@ -1,0 +1,53 @@
+---
+# Polls aircraft.json and records per-aircraft sightings into Postgres (adsb db).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adsb-recorder
+  labels:
+    app: adsb-recorder
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # single writer; in-flight passes reset cleanly on restart
+  selector:
+    matchLabels:
+      app: adsb-recorder
+  template:
+    metadata:
+      labels:
+        app: adsb-recorder
+    spec:
+      containers:
+        - name: recorder
+          image: python:3.13-slim
+          command:
+            - sh
+            - -c
+            - "pip install --quiet --no-cache-dir psycopg2-binary && exec python /app/recorder.py"
+          env:
+            - name: PGHOST
+              value: shared-postgres-rw.postgres.svc.cluster.local
+            - name: PGDATABASE
+              value: adsb
+            - name: PGUSER
+              value: adsb
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-postgres-1pw
+                  key: password
+                  optional: true # starts + retries even before the item is made
+          volumeMounts:
+            - name: script
+              mountPath: /app
+          resources:
+            requests:
+              cpu: "20m"
+              memory: "64Mi"
+            limits:
+              memory: "128Mi"
+      volumes:
+        - name: script
+          configMap:
+            name: adsb-recorder

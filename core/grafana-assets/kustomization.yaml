@@ -29,3 +29,6 @@ configMapGenerator:
   - name: grafana-dashboard-adsb            # home-built, from apps/adsb adsb-exporter
     files:
       - dashboards/adsb.json
+  - name: grafana-dashboard-adsb-frequent  # home-built, from adsb-recorder Postgres db
+    files:
+      - dashboards/adsb-frequent.json
