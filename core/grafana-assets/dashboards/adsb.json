@@ -31,7 +31,7 @@
         "x": 0,
         "y": 0,
         "w": 6,
-        "h": 4
+        "h": 5
       },
       "targets": [
         {
@@ -51,9 +51,10 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value",
         "colorMode": "value",
-        "graphMode": "area"
+        "graphMode": "area",
+        "justifyMode": "center"
       },
       "fieldConfig": {
         "defaults": {
@@ -85,7 +86,7 @@
         "x": 6,
         "y": 0,
         "w": 6,
-        "h": 4
+        "h": 5
       },
       "targets": [
         {
@@ -105,9 +106,10 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value",
         "colorMode": "value",
-        "graphMode": "area"
+        "graphMode": "area",
+        "justifyMode": "center"
       },
       "fieldConfig": {
         "defaults": {
@@ -139,7 +141,7 @@
         "x": 12,
         "y": 0,
         "w": 6,
-        "h": 4
+        "h": 5
       },
       "targets": [
         {
@@ -159,9 +161,10 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value",
         "colorMode": "value",
-        "graphMode": "area"
+        "graphMode": "area",
+        "justifyMode": "center"
       },
       "fieldConfig": {
         "defaults": {
@@ -193,7 +196,7 @@
         "x": 18,
         "y": 0,
         "w": 6,
-        "h": 4
+        "h": 5
       },
       "targets": [
         {
@@ -213,9 +216,10 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value",
         "colorMode": "value",
-        "graphMode": "area"
+        "graphMode": "area",
+        "justifyMode": "center"
       },
       "fieldConfig": {
         "defaults": {
@@ -245,7 +249,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 4,
+        "y": 5,
         "w": 12,
         "h": 8
       },
@@ -293,7 +297,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 4,
+        "y": 5,
         "w": 12,
         "h": 8
       },
@@ -350,7 +354,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 12,
+        "y": 13,
         "w": 12,
         "h": 8
       },
@@ -407,7 +411,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 12,
+        "y": 13,
         "w": 12,
         "h": 8
       },
@@ -455,9 +459,9 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 21,
         "w": 6,
-        "h": 4
+        "h": 5
       },
       "targets": [
         {
@@ -477,9 +481,10 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value",
         "colorMode": "value",
-        "graphMode": "area"
+        "graphMode": "area",
+        "justifyMode": "center"
       },
       "fieldConfig": {
         "defaults": {
@@ -528,9 +533,9 @@
       },
       "gridPos": {
         "x": 6,
-        "y": 20,
+        "y": 21,
         "w": 6,
-        "h": 4
+        "h": 5
       },
       "targets": [
         {
@@ -550,9 +555,10 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value",
         "colorMode": "value",
-        "graphMode": "area"
+        "graphMode": "area",
+        "justifyMode": "center"
       },
       "fieldConfig": {
         "defaults": {
