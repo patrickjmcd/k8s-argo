@@ -624,12 +624,10 @@
       ],
       "options": {
         "view": {
-          "id": "fit",
-          "lat": 0,
-          "lon": 0,
-          "zoom": 4,
-          "allLayers": true,
-          "padding": 15
+          "id": "coords",
+          "lat": 39.0,
+          "lon": -94.6,
+          "zoom": 8
         },
         "controls": {
           "showZoom": true,
