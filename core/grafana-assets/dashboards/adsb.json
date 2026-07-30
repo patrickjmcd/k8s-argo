@@ -627,7 +627,7 @@
           "id": "coords",
           "lat": 39.0,
           "lon": -94.6,
-          "zoom": 8
+          "zoom": 9
         },
         "controls": {
           "showZoom": true,
