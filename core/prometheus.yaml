@@ -269,6 +269,10 @@ spec:
                 memory: 300Mi
               limits:
                 memory: 512Mi
+            # Infinity datasource: lets the ADS-B Station dashboard read
+            # ultrafeeder's live aircraft.json into a native Geomap panel.
+            plugins:
+              - yesoreyeram-infinity-datasource
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io
@@ -298,6 +302,13 @@ spec:
                   postgresVersion: 1000
                 secureJsonData:
                   password: $__env{ADSB_DB_PASSWORD}
+              # Live aircraft feed for the Geomap panel on the ADS-B Station
+              # dashboard — reads ultrafeeder's aircraft.json in-cluster.
+              - name: ADS-B Live (Infinity)
+                uid: adsb-infinity
+                type: yesoreyeram-infinity-datasource
+                access: proxy
+                jsonData: {}
             persistence:
               type: pvc
               enabled: true

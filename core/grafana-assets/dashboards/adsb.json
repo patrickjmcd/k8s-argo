@@ -5,9 +5,9 @@
     "adsb"
   ],
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
-  "refresh": "1m",
+  "refresh": "30s",
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -574,6 +574,110 @@
                 "value": null
               }
             ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "geomap",
+      "title": "Live aircraft",
+      "description": "Live positions from ultrafeeder's aircraft.json (via the Infinity datasource). Markers are colored by barometric altitude, rotated to heading, and labeled with callsign. Refreshes with the dashboard.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "adsb-infinity"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 24,
+        "h": 16
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "adsb-infinity"
+          },
+          "type": "json",
+          "parser": "backend",
+          "source": "url",
+          "format": "table",
+          "url": "http://ultrafeeder.adsb.svc.cluster.local/data/aircraft.json",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "aircraft",
+          "columns": [
+            { "selector": "lat", "text": "lat", "type": "number" },
+            { "selector": "lon", "text": "lon", "type": "number" },
+            { "selector": "flight", "text": "flight", "type": "string" },
+            { "selector": "r", "text": "reg", "type": "string" },
+            { "selector": "t", "text": "type", "type": "string" },
+            { "selector": "alt_baro", "text": "alt_baro", "type": "number" },
+            { "selector": "gs", "text": "gs", "type": "number" },
+            { "selector": "track", "text": "track", "type": "number" },
+            { "selector": "squawk", "text": "squawk", "type": "string" }
+          ]
+        }
+      ],
+      "options": {
+        "view": {
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 4,
+          "allLayers": true,
+          "padding": 15
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showScale": false,
+          "showMeasure": false,
+          "showDebug": false
+        },
+        "tooltip": {
+          "mode": "details"
+        },
+        "basemap": {
+          "type": "default",
+          "name": "Basemap",
+          "config": {}
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Aircraft",
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "config": {
+              "showLegend": true,
+              "style": {
+                "size": { "fixed": 7, "min": 2, "max": 15 },
+                "color": { "field": "alt_baro" },
+                "opacity": 0.9,
+                "rotation": { "mode": "field", "field": "track", "fixed": 0, "min": 0, "max": 360 },
+                "symbol": { "mode": "fixed", "fixed": "img/icons/marker/triangle.svg" },
+                "symbolAlign": { "horizontal": "center", "vertical": "center" },
+                "textConfig": { "fontSize": 10, "textAlign": "center", "textBaseline": "bottom", "offsetX": 0, "offsetY": 8 },
+                "text": { "field": "flight" }
+              }
+            },
+            "tooltip": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthft",
+          "color": {
+            "mode": "continuous-GrYlRd"
           }
         },
         "overrides": []
