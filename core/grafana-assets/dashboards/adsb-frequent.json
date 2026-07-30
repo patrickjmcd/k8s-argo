@@ -89,7 +89,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT count(*) FROM (SELECT hex FROM sightings GROUP BY hex HAVING count(DISTINCT (started_at AT TIME ZONE 'America/New_York')::date) >= 2) t",
+          "rawSql": "SELECT count(*) FROM (SELECT hex FROM sightings GROUP BY hex HAVING count(DISTINCT (started_at AT TIME ZONE 'America/Chicago')::date) >= 2) t",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -188,7 +188,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT max(c) FROM (SELECT count(DISTINCT hex) c FROM sightings GROUP BY (started_at AT TIME ZONE 'America/New_York')::date) t",
+          "rawSql": "SELECT max(c) FROM (SELECT count(DISTINCT hex) c FROM sightings GROUP BY (started_at AT TIME ZONE 'America/Chicago')::date) t",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -238,7 +238,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT a.registration AS \"Reg\", a.last_flight AS \"Flight\", a.aircraft_type AS \"Type\", a.category AS \"Cat\", count(DISTINCT (s.started_at AT TIME ZONE 'America/New_York')::date) AS \"Days seen\", count(*) AS \"Passes\", min(s.started_at) AS \"First seen\", max(s.ended_at) AS \"Last seen\" FROM aircraft a JOIN sightings s USING (hex) GROUP BY a.hex, a.registration, a.last_flight, a.aircraft_type, a.category ORDER BY \"Days seen\" DESC, \"Passes\" DESC LIMIT 40",
+          "rawSql": "SELECT a.registration AS \"Reg\", a.last_flight AS \"Flight\", a.aircraft_type AS \"Type\", a.category AS \"Cat\", count(DISTINCT (s.started_at AT TIME ZONE 'America/Chicago')::date) AS \"Days seen\", count(*) AS \"Passes\", min(s.started_at) AS \"First seen\", max(s.ended_at) AS \"Last seen\" FROM aircraft a JOIN sightings s USING (hex) GROUP BY a.hex, a.registration, a.last_flight, a.aircraft_type, a.category ORDER BY \"Days seen\" DESC, \"Passes\" DESC LIMIT 40",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -284,7 +284,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT a.registration AS \"Reg\", a.last_flight AS \"Flight\", a.aircraft_type AS \"Type\", count(DISTINCT (s.started_at AT TIME ZONE 'America/New_York')::date) AS \"Days seen\", count(*) AS \"Passes\", min(s.started_at) AS \"First seen\", max(s.ended_at) AS \"Last seen\" FROM aircraft a JOIN sightings s USING (hex) WHERE a.is_rotorcraft GROUP BY a.hex, a.registration, a.last_flight, a.aircraft_type ORDER BY \"Days seen\" DESC, \"Passes\" DESC LIMIT 40",
+          "rawSql": "SELECT a.registration AS \"Reg\", a.last_flight AS \"Flight\", a.aircraft_type AS \"Type\", count(DISTINCT (s.started_at AT TIME ZONE 'America/Chicago')::date) AS \"Days seen\", count(*) AS \"Passes\", min(s.started_at) AS \"First seen\", max(s.ended_at) AS \"Last seen\" FROM aircraft a JOIN sightings s USING (hex) WHERE a.is_rotorcraft GROUP BY a.hex, a.registration, a.last_flight, a.aircraft_type ORDER BY \"Days seen\" DESC, \"Passes\" DESC LIMIT 40",
           "format": "table",
           "refId": "A",
           "editorMode": "code"
@@ -329,7 +329,7 @@
             "type": "postgres",
             "uid": "adsb-postgres"
           },
-          "rawSql": "SELECT (date_trunc('day', started_at AT TIME ZONE 'America/New_York') AT TIME ZONE 'America/New_York') AS time, count(DISTINCT hex) AS \"unique aircraft\" FROM sightings WHERE started_at > now() - interval '30 days' GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT (date_trunc('day', started_at AT TIME ZONE 'America/Chicago') AT TIME ZONE 'America/Chicago') AS time, count(DISTINCT hex) AS \"unique aircraft\" FROM sightings WHERE started_at > now() - interval '30 days' GROUP BY 1 ORDER BY 1",
           "format": "time_series",
           "refId": "A",
           "editorMode": "code"
