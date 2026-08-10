@@ -5,6 +5,7 @@ metadata:
   namespace: tailscale
 spec:
   hostname: k8s-subnet-router
+  exitNode: true
   subnetRouter:
     advertiseRoutes:
       - "192.168.8.0/24"  # node/MetalLB network — reaches Traefik at .200
