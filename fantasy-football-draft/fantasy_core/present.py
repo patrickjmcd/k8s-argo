@@ -37,6 +37,8 @@ def format_recommendations(recs: list[Recommendation]) -> str:
     lines = []
     for i, r in enumerate(recs, 1):
         head = f"{i}. {format_player(r.player)}"
+        if r.suggested_max_bid is not None:
+            head += f"  -> bid up to ${r.suggested_max_bid}"
         lines.append(head)
         if r.reasons:
             lines.append("     " + "; ".join(r.reasons))
@@ -45,18 +47,38 @@ def format_recommendations(recs: list[Recommendation]) -> str:
 
 def format_draft_summary(state: DraftState) -> str:
     lines = []
-    lines.append(f"Pick #{state.next_overall_pick} of the draft.")
-    if state.num_teams:
-        wait = state.picks_until_my_turn()
-        if wait == 0:
-            lines.append("You are ON THE CLOCK.")
-        elif wait is not None:
-            lines.append(f"{wait} pick(s) until your turn.")
+    if state.is_auction:
+        spent = state.budget_spent(state.my_team_id)
+        remaining = state.budget_remaining(state.my_team_id)
+        open_slots = state.open_roster_slots(state.my_team_id)
+        lines.append(f"Auction draft. {len(state.picks)} players rostered so far.")
+        lines.append(
+            f"Your budget: ${remaining} left of ${state.budget} "
+            f"(spent ${spent}), {open_slots} roster spots open, "
+            f"max bid ${state.max_bid(state.my_team_id)}."
+        )
+    else:
+        lines.append(f"Pick #{state.next_overall_pick} of the draft.")
+        if state.num_teams:
+            wait = state.picks_until_my_turn()
+            if wait == 0:
+                lines.append("You are ON THE CLOCK.")
+            elif wait is not None:
+                lines.append(f"{wait} pick(s) until your turn.")
     roster = state.my_roster
     if roster:
         lines.append("\nYour roster:")
+        # In an auction, show what you paid for each player.
+        cost_by_pid = {
+            pk.player.id: pk.cost
+            for pk in state.picks
+            if pk.team_id == state.my_team_id and pk.cost is not None
+        }
         for p in roster:
-            lines.append("  - " + format_player(p))
+            line = "  - " + format_player(p)
+            if state.is_auction and cost_by_pid.get(p.id) is not None:
+                line += f"  [${cost_by_pid[p.id]}]"
+            lines.append(line)
     needs = [n for n in roster_needs(roster, state.settings) if n.remaining > 0]
     if needs:
         lines.append(

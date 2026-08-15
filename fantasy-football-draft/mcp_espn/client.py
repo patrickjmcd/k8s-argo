@@ -12,7 +12,14 @@ import os
 
 from espn_api.football import League
 
-from fantasy_core import DraftPick, DraftState, Player, Position, RosterSettings
+from fantasy_core import (
+    DraftFormat,
+    DraftPick,
+    DraftState,
+    Player,
+    Position,
+    RosterSettings,
+)
 
 # ESPN's numeric roster-slot ids -> our positions. Slot ids are stable across
 # seasons; the multi-position slots (FLEX etc.) are handled separately.
@@ -120,12 +127,15 @@ def get_draft_state() -> DraftState:
         overall = getattr(pk, "round_num", 0) * league.settings.team_count - (
             league.settings.team_count - getattr(pk, "round_pick", 0)
         )
+        # In an auction draft, espn-api populates bid_amount on each Pick.
+        bid = getattr(pk, "bid_amount", 0) or 0
         picks.append(
             DraftPick(
                 overall=overall or len(picks) + 1,
                 round=getattr(pk, "round_num", 0),
                 team_id=team_id,
                 player=player,
+                cost=int(bid) if bid else None,
             )
         )
         drafted_ids.add(player.id)
@@ -141,7 +151,15 @@ def get_draft_state() -> DraftState:
         # Before/around draft time free_agents can be empty; fall back to players.
         pass
 
+    # Detect an auction from the presence of any winning bid. Fall back to the
+    # league setting if espn-api exposes it.
+    is_auction = any(pk.cost for pk in picks)
+    draft_type = str(getattr(league.settings, "draft_type", "") or "").upper()
+    if "AUCTION" in draft_type:
+        is_auction = True
+
     draft_slot = os.environ.get("ESPN_DRAFT_SLOT")
+    budget = int(os.environ.get("ESPN_AUCTION_BUDGET", "200"))
     return DraftState(
         settings=settings,
         picks=picks,
@@ -149,6 +167,8 @@ def get_draft_state() -> DraftState:
         my_team_id=cfg.get("team_id") or "",
         my_draft_slot=int(draft_slot) if draft_slot else None,
         num_teams=getattr(league.settings, "team_count", 0),
+        draft_format=DraftFormat.AUCTION if is_auction else DraftFormat.SNAKE,
+        budget=budget,
     )
 
 

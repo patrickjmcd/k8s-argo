@@ -7,6 +7,7 @@ and call the shared advisor so the draft logic lives in exactly one place.
 from .advisor import (
     Recommendation,
     RosterNeed,
+    auction_values,
     flex_remaining,
     recommend,
     replacement_levels,
@@ -15,6 +16,7 @@ from .advisor import (
     value_over_replacement,
 )
 from .models import (
+    DraftFormat,
     DraftPick,
     DraftState,
     Player,
@@ -23,6 +25,7 @@ from .models import (
 )
 
 __all__ = [
+    "DraftFormat",
     "DraftPick",
     "DraftState",
     "Player",
@@ -30,6 +33,7 @@ __all__ = [
     "RosterSettings",
     "Recommendation",
     "RosterNeed",
+    "auction_values",
     "flex_remaining",
     "recommend",
     "replacement_levels",

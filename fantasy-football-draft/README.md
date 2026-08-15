@@ -1,15 +1,21 @@
 # Fantasy Football Draft MCP
 
-Two local [MCP](https://modelcontextprotocol.io) servers that let Claude help you
-draft your fantasy football team — one for **Yahoo**, one for **ESPN** — sharing a
-single platform-agnostic draft brain.
+Local [MCP](https://modelcontextprotocol.io) servers that let Claude help you
+draft your fantasy football team — one for **Yahoo**, one for **ESPN**, plus a
+**local mock-draft simulator** to rehearse — all sharing a single
+platform-agnostic draft brain.
 
 ```
 fantasy_core/     # the "brain": models, value-based drafting, tiers, roster needs, pick advice
 mcp_yahoo/        # Yahoo Fantasy API (official OAuth2) -> MCP tools
 mcp_espn/         # ESPN Fantasy API (unofficial, cookie auth) -> MCP tools
-tests/            # tests for the shared brain (no credentials needed)
+mcp_mock/         # local mock-draft simulator (snake + auction) -> MCP tools
+tests/            # tests for the shared brain and simulator (no credentials needed)
 ```
+
+Both **snake and auction** drafts are supported. In an auction the tools switch
+to budget-aware advice — per-player dollar values, suggested max bids, and
+budget/max-bid tracking — instead of snake pick order.
 
 ## Why two servers, one brain
 
@@ -41,6 +47,54 @@ at whichever server is drafting that night.
 - **`best_available`** — top undrafted players, optionally filtered by position.
 - **`position_tiers`** — tier breaks at a position so you can see a talent cliff
   coming before it hits.
+
+In an **auction** draft, `recommend_pick` returns targets with a par dollar value
+and a suggested max bid, and `draft_status` reports your remaining budget, open
+roster spots, and current max bid.
+
+## Testing with a mock draft
+
+**Heads up:** ESPN and Yahoo mock-draft *rooms* are ephemeral practice lobbies
+with no API-queryable league id, so you can't point the Yahoo/ESPN servers at a
+mock draft on their sites. Instead, this repo ships a **local simulator**
+(`mcp_mock`) that runs a full draft against bots using the same recommendation
+brain — the best way to rehearse and to sanity-check the advice before draft day.
+It supports both snake and auction.
+
+Add it like the other servers (no credentials needed):
+
+```json
+{
+  "mcpServers": {
+    "mock-draft": { "command": "/absolute/path/to/.venv/bin/mock-draft-mcp" }
+  }
+}
+```
+
+Its tools:
+
+- **`start_mock_draft`** — `teams`, `my_slot`, `draft_format` (`snake`/`auction`),
+  `budget`. Resets and starts a draft.
+- **`draft_player`** (snake) — draft an available player by name; bots then pick
+  up to your next turn.
+- **`buy_player`** (auction) — win a player at a price (rejected if it exceeds your
+  max bid); opponents then buy a wave of players.
+- **`sim_opponents`** — advance bots to your next pick (snake) or run N opponent
+  purchases (auction).
+- Plus **`draft_status`**, **`recommend_pick`**, **`best_available`**,
+  **`position_tiers`**, same as the live servers.
+
+Then just talk to Claude: *"Start a 12-team auction mock, I'm team 5."* →
+*"Who should I target and how much?"* → *"Buy WR1 for $40."* → *"What's my
+budget now?"* Player names in the simulator are synthetic (`RB1`, `WR2`, …) since
+it carries no real projections — it's for rehearsing mechanics and decisions.
+
+## Want a real-data dry run?
+
+Point the ESPN or Yahoo server at one of **your previous seasons** (set
+`ESPN_SEASON` / `YAHOO_GAME_ID` to a past year you played). The API returns that
+season's completed draft and rosters, which is a good way to validate parsing
+against real data — though it won't feel "live."
 
 ## Setup
 
@@ -141,9 +195,14 @@ Once connected, on draft night just ask Claude things like:
   flex slots are handled as a shared pool so a single flex never reads as "need"
   at every eligible position; positions you're already deep at get a penalty.
 - **Strategy** dials how heavily roster need weighs against raw value.
+- **Auction values:** the league's total discretionary money (total budget minus
+  a $1 minimum per roster spot) is spread across players in proportion to their
+  value over replacement, giving each a par dollar value. Suggested max bids add a
+  small premium for positions you still need to start and are always capped so you
+  keep $1 for every remaining roster spot.
 
 Yahoo lacks season projections, so there the brain uses preseason rank and ADP
-for the same value/scarcity/tier logic.
+for the same value/scarcity/tier/auction logic.
 
 ## Development
 

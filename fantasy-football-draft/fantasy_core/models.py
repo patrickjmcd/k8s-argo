@@ -105,12 +105,19 @@ class RosterSettings:
         return self.slots.get(position, 0)
 
 
+class DraftFormat(str, Enum):
+    SNAKE = "snake"
+    AUCTION = "auction"
+
+
 @dataclass
 class DraftPick:
     overall: int
     round: int
     team_id: str
     player: Player
+    # Winning bid, for auction drafts. None in a snake draft.
+    cost: int | None = None
 
 
 @dataclass
@@ -128,6 +135,10 @@ class DraftState:
     my_draft_slot: int | None = None
     # Total number of teams, for snake-draft turn math.
     num_teams: int = 0
+    # Snake or auction. Drives which advice and turn math apply.
+    draft_format: DraftFormat = DraftFormat.SNAKE
+    # Per-team auction budget (e.g. $200). Only meaningful for auction drafts.
+    budget: int = 200
 
     @property
     def my_roster(self) -> list[Player]:
@@ -136,6 +147,37 @@ class DraftState:
     @property
     def next_overall_pick(self) -> int:
         return len(self.picks) + 1
+
+    @property
+    def is_auction(self) -> bool:
+        return self.draft_format == DraftFormat.AUCTION
+
+    @property
+    def roster_size(self) -> int:
+        """Total roster spots per team (starters + bench)."""
+        return self.settings.total_starters() + self.settings.bench
+
+    def team_picks(self, team_id: str) -> list[DraftPick]:
+        return [p for p in self.picks if p.team_id == team_id]
+
+    def budget_spent(self, team_id: str) -> int:
+        return sum(p.cost or 0 for p in self.team_picks(team_id))
+
+    def budget_remaining(self, team_id: str) -> int:
+        return self.budget - self.budget_spent(team_id)
+
+    def open_roster_slots(self, team_id: str) -> int:
+        return max(self.roster_size - len(self.team_picks(team_id)), 0)
+
+    def max_bid(self, team_id: str) -> int:
+        """Most a team can bid and still fill its roster at $1/slot.
+
+        You must keep at least $1 for every remaining roster spot other than the
+        one you're bidding on, so max bid = budget_left - (open_slots - 1).
+        """
+        remaining = self.budget_remaining(team_id)
+        open_slots = self.open_roster_slots(team_id)
+        return max(1, remaining - max(open_slots - 1, 0))
 
     def picks_until_my_turn(self) -> int | None:
         """How many picks until the requesting user is on the clock (snake)."""
