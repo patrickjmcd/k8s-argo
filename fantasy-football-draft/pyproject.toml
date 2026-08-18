@@ -1,0 +1,42 @@
+[project]
+name = "fantasy-football-draft"
+version = "0.1.0"
+description = "MCP servers that let Claude help draft your Yahoo and ESPN fantasy football teams"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # 1.x FastMCP API (stdio) — the interface current MCP clients (Claude
+    # Desktop/Code) target. 2.0 reorganized the API and is intentionally avoided.
+    "mcp>=1.2.0,<2",
+]
+
+[project.optional-dependencies]
+yahoo = [
+    "yfpy>=16.0.0",
+]
+espn = [
+    "espn-api>=0.45.0",
+]
+# Everything, for a single local install.
+all = [
+    "yfpy>=16.0.0",
+    "espn-api>=0.45.0",
+]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+yahoo-draft-mcp = "mcp_yahoo.server:main"
+espn-draft-mcp = "mcp_espn.server:main"
+mock-draft-mcp = "mcp_mock.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fantasy_core", "mcp_yahoo", "mcp_espn", "mcp_mock"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
