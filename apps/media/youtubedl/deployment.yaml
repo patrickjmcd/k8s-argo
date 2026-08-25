@@ -20,6 +20,28 @@ spec:
         app.kubernetes.io/instance: youtubedl
         app.kubernetes.io/name: youtubedl
     spec:
+      initContainers:
+        - name: ensure-ytdl-js-runtime
+          image: youtubedl
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["node", "-e"]
+          args:
+            - |
+              const fs = require('fs');
+              const p = '/app/appdata/default.json';
+              let c;
+              try { c = JSON.parse(fs.readFileSync(p)); } catch (e) { c = { YoutubeDLMaterial: {} }; }
+              c.YoutubeDLMaterial.Downloader = c.YoutubeDLMaterial.Downloader || {};
+              // yt-dlp needs a JS runtime to solve YouTube's PO-token challenge or downloads 403.
+              // Node is already bundled in this image; args are ,,-delimited per this app's custom_args parser.
+              c.YoutubeDLMaterial.Downloader.custom_args = '--js-runtimes,,node,,--remote-components,,ejs:github';
+              fs.writeFileSync(p, JSON.stringify(c, null, 2));
+          volumeMounts:
+            - name: config
+              mountPath: /app/appdata
       containers:
         - name: youtubedl-material
           image: youtubedl
