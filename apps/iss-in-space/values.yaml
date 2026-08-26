@@ -3,7 +3,7 @@ image:
   tag: "v1.9.0"
 
 service:
-  port: 8000
+  port: 4321
 
 resources:
   requests:
