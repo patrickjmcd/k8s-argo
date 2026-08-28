@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/unpoller/unpoller
-  tag: "v4.0.1"
+  tag: "v5.1.0"
 
 service:
   port: 9130
