@@ -10,7 +10,7 @@ resources:
 images:
   - name: dreeve
     newName: ghcr.io/dreeveapp/dreeve
-    newTag: "v5.3.0"
+    newTag: "v5.3.1"
 
 configMapGenerator:
   - name: dreeve-config
