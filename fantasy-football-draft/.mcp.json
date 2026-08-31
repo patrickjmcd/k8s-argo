@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "espn-draft": {
-      "command": ".venv/bin/espn-draft-mcp",
-      "args": []
-    }
-  }
-}
