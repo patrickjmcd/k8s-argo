@@ -8,6 +8,7 @@ dependencies = [
     # 1.x FastMCP API (stdio) — the interface current MCP clients (Claude
     # Desktop/Code) target. 2.0 reorganized the API and is intentionally avoided.
     "mcp>=1.2.0,<2",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]

@@ -19,9 +19,11 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from yfpy.query import YahooFantasySportsQuery
 
 _ENV_DIR = Path(os.environ.get("YAHOO_ENV_DIR", Path.cwd()))
+load_dotenv(_ENV_DIR / ".env")
 
 
 def main() -> int:

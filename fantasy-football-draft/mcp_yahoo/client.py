@@ -17,11 +17,13 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from yfpy.query import YahooFantasySportsQuery
 
 from fantasy_core import DraftPick, DraftState, Player, Position, RosterSettings
 
 _ENV_DIR = Path(os.environ.get("YAHOO_ENV_DIR", Path.cwd()))
+load_dotenv(_ENV_DIR / ".env")
 
 
 def _query() -> YahooFantasySportsQuery:

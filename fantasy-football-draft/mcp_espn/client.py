@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 
+from dotenv import load_dotenv
 from espn_api.football import League
 
 from fantasy_core import (
@@ -20,6 +21,8 @@ from fantasy_core import (
     Position,
     RosterSettings,
 )
+
+load_dotenv()
 
 # ESPN's numeric roster-slot ids -> our positions. Slot ids are stable across
 # seasons; the multi-position slots (FLEX etc.) are handled separately.
@@ -113,29 +116,32 @@ def get_draft_state() -> DraftState:
 
     picks: list[DraftPick] = []
     drafted_ids: set[str] = set()
-    for pk in getattr(league, "draft", []) or []:
-        # espn-api Pick objects expose playerId/playerName/round_num/round_pick/team.
-        # They don't carry position, so drafted players are recorded by name/id only.
+    # espn-api's league.draft is populated by _fetch_draft(), which bails out
+    # entirely unless draftDetail.drafted is true — and ESPN only sets that
+    # once the WHOLE draft is complete, not while it's in progress. Read the
+    # raw draft payload directly so in-progress picks show up live.
+    raw_picks = (
+        league.espn_request.get_league_draft().get("draftDetail", {}).get("picks", [])
+    )
+    for pk in raw_picks:
+        player_id = pk.get("playerId", -1)
+        if player_id is None or player_id == -1:
+            continue  # unfilled pick slot
         player = Player(
-            id=str(getattr(pk, "playerId", getattr(pk, "playerName", ""))),
-            name=getattr(pk, "playerName", "unknown"),
+            id=str(player_id),
+            name=league.player_map.get(player_id, f"Player {player_id}"),
             position=None,
             nfl_team="",
         )
-        team = getattr(pk, "team", None)
-        team_id = str(getattr(team, "team_id", "")) if team else ""
-        overall = getattr(pk, "round_num", 0) * league.settings.team_count - (
-            league.settings.team_count - getattr(pk, "round_pick", 0)
-        )
-        # In an auction draft, espn-api populates bid_amount on each Pick.
-        bid = getattr(pk, "bid_amount", 0) or 0
+        team_id = str(pk.get("teamId", ""))
+        overall = pk.get("overallPickNumber") or len(picks) + 1
         picks.append(
             DraftPick(
-                overall=overall or len(picks) + 1,
-                round=getattr(pk, "round_num", 0),
+                overall=overall,
+                round=pk.get("roundId", 0),
                 team_id=team_id,
                 player=player,
-                cost=int(bid) if bid else None,
+                cost=int(pk["bidAmount"]) if pk.get("bidAmount") else None,
             )
         )
         drafted_ids.add(player.id)
@@ -158,8 +164,21 @@ def get_draft_state() -> DraftState:
     if "AUCTION" in draft_type:
         is_auction = True
 
+    # espn-api's Settings wrapper doesn't parse draftSettings at all (only
+    # keeperCount), so before any bid has posted the checks above always miss
+    # a real auction league and silently fall back to snake-style advice. Ask
+    # the raw league payload directly, which does carry draftSettings.type.
+    raw_budget: int | None = None
+    try:
+        raw_draft = league.espn_request.get_league().get("settings", {}).get("draftSettings", {})
+        if str(raw_draft.get("type", "")).upper() == "AUCTION":
+            is_auction = True
+        raw_budget = raw_draft.get("auctionBudget") or None
+    except Exception:
+        pass
+
     draft_slot = os.environ.get("ESPN_DRAFT_SLOT")
-    budget = int(os.environ.get("ESPN_AUCTION_BUDGET", "200"))
+    budget = raw_budget or int(os.environ.get("ESPN_AUCTION_BUDGET", "200"))
     return DraftState(
         settings=settings,
         picks=picks,
