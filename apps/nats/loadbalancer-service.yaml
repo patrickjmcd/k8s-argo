@@ -6,10 +6,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats-lan
-  # Migrated off MetalLB to kube-vip (first pilot service in the migration
-  # off MetalLB, whose frr-k8s DaemonSet chronically crash-loops on
-  # pi4-kube0). .205 excluded from MetalLB's IPAddressPool
-  # (core/metallb-system/ip-address-pool.yaml) so it can't be reclaimed.
+  annotations:
+    # ROLLED BACK from kube-vip 2026-09-01: kube-vip successfully won
+    # leader election and inserted the ARP/IP twice (confirmed in its own
+    # logs) but never populated Service.status.loadBalancer, so kube-proxy
+    # never programmed the DNAT rule and nats-lan stayed unreachable both
+    # times. Parked back on MetalLB pending investigation.
+    kube-vip.io/ignore: "true"
 spec:
   type: LoadBalancer
   loadBalancerIP: 192.168.8.205
