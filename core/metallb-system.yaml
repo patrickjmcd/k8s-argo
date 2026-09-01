@@ -37,3 +37,27 @@ spec:
       targetRevision: 0.16.1
       helm:
         releaseName: metallb
+        valuesObject:
+          speaker:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - pi4-kube0
+                            - pi4-kube1
+          frr-k8s:
+            frrk8s:
+              affinity:
+                nodeAffinity:
+                  requiredDuringSchedulingIgnoredDuringExecution:
+                    nodeSelectorTerms:
+                      - matchExpressions:
+                          - key: kubernetes.io/hostname
+                            operator: NotIn
+                            values:
+                              - pi4-kube0
+                              - pi4-kube1
