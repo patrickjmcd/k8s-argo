@@ -59,6 +59,11 @@ spec:
                 respondingTimeouts:
                   readTimeout: 0
           service:
+            annotations:
+              # kube-vip's svc_enable watches all type=LoadBalancer Services
+              # cluster-wide; this opts traefik out while it's piloted on
+              # nats-lan only. Remove once traefik itself migrates.
+              kube-vip.io/ignore: "true"
             spec:
               loadBalancerIP: 192.168.8.200
           additionalArguments:

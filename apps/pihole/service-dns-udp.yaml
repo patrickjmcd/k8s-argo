@@ -5,6 +5,10 @@ metadata:
   annotations:
     metallb.universe.tf/loadBalancerIPs: "192.168.8.204"
     metallb.universe.tf/allow-shared-ip: pihole
+    # kube-vip pilot is nats-lan only for now; pihole's tcp+udp pair needs a
+    # kube-vip shared-IP equivalent worked out before it migrates (see
+    # kube-vip migration sketch).
+    kube-vip.io/ignore: "true"
   labels:
     app: pihole
 spec:

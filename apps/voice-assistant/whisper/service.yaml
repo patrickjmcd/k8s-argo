@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: wyoming-whisper
   namespace: voice-assistant
+  annotations:
+    # kube-vip pilot is nats-lan only for now.
+    kube-vip.io/ignore: "true"
 spec:
   type: LoadBalancer
   loadBalancerIP: 192.168.8.201

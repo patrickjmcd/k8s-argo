@@ -1,16 +1,21 @@
 ---
-# Exposes the NATS client port (4222) on a MetalLB IP so the upstairs Pi
-# (192.168.1.x) can publish to it. The chart's own Service stays ClusterIP;
-# this is a second, LAN-facing Service we own.
+# Exposes the NATS client port (4222) on a LAN-reachable IP so the upstairs
+# Pi (192.168.1.x) can publish to it. The chart's own Service stays
+# ClusterIP; this is a second, LAN-facing Service we own.
 apiVersion: v1
 kind: Service
 metadata:
   name: nats-lan
-  # No fixed IP — let MetalLB auto-assign a free address from the pool
-  # (.200 = Traefik, .201 = wyoming-whisper were taken). Read the assigned
-  # IP with: kubectl -n nats get svc nats-lan
+  annotations:
+    # Piloting the kube-vip migration off MetalLB on this service first
+    # (lowest blast radius of the current LoadBalancer services). Still
+    # ignored by kube-vip for now — MetalLB stays the sole owner of .205
+    # until the cutover step removes this annotation and hands the IP off
+    # deliberately (avoids both controllers announcing it at once).
+    kube-vip.io/ignore: "true"
 spec:
   type: LoadBalancer
+  loadBalancerIP: 192.168.8.205
   selector:
     app.kubernetes.io/name: nats
     app.kubernetes.io/instance: nats
