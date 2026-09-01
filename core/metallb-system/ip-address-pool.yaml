@@ -5,4 +5,8 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-    - 192.168.8.200-192.168.8.210
+    # .205 (nats-lan) excluded — migrated to kube-vip during the MetalLB
+    # migration pilot; keeping it out of MetalLB's pool so it can't be
+    # re-claimed on a future reconcile.
+    - 192.168.8.200-192.168.8.204
+    - 192.168.8.206-192.168.8.210
