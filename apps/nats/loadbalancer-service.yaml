@@ -6,13 +6,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats-lan
-  annotations:
-    # ROLLED BACK from kube-vip 2026-09-01: kube-vip successfully won
-    # leader election and inserted the ARP/IP twice (confirmed in its own
-    # logs) but never populated Service.status.loadBalancer, so kube-proxy
-    # never programmed the DNAT rule and nats-lan stayed unreachable both
-    # times. Parked back on MetalLB pending investigation.
-    kube-vip.io/ignore: "true"
+  # Migrated to kube-vip. Root cause of the first failed attempt: MetalLB
+  # and kube-vip were both still watching this Service concurrently (.205
+  # stayed in MetalLB's pool during the cutover), which raced writes to
+  # Service.status.loadBalancer. This time .205 was excluded from
+  # MetalLB's pool (core/metallb-system/ip-address-pool.yaml) BEFORE this
+  # annotation was removed, and the object gets deleted/recreated fresh
+  # rather than toggling kube-vip.io/ignore on a live object — kube-vip's
+  # AddOrModify() does no teardown on an ignore->unignore transition
+  # (matches kube-vip/kube-vip#953), so a fresh create avoids that path
+  # entirely.
 spec:
   type: LoadBalancer
   loadBalancerIP: 192.168.8.205
