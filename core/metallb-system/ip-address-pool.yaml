@@ -5,10 +5,4 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-    # .205 (nats-lan) excluded — retrying the kube-vip migration. Excluded
-    # here BEFORE the Service loses its kube-vip.io/ignore annotation this
-    # time, so MetalLB and kube-vip never both watch the live object at
-    # once (that concurrent-write race was the root cause of the first
-    # failed attempt).
-    - 192.168.8.200-192.168.8.204
-    - 192.168.8.206-192.168.8.210
+    - 192.168.8.200-192.168.8.210
