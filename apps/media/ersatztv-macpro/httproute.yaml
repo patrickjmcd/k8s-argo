@@ -10,7 +10,7 @@ spec:
       name: traefik-gateway
       namespace: default
   hostnames:
-    - ersatztv-macpro.x.pmcd.io
+    - ersatztv.x.pmcd.io
   rules:
     - matches:
         - path:
