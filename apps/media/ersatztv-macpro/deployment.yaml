@@ -73,7 +73,7 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: config
-            - mountPath: /mnt/media
+            - mountPath: /mnt/unas/Media
               name: media
             - mountPath: /transcode
               name: transcode-cache
