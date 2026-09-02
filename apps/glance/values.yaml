@@ -244,6 +244,36 @@ configMap:
                       {{ end }}
                     {{ end }}
 
+                - type: custom-api
+                  title: Chiefs
+                  cache: 1h
+                  url: https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id=134931
+                  subrequests:
+                    last:
+                      url: https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=134931
+                  template: |
+                    {{ $last := .Subrequest "last" }}
+                    <p class="color-subdue size-h6">LAST</p>
+                    {{ if eq ($last.JSON.String "results.0.strStatus") "FT" }}
+                      <div class="flex justify-between">
+                        <span>{{ $last.JSON.String "results.0.strAwayTeam" }}</span>
+                        <span class="color-highlight">{{ $last.JSON.Int "results.0.intAwayScore" }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>{{ $last.JSON.String "results.0.strHomeTeam" }}</span>
+                        <span class="color-highlight">{{ $last.JSON.Int "results.0.intHomeScore" }}</span>
+                      </div>
+                    {{ else }}
+                      <p class="color-subdue">No result yet</p>
+                    {{ end }}
+                    {{ if gt (len (.JSON.Array "events")) 0 }}
+                      <p class="color-subdue size-h6" style="margin-top: 0.5rem">NEXT</p>
+                      <div class="flex justify-between">
+                        <span>{{ .JSON.String "events.0.strAwayTeam" }} @ {{ .JSON.String "events.0.strHomeTeam" }}</span>
+                      </div>
+                      <p class="color-subdue size-h4">{{ .JSON.String "events.0.dateEventLocal" }} {{ .JSON.String "events.0.strTimeLocal" }}</p>
+                    {{ end }}
+
                 - type: stocks
                   stocks:
                     - symbol: SPY
