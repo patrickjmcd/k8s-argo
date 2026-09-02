@@ -1,3 +1,6 @@
+glance:
+  monitor: true
+
 image:
   repository: ghcr.io/patrickjmcd/homebox
   tag: "main"

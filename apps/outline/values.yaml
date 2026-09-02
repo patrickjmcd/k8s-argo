@@ -1,3 +1,6 @@
+glance:
+  monitor: true
+
 image:
   repository: outlinewiki/outline
   tag: "1.10.0"

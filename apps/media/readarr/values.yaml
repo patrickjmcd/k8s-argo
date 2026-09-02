@@ -1,3 +1,7 @@
+glance:
+  monitor: true
+  title: "Readarr"
+
 image:
   repository: ghcr.io/pennydreadful/bookshelf
   tag: "softcover-v0.4.20.107"

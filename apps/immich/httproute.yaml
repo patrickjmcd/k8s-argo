@@ -3,6 +3,9 @@ kind: HTTPRoute
 metadata:
   name: immich-httproute
   namespace: immich
+  annotations:
+    glance.pmcd.io/monitor: "true"
+    glance.pmcd.io/monitor-hostname: "immich.x.pmcd.io"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

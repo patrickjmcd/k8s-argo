@@ -3,6 +3,9 @@ kind: HTTPRoute
 metadata:
   name: argocd-httproute
   namespace: argocd
+  annotations:
+    glance.pmcd.io/monitor: "true"
+    glance.pmcd.io/monitor-title: "ArgoCD"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

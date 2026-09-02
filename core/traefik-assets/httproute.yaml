@@ -19,6 +19,8 @@ kind: HTTPRoute
 metadata:
   name: traefik-dashboard-httproute
   namespace: default
+  annotations:
+    glance.pmcd.io/monitor: "true"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

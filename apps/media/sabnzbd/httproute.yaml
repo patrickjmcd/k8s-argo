@@ -3,6 +3,9 @@ kind: HTTPRoute
 metadata:
   name: sabnzbd-httproute
   namespace: media
+  annotations:
+    glance.pmcd.io/monitor: "true"
+    glance.pmcd.io/monitor-title: "SABnzbd"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

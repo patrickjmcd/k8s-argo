@@ -1,3 +1,7 @@
+glance:
+  monitor: true
+  title: "Seerr"
+
 image:
   repository: ghcr.io/seerr-team/seerr
   tag: "v3.4.1"

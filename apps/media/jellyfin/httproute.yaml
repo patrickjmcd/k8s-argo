@@ -15,6 +15,8 @@ kind: HTTPRoute
 metadata:
   name: jellyfin-httproute
   namespace: media
+  annotations:
+    glance.pmcd.io/monitor: "true"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

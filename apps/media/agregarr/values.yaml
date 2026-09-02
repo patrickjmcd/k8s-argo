@@ -1,3 +1,6 @@
+glance:
+  monitor: true
+
 image:
   repository: agregarr/agregarr
   tag: "v2.4.2"

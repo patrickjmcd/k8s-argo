@@ -1,3 +1,7 @@
+glance:
+  monitor: true
+  title: "Uptime Kuma"
+
 image:
   repository: louislam/uptime-kuma
   tag: "2.5.3"

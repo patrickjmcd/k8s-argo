@@ -4,6 +4,8 @@ kind: HTTPRoute
 metadata:
   name: grafana-httproute
   namespace: prometheus
+  annotations:
+    glance.pmcd.io/monitor: "true"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

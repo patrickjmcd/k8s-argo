@@ -3,6 +3,9 @@ kind: HTTPRoute
 metadata:
   name: youtubedl-httproute
   namespace: media
+  annotations:
+    glance.pmcd.io/monitor: "true"
+    glance.pmcd.io/monitor-title: "Youtube-DL"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

@@ -1,3 +1,6 @@
+glance:
+  monitor: true
+
 image:
   repository: octoprint/octoprint
   tag: "1.11.8"
