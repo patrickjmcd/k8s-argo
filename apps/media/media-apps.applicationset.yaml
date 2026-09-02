@@ -63,6 +63,7 @@ spec:
           - name: kometa
           - name: youtubedl
           - name: dispatcharr
+          - name: ersatztv-macpro
   template:
     metadata:
       name: '{{name}}'

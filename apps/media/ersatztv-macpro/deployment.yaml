@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: ersatztv-macpro
+    app.kubernetes.io/name: ersatztv-macpro
+  name: ersatztv-macpro
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ersatztv-macpro
+      app.kubernetes.io/name: ersatztv-macpro
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: ersatztv-macpro
+        app.kubernetes.io/name: ersatztv-macpro
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: macpro-kube0
+      containers:
+        - name: ersatztv
+          env:
+            - name: TZ
+              value: America/Chicago
+
+          image: ersatztv
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8409
+              name: http
+              protocol: TCP
+
+          readinessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          livenessProbe:
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          startupProbe:
+            failureThreshold: 30
+            periodSeconds: 5
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+
+          resources:
+            # No CPU limit on purpose: this deployment exists to test whether
+            # macpro-kube0 can transcode acceptably. A tight limit would
+            # throttle it and invalidate the test (see CLAUDE.md "Resource
+            # requests and limits").
+            limits:
+              memory: 4096Mi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /mnt/media
+              name: media
+            - mountPath: /transcode
+              name: transcode-cache
+
+      restartPolicy: Always
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: ersatztv-macpro-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: smb-media-claim
+        - name: transcode-cache
+          emptyDir:
+            sizeLimit: 20Gi
