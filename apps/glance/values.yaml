@@ -48,6 +48,10 @@ envFrom:
       name: glance-1pw
   - secretRef:
       name: glance-pihole-1pw
+  - secretRef:
+      name: glance-radarr-1pw
+  - secretRef:
+      name: glance-sonarr-1pw
 
 extraObjects:
   - apiVersion: onepassword.com/v1
@@ -56,6 +60,18 @@ extraObjects:
       name: glance-pihole-1pw
     spec:
       itemPath: "vaults/Kubernetes/items/pihole"
+  - apiVersion: onepassword.com/v1
+    kind: OnePasswordItem
+    metadata:
+      name: glance-radarr-1pw
+    spec:
+      itemPath: "vaults/Kubernetes/items/radarr"
+  - apiVersion: onepassword.com/v1
+    kind: OnePasswordItem
+    metadata:
+      name: glance-sonarr-1pw
+    spec:
+      itemPath: "vaults/Kubernetes/items/sonarr"
 
 command:
   - "/app/glance"
@@ -181,6 +197,56 @@ configMap:
                     - title: Youtube-DL
                       url: https://youtubedl.x.pmcd.io
                     # END GLANCE-GENERATED:Media Services
+
+                - type: custom-api
+                  title: Radarr Stats
+                  cache: 1m
+                  url: http://radarr.media.svc.cluster.local/api/v3/movie?apikey=${RADARR__AUTH__APIKEY}
+                  subrequests:
+                    missing:
+                      url: http://radarr.media.svc.cluster.local/api/v3/wanted/missing?apikey=${RADARR__AUTH__APIKEY}
+                    queue:
+                      url: http://radarr.media.svc.cluster.local/api/v3/queue?apikey=${RADARR__AUTH__APIKEY}
+                  template: |
+                    <div class="flex justify-between text-center">
+                      <div>
+                        <div class="color-highlight size-h3">{{ len (.JSON.Array "") }}</div>
+                        <div class="size-h6">MOVIES</div>
+                      </div>
+                      <div>
+                        <div class="color-highlight size-h3">{{ (.Subrequest "missing").JSON.Int "totalRecords" }}</div>
+                        <div class="size-h6">MISSING</div>
+                      </div>
+                      <div>
+                        <div class="color-highlight size-h3">{{ (.Subrequest "queue").JSON.Int "totalRecords" }}</div>
+                        <div class="size-h6">QUEUED</div>
+                      </div>
+                    </div>
+
+                - type: custom-api
+                  title: Sonarr Stats
+                  cache: 1m
+                  url: http://sonarr.media.svc.cluster.local/api/v3/series?apikey=${SONARR__AUTH__APIKEY}
+                  subrequests:
+                    missing:
+                      url: http://sonarr.media.svc.cluster.local/api/v3/wanted/missing?apikey=${SONARR__AUTH__APIKEY}
+                    queue:
+                      url: http://sonarr.media.svc.cluster.local/api/v3/queue?apikey=${SONARR__AUTH__APIKEY}
+                  template: |
+                    <div class="flex justify-between text-center">
+                      <div>
+                        <div class="color-highlight size-h3">{{ len (.JSON.Array "") }}</div>
+                        <div class="size-h6">SERIES</div>
+                      </div>
+                      <div>
+                        <div class="color-highlight size-h3">{{ (.Subrequest "missing").JSON.Int "totalRecords" }}</div>
+                        <div class="size-h6">MISSING</div>
+                      </div>
+                      <div>
+                        <div class="color-highlight size-h3">{{ (.Subrequest "queue").JSON.Int "totalRecords" }}</div>
+                        <div class="size-h6">QUEUED</div>
+                      </div>
+                    </div>
 
             - size: full
               widgets:
