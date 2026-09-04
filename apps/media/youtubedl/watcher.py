@@ -3,16 +3,16 @@
 watcher.py
 
 Watches an INCOMING directory for youtube-dl / yt-dlp style downloads, then:
-- Infers PRIMARY ARTIST + SONG TITLE (rules first, OpenAI fallback)
-- Detects "full set" / concert-ish items
+- Infers PRIMARY ARTIST + SONG TITLE (rules first, Claude fallback)
+- Detects "full set" / concert-ish items and classifies a Plex label category
 - Moves (or copies) the media + sidecar files into ORGANIZED/<Artist>/
 - Writes a CLEANED + ENRICHED .info.json next to the moved media
-- Generates an embedding (trimmed metadata) and stores it in SQLite using sqlite-vec
+- Generates an embedding (trimmed metadata, OpenAI) and stores it in SQLite using sqlite-vec
 - Stores metadata in SQLite so you can join semantic results -> file paths
 - Cleans up orphaned sidecars (.info.json, thumbs, subs) and empty folders under INCOMING
 
 Requires:
-  pip install watchdog openai sqlite-vec
+  pip install watchdog anthropic openai sqlite-vec
 """
 
 import os
@@ -71,10 +71,14 @@ PLEX_LABEL_TIMEOUT = int(os.getenv("PLEX_LABEL_TIMEOUT", "90"))
 PLEX_LABEL_POLL_INTERVAL = int(os.getenv("PLEX_LABEL_POLL_INTERVAL", "5"))
 PLEX_ENABLED = bool(PLEX_URL and PLEX_TOKEN and PLEX_SECTION_ID and PLEX_PATH_PREFIX)
 
-# OpenAI inference
+# Claude inference (artist/title/full-set classification)
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
+USE_CLAUDE = (os.getenv("USE_CLAUDE", "1") == "1") and bool(ANTHROPIC_API_KEY)
+
+# OpenAI — only used for the optional embeddings feature below (ENABLE_EMBEDDINGS),
+# not for classification (see Claude inference above).
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
-USE_OPENAI = (os.getenv("USE_OPENAI", "1") == "1") and bool(OPENAI_API_KEY)
 
 # Embeddings (SQLite-only via sqlite-vec)
 ENABLE_EMBEDDINGS = (os.getenv("ENABLE_EMBEDDINGS", "1") == "1") and bool(OPENAI_API_KEY)
@@ -139,8 +143,9 @@ PUBLISHERS = {
 }
 
 # ============================================================
-# OpenAI client (lazy)
+# Anthropic / OpenAI clients (lazy)
 # ============================================================
+_anthropic_client = None
 _openai_client = None
 
 SYSTEM_PROMPT_ARTIST_TITLE = (
@@ -158,6 +163,16 @@ SYSTEM_PROMPT_ARTIST_TITLE = (
     "\"is_full_set\":false"
     "}\n"
 )
+
+def get_anthropic():
+    global _anthropic_client
+    if _anthropic_client:
+        return _anthropic_client
+    if not ANTHROPIC_API_KEY:
+        raise RuntimeError("ANTHROPIC_API_KEY not set")
+    from anthropic import Anthropic
+    _anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)  # security-agent: ignore
+    return _anthropic_client
 
 def get_openai():
     global _openai_client
@@ -268,7 +283,7 @@ def notify_discord(title: str, description: str, color: int, fields: Optional[di
     req = urllib.request.Request(
         DISCORD_WEBHOOK_URL,
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "User-Agent": "youtubedl-postprocessor/1.0"},
         method="POST",
     )
     try:
@@ -283,7 +298,11 @@ def _plex_request(method: str, path: str, params: dict) -> Optional[bytes]:
     q = dict(params)
     q["X-Plex-Token"] = PLEX_TOKEN
     url = f"{PLEX_URL}{path}?{urllib.parse.urlencode(q)}"
-    req = urllib.request.Request(url, method=method, headers={"Accept": "application/xml"})
+    req = urllib.request.Request(
+        url,
+        method=method,
+        headers={"Accept": "application/xml", "User-Agent": "youtubedl-postprocessor/1.0"},
+    )
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             return resp.read()
@@ -609,9 +628,16 @@ def heuristic_infer(info: Optional[dict], media: Path) -> Tuple[str, float, str,
     return UNKNOWN_ARTIST, 0.25, sanitize(title, UNKNOWN_TITLE), 0.40, looks_like_full_set(title, desc), "unknown"
 
 # ============================================================
-# OpenAI inference (artist + title + full_set)
+# Claude inference (artist + title + full_set)
 # ============================================================
-def openai_infer(info: dict, media: Path) -> Tuple[str, float, str, float, bool]:
+def _strip_json_fences(text: str) -> str:
+    t = text.strip()
+    if t.startswith("```"):
+        t = re.sub(r"^```[a-zA-Z]*\n?", "", t)
+        t = re.sub(r"```\s*$", "", t)
+    return t.strip()
+
+def claude_infer(info: dict, media: Path) -> Tuple[str, float, str, float, bool]:
     title = title_from_info(info, media)
     channel = channel_from_info(info)
     tags = info.get("tags") if isinstance(info.get("tags"), list) else []
@@ -628,17 +654,16 @@ def openai_infer(info: dict, media: Path) -> Tuple[str, float, str, float, bool]
         f"DESCRIPTION:\n{desc}\n"
     )
 
-    resp = get_openai().responses.create(
-        model=OPENAI_MODEL,
-        input=[
-            {"role": "system", "content": SYSTEM_PROMPT_ARTIST_TITLE},
-            {"role": "user", "content": payload},
-        ],
+    resp = get_anthropic().messages.create(
+        model=CLAUDE_MODEL,
+        max_tokens=220,
         temperature=0,
-        max_output_tokens=220,
+        system=SYSTEM_PROMPT_ARTIST_TITLE,
+        messages=[{"role": "user", "content": payload}],
     )
 
-    data = json.loads((resp.output_text or "").strip())
+    text = "".join(block.text for block in resp.content if getattr(block, "type", None) == "text")
+    data = json.loads(_strip_json_fences(text))
 
     artist = sanitize(str(data.get("primary_artist", UNKNOWN_ARTIST)), UNKNOWN_ARTIST)
     artist_conf = float(data.get("artist_confidence", 0.75))
@@ -824,13 +849,13 @@ def decide(info: Optional[dict], media_path: Path) -> Tuple[str, float, str, flo
 
     artist, aconf, song, tconf, is_full_set, src = heuristic_infer(info, media_path)
 
-    if USE_OPENAI and (aconf < CONF_AUTO or tconf < CONF_AUTO):
+    if USE_CLAUDE and (aconf < CONF_AUTO or tconf < CONF_AUTO):
         try:
-            oa_artist, oa_aconf, oa_song, oa_tconf, oa_full = openai_infer(info, media_path)
-            artist, aconf, song, tconf, is_full_set = oa_artist, oa_aconf, oa_song, oa_tconf, oa_full
-            src = f"openai:{OPENAI_MODEL}"
+            cl_artist, cl_aconf, cl_song, cl_tconf, cl_full = claude_infer(info, media_path)
+            artist, aconf, song, tconf, is_full_set = cl_artist, cl_aconf, cl_song, cl_tconf, cl_full
+            src = f"claude:{CLAUDE_MODEL}"
         except Exception as e:
-            src = f"{src} (openai-failed: {e})"
+            src = f"{src} (claude-failed: {e})"
 
     cache_put(key, "", artist, aconf, song, tconf, is_full_set, src)
     return artist, aconf, song, tconf, is_full_set, src, key
@@ -1036,7 +1061,7 @@ def main():
     print(
         f"Watching {INCOMING} -> {ORGANIZED} (review->{NEEDS_REVIEW}) "
         f"stable={STABLE_SECONDS}s copy={COPY_MODE} "
-        f"openai={USE_OPENAI} model={OPENAI_MODEL} "
+        f"claude={USE_CLAUDE} model={CLAUDE_MODEL} "
         f"embeddings={ENABLE_EMBEDDINGS} embed_model={EMBEDDING_MODEL} dims={EMBEDDING_DIMS} "
         f"orphans={CLEAN_ORPHANS} orphan_grace={ORPHAN_GRACE_SECONDS}s",
         flush=True,

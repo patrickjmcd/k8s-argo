@@ -103,9 +103,9 @@ spec:
               value: "Unknown Artist"
             - name: COPY_MODE
               value: "0"
-            - name: OPENAI_MODEL
-              value: "gpt-4.1-mini"
-            - name: USE_OPENAI
+            - name: CLAUDE_MODEL
+              value: "claude-haiku-4-5-20251001"
+            - name: USE_CLAUDE
               value: "1"
             - name: CONF_AUTO
               value: "0.85"
@@ -124,7 +124,7 @@ spec:
           command: [ "sh","-lc" ]
           args:
             - >
-              pip install --no-cache-dir watchdog openai sqlite-vec &&
+              pip install --no-cache-dir watchdog anthropic openai sqlite-vec &&
               python /app/watcher.py
           envFrom:
             - secretRef:
