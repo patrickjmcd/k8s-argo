@@ -1,0 +1,31 @@
+collections:
+
+  Music Videos:
+    ignore_blank_results: true
+    plex_search:
+      any:
+        label:
+          - Music Video
+    collection_order: alpha
+    sync_mode: sync
+    summary: "Individual music videos, auto-tagged by the youtubedl postprocessor."
+
+  Live Performances:
+    ignore_blank_results: true
+    plex_search:
+      any:
+        label:
+          - Live Performance
+    collection_order: alpha
+    sync_mode: sync
+    summary: "Full concerts, festival sets, and other live performances."
+
+  Tiny Desk Concerts:
+    ignore_blank_results: true
+    plex_search:
+      any:
+        label:
+          - Tiny Desk Concert
+    collection_order: alpha
+    sync_mode: sync
+    summary: "NPR Tiny Desk (and Tiny Desk-style) concerts."

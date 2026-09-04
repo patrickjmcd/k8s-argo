@@ -115,6 +115,12 @@ spec:
               value: "0"
             - name: EMBEDDING_MODEL
               value: "text-embedding-3-small"
+            - name: PLEX_URL
+              value: "http://192.168.1.210:32400"
+            - name: PLEX_SECTION_ID
+              value: "6"
+            - name: PLEX_PATH_PREFIX
+              value: "/mnt/unas/Media/video/youtube/Organized"
           command: [ "sh","-lc" ]
           args:
             - >
@@ -133,6 +139,10 @@ spec:
             - name: script
               mountPath: /app/watcher.py
               subPath: watcher.py
+              readOnly: true
+            - name: script
+              mountPath: /app/backfill_labels.py
+              subPath: backfill_labels.py
               readOnly: true
             - name: cache
               mountPath: /cache

@@ -20,3 +20,4 @@ configMapGenerator:
   - name: ytdl-postprocessor-script
     files:
       - watcher.py
+      - backfill_labels.py

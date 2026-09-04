@@ -77,6 +77,13 @@ libraries:
         - mdb_commonsense
         - mdb_age_rating
         - NR
+
+  Youtube / Other:                                    # Must match a library name in your Plex
+    collection_files:
+      - file: /config/other-videos-collections.yml
+    settings:
+      asset_directory:
+        - config/assets
 settings:
   run_order:
     - operations

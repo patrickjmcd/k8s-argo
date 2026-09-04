@@ -22,7 +22,10 @@ import json
 import shutil
 import hashlib
 import sqlite3
+import threading
+import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional, Tuple, List
 
@@ -54,6 +57,19 @@ CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/media.sqlite3"))
 
 # Discord notifications (optional)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
+
+# Plex labeling (optional) — used to build "Music Videos" / "Live Performances" /
+# "Tiny Desk Concerts" smart collections in Kometa via plex_search label filters.
+PLEX_URL = os.getenv("PLEX_URL", "").rstrip("/")
+PLEX_TOKEN = os.getenv("PLEX_TOKEN", "")
+PLEX_SECTION_ID = os.getenv("PLEX_SECTION_ID", "")
+# Absolute path Plex itself sees for this library's "Organized" folder, e.g.
+# /mnt/unas/Media/video/youtube/Organized — used to map a local ORGANIZED-relative
+# path to the file path Plex reports in <Part file="...">.
+PLEX_PATH_PREFIX = os.getenv("PLEX_PATH_PREFIX", "").rstrip("/")
+PLEX_LABEL_TIMEOUT = int(os.getenv("PLEX_LABEL_TIMEOUT", "90"))
+PLEX_LABEL_POLL_INTERVAL = int(os.getenv("PLEX_LABEL_POLL_INTERVAL", "5"))
+PLEX_ENABLED = bool(PLEX_URL and PLEX_TOKEN and PLEX_SECTION_ID and PLEX_PATH_PREFIX)
 
 # OpenAI inference
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -95,11 +111,26 @@ FEAT_RE = re.compile(
     re.IGNORECASE,
 )
 
-FULL_SET_HINTS = (
+TINY_DESK_HINTS = ("tiny desk",)
+
+LIVE_PERFORMANCE_HINTS = (
     "full concert", "full set", "full show", "complete", "entire", "livestream",
     "festival", "glastonbury", "lollapalooza", "outside lands", "acl",
-    "live at", "tiny desk concert", "session", "interview", "performance + interview"
+    "live at", "session", "interview", "performance + interview",
 )
+
+FULL_SET_HINTS = TINY_DESK_HINTS + LIVE_PERFORMANCE_HINTS
+
+# Plex label used to build the "Music Videos" / "Live Performances" /
+# "Tiny Desk Concerts" smart collections in the Youtube/Other library.
+def classify_category(title: str, desc: str) -> str:
+    t = (title or "").lower()
+    d = (desc or "").lower()
+    if any(h in t for h in TINY_DESK_HINTS) or any(h in d for h in TINY_DESK_HINTS):
+        return "Tiny Desk Concert"
+    if any(h in t for h in LIVE_PERFORMANCE_HINTS) or any(h in d for h in LIVE_PERFORMANCE_HINTS):
+        return "Live Performance"
+    return "Music Video"
 
 # channels that are commonly publishers, not artists
 PUBLISHERS = {
@@ -244,6 +275,77 @@ def notify_discord(title: str, description: str, color: int, fields: Optional[di
         urllib.request.urlopen(req, timeout=10).close()
     except Exception as e:
         print(f"[WARN] discord notify failed: {e}", flush=True)
+
+# ============================================================
+# Plex labeling
+# ============================================================
+def _plex_request(method: str, path: str, params: dict) -> Optional[bytes]:
+    q = dict(params)
+    q["X-Plex-Token"] = PLEX_TOKEN
+    url = f"{PLEX_URL}{path}?{urllib.parse.urlencode(q)}"
+    req = urllib.request.Request(url, method=method, headers={"Accept": "application/xml"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return resp.read()
+    except Exception as e:
+        print(f"[WARN] plex {method} {path} failed: {e}", flush=True)
+        return None
+
+def plex_refresh_path(plex_dir: str) -> None:
+    _plex_request("GET", f"/library/sections/{PLEX_SECTION_ID}/refresh", {"path": plex_dir})
+
+def plex_find_rating_key(plex_file: str) -> Optional[str]:
+    deadline = time.time() + PLEX_LABEL_TIMEOUT
+    while time.time() < deadline:
+        data = _plex_request(
+            "GET",
+            f"/library/sections/{PLEX_SECTION_ID}/recentlyAdded",
+            {"X-Plex-Container-Start": "0", "X-Plex-Container-Size": "10"},
+        )
+        if data:
+            try:
+                for v in ET.fromstring(data).findall("Video"):
+                    rk = v.get("ratingKey")
+                    if not rk:
+                        continue
+                    meta = _plex_request("GET", f"/library/metadata/{rk}", {})
+                    if not meta:
+                        continue
+                    for part in ET.fromstring(meta).iter("Part"):
+                        if part.get("file") == plex_file:
+                            return rk
+            except ET.ParseError:
+                pass
+        time.sleep(PLEX_LABEL_POLL_INTERVAL)
+    return None
+
+def plex_set_label(rating_key: str, label: str) -> None:
+    _plex_request(
+        "PUT",
+        f"/library/metadata/{rating_key}",
+        {"label[0].tag.tag": label, "label.locked": "1"},
+    )
+
+def label_in_plex_async(dst_media: Path, category: str) -> None:
+    if not PLEX_ENABLED:
+        return
+
+    def _run():
+        try:
+            rel = dst_media.relative_to(ORGANIZED)
+        except ValueError:
+            return
+        plex_file = f"{PLEX_PATH_PREFIX}/{rel.as_posix()}"
+        plex_dir = f"{PLEX_PATH_PREFIX}/{rel.parent.as_posix()}"
+        plex_refresh_path(plex_dir)
+        rk = plex_find_rating_key(plex_file)
+        if rk:
+            plex_set_label(rk, category)
+            print(f"[OK] labeled Plex item {rk} as '{category}' ({plex_file})", flush=True)
+        else:
+            print(f"[WARN] could not find Plex item for {plex_file} within {PLEX_LABEL_TIMEOUT}s", flush=True)
+
+    threading.Thread(target=_run, daemon=True).start()
 
 # ============================================================
 # Utilities
@@ -761,6 +863,10 @@ def process_media(media_path: Path) -> None:
 
     artist, aconf, song, tconf, is_full_set, src, key = decide(info, media_path)
 
+    raw_title = title_from_info(info, media_path) if info else media_path.stem
+    raw_desc = (info.get("description") if info and isinstance(info.get("description"), str) else "") or ""
+    category = classify_category(raw_title, raw_desc)
+
     target_root = NEEDS_REVIEW if min(aconf, tconf) < CONF_REVIEW else ORGANIZED
     artist_dir = target_root / sanitize(artist, UNKNOWN_ARTIST)
     artist_dir.mkdir(parents=True, exist_ok=True)
@@ -847,10 +953,12 @@ def process_media(media_path: Path) -> None:
                 "Title": song,
                 "Artist conf": f"{aconf:.2f}",
                 "Title conf": f"{tconf:.2f}",
-                "Full set": is_full_set,
+                "Category": category,
                 "Source": src,
             },
         )
+
+        label_in_plex_async(dst_media, category)
 
     except Exception as e:
         print(f"[ERR] Failed {media_path}: {e}", flush=True)

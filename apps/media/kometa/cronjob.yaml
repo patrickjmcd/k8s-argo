@@ -50,6 +50,9 @@ spec:
                 - name: config-template
                   mountPath: /config/custom-collections.yml
                   subPath: custom-collections.yml
+                - name: config-template
+                  mountPath: /config/other-videos-collections.yml
+                  subPath: other-videos-collections.yml
           volumes:
             - name: config
               persistentVolumeClaim:

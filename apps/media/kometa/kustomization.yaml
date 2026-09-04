@@ -13,6 +13,7 @@ configMapGenerator:
     files:
       - config.template.yml
       - custom-collections.yml
+      - other-videos-collections.yml
 
 images:
   - name: kometa
