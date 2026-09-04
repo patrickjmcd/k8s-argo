@@ -657,7 +657,6 @@ def claude_infer(info: dict, media: Path) -> Tuple[str, float, str, float, bool]
     resp = get_anthropic().messages.create(
         model=CLAUDE_MODEL,
         max_tokens=220,
-        temperature=0,
         system=SYSTEM_PROMPT_ARTIST_TITLE,
         messages=[{"role": "user", "content": payload}],
     )
