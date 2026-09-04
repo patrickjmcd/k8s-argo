@@ -386,25 +386,38 @@ def _artist_lead_pattern(artist: str) -> Optional[re.Pattern]:
     return re.compile(rf"^\s*{body}\s*[-:]*\s*", re.IGNORECASE)
 
 def build_canonical_title(artist: str, title: str, fallback: str) -> str:
-    """Prefix `title` with `artist` unless already present, stripping any leading
-    repeat of the artist first (even a differently-spelled "&"/"and" one) so the
-    result is always exactly one canonical "Artist - Title" — safe to re-run."""
+    """Prefix `title` with `artist` unless already present. A title that already
+    starts with the artist exactly once (in any form — "Foo - Bar", "Foo Bar",
+    "Foo: Bar") is left completely untouched, even without an explicit " - "
+    separator. Only a genuine repeat (including a differently-spelled "&"/"and"
+    one, e.g. a "Dead & Company" title already starting "Dead and Company - ...")
+    gets collapsed down to one canonical "Artist - Title" — safe to re-run."""
     if artist == UNKNOWN_ARTIST:
         return sanitize(title, fallback)
 
     pat = _artist_lead_pattern(artist)
-    stripped = title
-    if pat:
-        prev = None
-        while stripped != prev:
-            prev = stripped
-            m = pat.match(stripped)
-            if m and m.end() > 0:
-                candidate = stripped[m.end():].strip()
-                if candidate:
-                    stripped = candidate
+    if not pat:
+        return sanitize(title, fallback)
 
-    return sanitize(f"{artist} - {stripped}", fallback)
+    m = pat.match(title)
+    if not m:
+        return sanitize(f"{artist} - {title}", fallback)
+
+    rest = title[m.end():]
+    if not pat.match(rest):
+        # Exactly one mention already, however it's formatted — leave it alone.
+        return sanitize(title, fallback)
+
+    # A genuine repeat: strip every further leading repeat, then rebuild once.
+    prev = None
+    while rest != prev:
+        prev = rest
+        nxt = pat.match(rest)
+        if nxt and nxt.end() > 0:
+            candidate = rest[nxt.end():].strip()
+            if candidate:
+                rest = candidate
+    return sanitize(f"{artist} - {rest}", fallback)
 
 def is_stable(path: Path) -> bool:
     last = -1
