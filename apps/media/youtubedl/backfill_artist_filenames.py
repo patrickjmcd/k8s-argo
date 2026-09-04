@@ -3,13 +3,17 @@
 backfill_artist_filenames.py
 
 One-time backfill: rename existing organized files so the artist name is
-always part of the filename, not just the parent folder — matches the
-always-prefix-artist behavior in watcher.py's process_media().
+always part of the filename exactly once, not just the parent folder —
+matches the always-prefix-artist behavior in watcher.py's process_media().
+Also fixes a redundant/differently-spelled repeat of the artist already in
+the title (e.g. a "Dead & Company" folder with a title already starting
+"Dead and Company - ...") by stripping it before re-prefixing, using the
+same build_canonical_title() watcher.py uses live — safe to re-run.
 
 Renames the media file plus any co-located sidecars sharing its exact
 stem (.info.json, thumbs, subs), then triggers a targeted Plex refresh
 of that artist folder so the library picks up the new path. Skips a
-file if its name already starts with the artist folder name.
+file whose name is already in canonical form.
 
 Dry-run by default — pass --apply to actually rename files.
 
@@ -25,9 +29,10 @@ from watcher import (  # noqa: E402
     ORGANIZED,
     PLEX_PATH_PREFIX,
     UNKNOWN_ARTIST,
+    UNKNOWN_TITLE,
+    build_canonical_title,
     plex_refresh_path,
     resolve_collision,
-    sanitize,
 )
 
 
@@ -44,10 +49,10 @@ def rename_in_artist_dir(artist_dir, dry_run: bool) -> int:
             continue
 
         stem = media_path.stem
-        if stem.lower().startswith(artist.lower()):
+        new_stem = build_canonical_title(artist, stem, UNKNOWN_TITLE)
+        if new_stem == stem:
             continue
 
-        new_stem = sanitize(f"{artist} - {stem}", stem)
         new_media = resolve_collision(artist_dir / f"{new_stem}{media_path.suffix}")
         new_stem = new_media.stem  # may differ if a collision suffix was added
 

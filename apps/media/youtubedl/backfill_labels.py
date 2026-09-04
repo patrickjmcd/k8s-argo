@@ -59,14 +59,18 @@ def main() -> None:
             rk = v.get("ratingKey")
             plex_title = v.get("title") or ""
 
-            if v.find("Label") is not None:
-                skipped += 1
-                continue
-
+            # The /all summary listing never includes <Label> children, even when
+            # the item has one — the skip check has to run against full metadata.
             meta = _plex_request("GET", f"/library/metadata/{rk}", {})
             if not meta:
                 continue
-            part = next(ET.fromstring(meta).iter("Part"), None)
+            meta_root = ET.fromstring(meta)
+
+            if meta_root.find(".//Label") is not None:
+                skipped += 1
+                continue
+
+            part = next(meta_root.iter("Part"), None)
             plex_file = part.get("file") if part is not None else None
 
             title, desc = plex_title, ""

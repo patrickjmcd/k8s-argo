@@ -375,6 +375,37 @@ def sanitize(s: str, fallback: str) -> str:
     s = re.sub(r"\s+", " ", s).rstrip(" .")
     return s or fallback
 
+def _artist_lead_pattern(artist: str) -> Optional[re.Pattern]:
+    # "&" and "and" are treated as interchangeable within the artist name itself
+    # (e.g. "Dead & Company" also matches a leading "Dead and Company"), so a
+    # differently-spelled repeat of the artist doesn't survive canonicalization.
+    parts = [re.escape(p) for p in re.split(r"\s*&\s*|\s+and\s+", artist, flags=re.IGNORECASE) if p.strip()]
+    if not parts:
+        return None
+    body = r"\s*(?:&|and)\s*".join(parts)
+    return re.compile(rf"^\s*{body}\s*[-:]*\s*", re.IGNORECASE)
+
+def build_canonical_title(artist: str, title: str, fallback: str) -> str:
+    """Prefix `title` with `artist` unless already present, stripping any leading
+    repeat of the artist first (even a differently-spelled "&"/"and" one) so the
+    result is always exactly one canonical "Artist - Title" — safe to re-run."""
+    if artist == UNKNOWN_ARTIST:
+        return sanitize(title, fallback)
+
+    pat = _artist_lead_pattern(artist)
+    stripped = title
+    if pat:
+        prev = None
+        while stripped != prev:
+            prev = stripped
+            m = pat.match(stripped)
+            if m and m.end() > 0:
+                candidate = stripped[m.end():].strip()
+                if candidate:
+                    stripped = candidate
+
+    return sanitize(f"{artist} - {stripped}", fallback)
+
 def is_stable(path: Path) -> bool:
     last = -1
     stable = 0
@@ -903,12 +934,10 @@ def process_media(media_path: Path) -> None:
     artist_dir = target_root / sanitize(artist, UNKNOWN_ARTIST)
     artist_dir.mkdir(parents=True, exist_ok=True)
 
-    base_title = sanitize(song, UNKNOWN_TITLE)
     # Keep the artist in the filename itself, not just the parent folder — titles
     # like a bare "Tiny Desk Concert" are ambiguous once grouped into a cross-artist
     # Kometa collection, and this keeps every file self-describing when viewed flat.
-    if artist != UNKNOWN_ARTIST and not base_title.lower().startswith(artist.lower()):
-        base_title = sanitize(f"{artist} - {song}", UNKNOWN_TITLE)
+    base_title = build_canonical_title(artist, song, UNKNOWN_TITLE)
     dst_media = resolve_collision(artist_dir / f"{base_title}{ext}")
     dst_dir = dst_media.parent
     dst_stem = dst_media.stem

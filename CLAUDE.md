@@ -286,6 +286,18 @@ sudo cp /usr/lib/cni/* /opt/cni/bin/
 
 Also install the storage clients so CSI mounts work: `nfs-common` and `cifs-utils`.
 
+**inotify instance limit** — `fs.inotify.max_user_instances` is a per-UID limit shared by every root-owned container on the node (not namespaced per-pod), and most system/sidecar containers run as root. A node hosting many containers with fsnotify-based watchers (config reloaders, log tailers, etc.) can silently approach the default cap of 128 as container density grows, at which point the next container to request an inotify instance crash-loops with `OSError: [Errno 24] inotify instance limit reached` — a red herring that looks like an app bug. Confirmed on `pi5-kube0/1/2` in Sept 2026 (91, 72, and 127 of 128 respectively) when the `youtubedl` postprocessor's `watchdog` Observer tipped `pi5-kube2` over the edge.
+
+```bash
+echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf
+sudo sysctl -p /etc/sysctl.d/99-inotify.conf
+```
+
+Verify with: `sudo sysctl fs.inotify.max_user_instances` → should be `1024`. Check current usage per node with:
+```bash
+sudo sh -c 'for f in /proc/[0-9]*/fd; do pid=${f%/fd}; pid=${pid#/proc/}; n=$(ls -la "$f" 2>/dev/null | grep -c inotify); [ "$n" -gt 0 ] && stat -c %u /proc/$pid; done' | sort | uniq -c
+```
+
 ## Node Bootstrap Requirements (RPi nodes)
 
 When adding a new Raspberry Pi node (Pi 4 or Pi 5, Debian trixie, kernel 6.12.x), apply this before joining the cluster:
