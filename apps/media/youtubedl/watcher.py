@@ -22,6 +22,7 @@ import json
 import shutil
 import hashlib
 import sqlite3
+import urllib.request
 from pathlib import Path
 from typing import Optional, Tuple, List
 
@@ -50,6 +51,9 @@ CONF_AUTO = float(os.getenv("CONF_AUTO", "0.85"))
 CONF_REVIEW = float(os.getenv("CONF_REVIEW", "0.70"))
 
 CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/media.sqlite3"))
+
+# Discord notifications (optional)
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 # OpenAI inference
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -217,6 +221,29 @@ def vec_exists(key: str) -> bool:
     row = conn.execute("SELECT 1 FROM media_vec WHERE key=? LIMIT 1", (key,)).fetchone()
     conn.close()
     return row is not None
+
+# ============================================================
+# Discord notifications
+# ============================================================
+def notify_discord(title: str, description: str, color: int, fields: Optional[dict] = None) -> None:
+    if not DISCORD_WEBHOOK_URL:
+        return
+    embed = {"title": title, "description": description, "color": color}
+    if fields:
+        embed["fields"] = [
+            {"name": k, "value": str(v), "inline": True} for k, v in fields.items()
+        ]
+    payload = json.dumps({"embeds": [embed]}).encode("utf-8")
+    req = urllib.request.Request(
+        DISCORD_WEBHOOK_URL,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        urllib.request.urlopen(req, timeout=10).close()
+    except Exception as e:
+        print(f"[WARN] discord notify failed: {e}", flush=True)
 
 # ============================================================
 # Utilities
@@ -810,8 +837,29 @@ def process_media(media_path: Path) -> None:
             flush=True,
         )
 
+        needs_review = target_root == NEEDS_REVIEW
+        notify_discord(
+            "🟡 Needs Review" if needs_review else "✅ Processed",
+            f"`{dst_media.name}`",
+            0xF1C40F if needs_review else 0x2ECC71,
+            {
+                "Artist": artist,
+                "Title": song,
+                "Artist conf": f"{aconf:.2f}",
+                "Title conf": f"{tconf:.2f}",
+                "Full set": is_full_set,
+                "Source": src,
+            },
+        )
+
     except Exception as e:
         print(f"[ERR] Failed {media_path}: {e}", flush=True)
+        notify_discord(
+            "❌ Processing Failed",
+            f"`{media_path.name}`",
+            0xE74C3C,
+            {"Error": str(e)[:500]},
+        )
         return
 
     # Cleanup in Incoming (after success)
