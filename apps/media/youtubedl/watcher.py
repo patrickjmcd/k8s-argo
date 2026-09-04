@@ -874,6 +874,14 @@ def process_media(media_path: Path) -> None:
     if media_path.stem.endswith(".temp"):
         return
 
+    # yt-dlp downloads separate video/audio streams as per-format-code temp files
+    # before muxing, e.g. Foo.f616.mp4 (video) and Foo.f251.webm (audio) — both
+    # extensions can pass MEDIA_EXTS, so without this they get raced and often
+    # deleted mid-processing by the merge step, producing spurious duplicate
+    # (and "failed") notifications alongside the real Foo.mp4 once merged.
+    if re.search(r"\.f\d+$", media_path.stem):
+        return
+
     try:
         media_path.relative_to(INCOMING)
     except ValueError:
