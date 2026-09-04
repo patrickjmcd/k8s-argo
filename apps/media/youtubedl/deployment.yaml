@@ -144,6 +144,10 @@ spec:
               mountPath: /app/backfill_labels.py
               subPath: backfill_labels.py
               readOnly: true
+            - name: script
+              mountPath: /app/backfill_artist_filenames.py
+              subPath: backfill_artist_filenames.py
+              readOnly: true
             - name: cache
               mountPath: /cache
       volumes:

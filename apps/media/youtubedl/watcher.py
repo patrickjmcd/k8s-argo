@@ -904,10 +904,10 @@ def process_media(media_path: Path) -> None:
     artist_dir.mkdir(parents=True, exist_ok=True)
 
     base_title = sanitize(song, UNKNOWN_TITLE)
-    # Tiny Desk titles are often just "Tiny Desk Concert" with no song name, which is
-    # ambiguous once grouped into the cross-artist Tiny Desk Concerts collection —
-    # keep the artist in the filename unless it's already part of the title.
-    if category == "Tiny Desk Concert" and artist != UNKNOWN_ARTIST and not base_title.lower().startswith(artist.lower()):
+    # Keep the artist in the filename itself, not just the parent folder — titles
+    # like a bare "Tiny Desk Concert" are ambiguous once grouped into a cross-artist
+    # Kometa collection, and this keeps every file self-describing when viewed flat.
+    if artist != UNKNOWN_ARTIST and not base_title.lower().startswith(artist.lower()):
         base_title = sanitize(f"{artist} - {song}", UNKNOWN_TITLE)
     dst_media = resolve_collision(artist_dir / f"{base_title}{ext}")
     dst_dir = dst_media.parent

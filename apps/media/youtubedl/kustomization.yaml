@@ -21,3 +21,4 @@ configMapGenerator:
     files:
       - watcher.py
       - backfill_labels.py
+      - backfill_artist_filenames.py
