@@ -1,0 +1,99 @@
+# Cilium CNI — Phase 1 of the flannel -> Cilium migration.
+#
+# ORDERING — DO NOT merge this to `main` and let ArgoCD sync it as a
+# big-bang install. Cilium taking over CNI on every node at once, while
+# flannel is still present, will disrupt pod networking cluster-wide.
+# Follow docs/cilium-migration.md: install Cilium out-of-band and migrate
+# node-by-node FIRST, then merge this Application so ArgoCD *adopts* the
+# already-running install (a no-op reconcile). Delete core/flannel.yaml
+# only once every node is migrated (last step of the runbook).
+#
+# Scope of Phase 1: Cilium replaces flannel as the CNI and adds
+# NetworkPolicy + Hubble. kube-proxy, MetalLB, kube-vip and Traefik are
+# all left in place. kube-proxy replacement and LB-IPAM are later phases.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Earlier than flannel (-3): the CNI must be the first thing reconciled.
+    argocd.argoproj.io/sync-wave: "-4"
+spec:
+  destination:
+    namespace: kube-system
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    chart: cilium
+    repoURL: https://helm.cilium.io/
+    targetRevision: 1.20.1
+    helm:
+      releaseName: cilium
+      valuesObject:
+        # IPAM: honour the podCIDR k3s already hands each node out of the
+        # cluster CIDR (10.42.0.0/16), so pods keep the same address space
+        # they had under flannel — no cluster-wide renumber.
+        ipam:
+          mode: kubernetes
+
+        # Match flannel's current datapath: VXLAN overlay on the flat L2
+        # network. Native routing is a later optimisation, not Phase 1.
+        routingMode: tunnel
+        tunnelProtocol: vxlan
+
+        # Phase 1 KEEPS kube-proxy. Do not flip this to true without also
+        # starting k3s with --disable-kube-proxy and setting k8sServiceHost
+        # / k8sServicePort so the agents can still reach the API server.
+        kubeProxyReplacement: false
+
+        # During the flannel -> Cilium cutover, don't let Cilium take sole
+        # ownership of /etc/cni/net.d — a half-migrated node would otherwise
+        # lose all CNI config. Flip back to the default (true) in a
+        # follow-up once flannel is fully removed.
+        cni:
+          exclusive: false
+
+        # cilium-agent is squarely on the pod-networking critical path, so
+        # NO CPU limit — same reasoning as flannel in CLAUDE.md "Resource
+        # requests and limits" (the July 2026 throttling incident). Eviction
+        # protection comes from the chart's default system-node-critical
+        # priorityClass, not from Guaranteed QoS. Memory limit has headroom.
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+
+        operator:
+          # Two replicas across the 3 Pi 5s / x86 VMs for HA. Off the
+          # per-packet path, so a modest CPU limit is acceptable here.
+          replicas: 2
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+        # Observability — the main Phase 1 payoff alongside NetworkPolicy.
+        # UI stays ClusterIP for now; expose via an HTTPRoute in a follow-up
+        # (needs a ReferenceGrant since hubble-ui is in kube-system and the
+        # traefik-gateway is in default).
+        hubble:
+          enabled: true
+          relay:
+            enabled: true
+          ui:
+            enabled: true
