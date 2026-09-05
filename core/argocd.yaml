@@ -112,15 +112,6 @@ spec:
             # Sharding only helps with multiple destination clusters; the second
             # replica sat idle.
             replicas: 1
-            affinity:
-              nodeAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  nodeSelectorTerms:
-                    - matchExpressions:
-                        - key: kubernetes.io/hostname
-                          operator: NotIn
-                          values:
-                            - jetson-nano-kube0
             # VPA target: 671m / ~1.75Gi — the controller does all reconciliation
             # and was requesting half its real usage.
             resources:
