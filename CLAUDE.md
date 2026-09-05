@@ -201,9 +201,7 @@ Cert-manager issues certs via Let's Encrypt DNS-01 (Cloudflare). Certs live in `
 
 ### Longhorn (block storage)
 
-Default storage class. Used for databases and stateful apps. Excludes Jetson Nano nodes. PVC name convention: `longhorn-<release>-data`.
-
-**Jetson Nano can never attach Longhorn volumes, not just host replicas.** Its L4T/Tegra kernel (5.15.148-tegra, L4T R36.4.x) was built without `CONFIG_ISCSI_TCP` — `iscsi_tcp` doesn't exist as a loadable module, so Longhorn's iSCSI frontend fails outright when it tries to attach anything there (`allowScheduling: false` on that node only stops it from hosting *replicas*; it doesn't stop a pod with a Longhorn PVC from being scheduled there via nodeSelector and failing to attach). This is a structural kernel limitation, not a config bug — fixing it for real would mean cross-compiling a custom L4T kernel. Any workload placed on `jetson-nano-kube0` (e.g. for GPU access) must use a `hostPath` volume instead, same pattern as `apps/voice-assistant/piper` and `apps/voice-assistant/openwakeword`.
+Default storage class. Used for databases and stateful apps. PVC name convention: `longhorn-<release>-data`.
 
 ### SMB (network storage)
 
@@ -265,14 +263,9 @@ IP pool: `192.168.8.200–192.168.8.210`. Traefik LoadBalancer gets `.200`. L2 a
 ## Hardware
 
 - **Pi 5 nodes**: `pi5-kube0`, `pi5-kube1`, `pi5-kube2` — general workloads
-- **Jetson Nano**: `jetson-nano-kube0` — GPU workloads (NVIDIA device plugin). Least memory of any node (7.8Gi) and cannot attach Longhorn volumes (see Storage section) — keep it to stateless/GPU-only workloads with `hostPath` storage, not databases or other critical singletons.
-
-**GPU runtime (`nvidia` RuntimeClass)**: managed by `apps/nvidia-runtime-config` (writes containerd config on the node via a privileged DaemonSet init container — see that manifest for the full story). Two non-obvious requirements, both confirmed by hand:
-  - `SystemdCgroup = false` for the nvidia runtime specifically. `nvidia-container-runtime` fails sandbox creation with `SystemdCgroup = true` on this node, even though the plain `runc` handler uses `SystemdCgroup = true` fine. Don't "fix" this back to `true` without retesting.
-  - Never set `default_runtime_name = "nvidia"`. That forces *every* pod on the node through `nvidia-container-runtime`, not just GPU ones — broke `kyverno`'s controllers (which run there with no HA elsewhere) and cascaded into a cluster-wide admission-webhook outage. `nvidia` must stay opt-in via `runtimeClassName` on individual pods only.
-  - `nvidia-ctk runtime configure` (v1.16.2 on this node) always emits the containerd 1.x schema (`io.containerd.grpc.v1.cri`), which containerd 2.x (this node runs 2.2.2) silently ignores — looks like it worked, does nothing. Use the 2.x schema (`io.containerd.cri.v1.runtime`, `version = 3`) directly.
-  - Test with a disposable pod (`runtimeClassName: nvidia`, `NVIDIA_VISIBLE_DEVICES=all`) before pointing a real workload at it — check for `/dev/nvidia0`, `nvidiactl`, `nvhost-gpu`, `nvmap` inside the container.
 - **x86 VMs**: `kube-leader`, `kube-worker-{1-4}` — provisioned via Terraform on Proxmox
+
+The cluster has no GPU nodes. The Jetson Nano (`jetson-nano-kube0`) was retired — it could not run an eBPF CNI datapath or attach Longhorn volumes on its L4T/Tegra kernel, and its GPU workloads (piper TTS, openwakeword) were dropped along with the NVIDIA device plugin and runtime config.
 
 ## Node Bootstrap Requirements (all nodes)
 
