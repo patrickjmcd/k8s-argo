@@ -87,6 +87,20 @@ spec:
               cpu: 200m
               memory: 256Mi
 
+        # cilium-envoy crashes on boot on the Pi 4 nodes (pi4-kube0/pi4-kube1): tcmalloc
+        # assumes ARM64 always has 48-bit virtual address space, but Raspberry Pi kernels
+        # default to 39-bit (CONFIG_ARM64_VA_BITS_39), so it dies instantly with
+        # "MmapAligned() failed". Known upstream issue, not fixable from our side —
+        # cilium/proxy#1027, envoyproxy/envoy#23339, cilium/cilium#17467. Pi 5 nodes are
+        # unaffected (different default VA-bits config). Phase 1 only needs L3/L4
+        # NetworkPolicy + Hubble flow visibility, neither of which needs Envoy (only L7
+        # HTTP/gRPC/Kafka parsing does), so just disable it rather than patch around the
+        # bug. Pass --set envoy.enabled=false to the matching out-of-band `helm install`
+        # in §3 of the runbook too, so the manual install matches what this Application
+        # later adopts.
+        envoy:
+          enabled: false
+
         # Observability — the main Phase 1 payoff alongside NetworkPolicy.
         # UI stays ClusterIP for now; expose via an HTTPRoute in a follow-up
         # (needs a ReferenceGrant since hubble-ui is in kube-system and the
