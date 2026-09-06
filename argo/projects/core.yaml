@@ -27,6 +27,7 @@ spec:
     - https://charts.jetstack.io
     - https://cloudnative-pg.github.io/charts
     - https://helm.cilium.io/
+    - https://aquasecurity.github.io/helm-charts/
   destinations:
     - namespace: "*"
       name: in-cluster
