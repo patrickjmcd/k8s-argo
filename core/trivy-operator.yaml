@@ -49,10 +49,7 @@ spec:
             enabled: true
           nodeCollector:
             tolerations:
-              - key: dedicated
-                operator: Equal
-                value: heavy
-                effect: NoSchedule
+              - operator: Exists
 
     - path: core/trivy-operator
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
