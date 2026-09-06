@@ -118,6 +118,16 @@ spec:
           # later adopts.
           envoy:
             enabled: false
+          # envoy.enabled=false only disables the separate Envoy DaemonSet - Cilium 1.20
+          # still runs Envoy EMBEDDED inside the main cilium-agent process whenever any L7
+          # feature is active (including Hubble L7 flow visibility), which is what actually
+          # triggers the Pi4 tcmalloc/ARM64-VA-bits bug above. Confirmed live post-cutover:
+          # cilium-agent on pi4-kube0/pi4-kube1 was hitting its 1Gi memory limit and getting
+          # OOM-killed, with dmesg showing cilium-envoy/cilium-envoy-starter processes inside
+          # the same cgroup as cilium-agent. l7Proxy=false (default true) disables the
+          # embedded proxy entirely - safe for Phase 1 since we only need L3/L4 NetworkPolicy
+          # + basic flow visibility, neither of which needs L7 parsing.
+          l7Proxy: false
 
           # Observability — the main Phase 1 payoff alongside NetworkPolicy.
           # UI exposed at hubble.x.pmcd.io via the HTTPRoute in ./cilium/ (second
