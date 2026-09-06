@@ -47,6 +47,12 @@ spec:
                 memory: 500Mi
           serviceMonitor:
             enabled: true
+          nodeCollector:
+            tolerations:
+              - key: dedicated
+                operator: Equal
+                value: heavy
+                effect: NoSchedule
 
     - path: core/trivy-operator
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
