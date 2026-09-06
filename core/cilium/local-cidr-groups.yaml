@@ -1,0 +1,55 @@
+# Hubble labels everything outside the cluster as generic reserved:world,
+# including devices on the local LAN/VLANs — making it impossible to tell
+# "talking to the printer" apart from "talking to the actual internet" in
+# flow visibility. These CIDRGroups don't change any traffic behavior (no
+# enforcement is added — see policyEnforcementMode: never in ../cilium.yaml)
+# but they make Cilium allocate a distinct identity per local network, which
+# Hubble then displays instead of collapsing it to "world". Ranges below are
+# every non-WAN network defined in UniFi (verified live, not guessed).
+apiVersion: cilium.io/v2
+kind: CiliumCIDRGroup
+metadata:
+  name: kube-lan
+spec:
+  externalCIDRs:
+    - "192.168.8.0/24" # "Kube" VLAN 8 — the cluster's own node network
+---
+apiVersion: cilium.io/v2
+kind: CiliumCIDRGroup
+metadata:
+  name: default-lan
+spec:
+  externalCIDRs:
+    - "192.168.1.0/24" # "Default" (native, no VLAN) — media-server (Plex) lives here
+---
+apiVersion: cilium.io/v2
+kind: CiliumCIDRGroup
+metadata:
+  name: kamera-lan
+spec:
+  externalCIDRs:
+    - "192.168.3.0/24" # "Kamera" VLAN 2 — IP cameras
+---
+apiVersion: cilium.io/v2
+kind: CiliumCIDRGroup
+metadata:
+  name: jolly-roger-lan
+spec:
+  externalCIDRs:
+    - "192.168.4.0/24" # "Jolly Roger" VLAN 4 — arr.pmcd.io media/arr apps
+---
+apiVersion: cilium.io/v2
+kind: CiliumCIDRGroup
+metadata:
+  name: cari-ads-lan
+spec:
+  externalCIDRs:
+    - "192.168.5.0/24" # "Safe from Cari's Ads" VLAN 5 — macpro-kube0 lives here
+---
+apiVersion: cilium.io/v2
+kind: CiliumCIDRGroup
+metadata:
+  name: home-automation-lan
+spec:
+  externalCIDRs:
+    - "192.168.10.0/24" # "HomeAutomation" VLAN 10 — ha.pmcd.io

@@ -1,0 +1,28 @@
+# Allow-only policy (no deny/enforcement effect — see policyEnforcementMode:
+# never in ../cilium.yaml). Its only purpose is to make Cilium allocate
+# per-VLAN identities for the CIDRGroups in ./local-cidr-groups.yaml, so
+# Hubble shows which local network traffic belongs to instead of generic
+# reserved:world. Safe to have even once enforcement is re-enabled later,
+# since it's a superset allow of the existing LAN.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: identify-local-vlans
+spec:
+  endpointSelector: {}
+  egress:
+    - toCIDRSet:
+        - cidrGroupRef: kube-lan
+        - cidrGroupRef: default-lan
+        - cidrGroupRef: kamera-lan
+        - cidrGroupRef: jolly-roger-lan
+        - cidrGroupRef: cari-ads-lan
+        - cidrGroupRef: home-automation-lan
+  ingress:
+    - fromCIDRSet:
+        - cidrGroupRef: kube-lan
+        - cidrGroupRef: default-lan
+        - cidrGroupRef: kamera-lan
+        - cidrGroupRef: jolly-roger-lan
+        - cidrGroupRef: cari-ads-lan
+        - cidrGroupRef: home-automation-lan
