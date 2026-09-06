@@ -194,6 +194,8 @@ configMap:
                       url: https://sonarr.x.pmcd.io
                     - title: Tautulli
                       url: https://tautulli.x.pmcd.io
+                    - title: Youtarr
+                      url: https://youtarr.x.pmcd.io
                     - title: Youtube-DL
                       url: https://youtubedl.x.pmcd.io
                     # END GLANCE-GENERATED:Media Services
