@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/sirkirby/unifi-network-mcp
-  tag: "0.31.0"
+  tag: "0.31.1"
 
 service:
   port: 3000
