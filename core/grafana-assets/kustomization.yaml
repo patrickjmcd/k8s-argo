@@ -32,3 +32,6 @@ configMapGenerator:
   - name: grafana-dashboard-adsb-frequent  # home-built, from adsb-recorder Postgres db
     files:
       - dashboards/adsb-frequent.json
+  - name: grafana-dashboard-trivy-operator  # home-built, from core/trivy-operator metrics
+    files:
+      - dashboards/trivy-operator.json
