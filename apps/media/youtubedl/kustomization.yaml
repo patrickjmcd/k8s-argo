@@ -11,7 +11,8 @@ resources:
 images:
   - name: youtubedl
     newName: tzahi12345/youtubedl-material
-    newTag: 4.3.2
+    newTag: nightly
+    digest: sha256:ca6f08a9c3aeca75ddee7356252fb712998f45e99da9542d0e14c2eaef5e8e08
 
 configMapGenerator:
   - name: youtubedl-config
