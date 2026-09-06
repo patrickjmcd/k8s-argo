@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtarr
+  labels:
+    app.kubernetes.io/instance: youtarr
+    app.kubernetes.io/name: youtarr
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: youtarr
+      app.kubernetes.io/name: youtarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: youtarr
+        app.kubernetes.io/name: youtarr
+    spec:
+      containers:
+        - name: youtarr
+          image: dialmaster/youtarr:v1.81.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: LOG_LEVEL
+              value: info
+            # No external auth provider — this app is only reachable via the
+            # internal Traefik gateway / Cloudflare tunnel, both already
+            # access-controlled. See authState.js / verifyToken middleware:
+            # AUTH_ENABLED=false is a first-class supported mode, not a hack.
+            - name: AUTH_ENABLED
+              value: "false"
+            - name: TRUST_PROXY
+              value: "true"
+            - name: YOUTUBE_OUTPUT_DIR
+              value: /usr/src/app/data
+            - name: DB_HOST
+              value: youtarr-mariadb
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_NAME
+              value: youtarr
+            - name: DB_USER
+              value: youtarr
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-db-1pw
+                  key: password
+                  optional: true # starts + retries even before the item is made
+          ports:
+            - name: http
+              containerPort: 3011
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+            - name: jobs
+              mountPath: /app/jobs
+            - name: images
+              mountPath: /app/server/images
+            - name: media
+              mountPath: /usr/src/app/data
+              subPath: video/youtube/YoutarrOutput
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 35m
+              memory: 300Mi
+            limits:
+              memory: 768Mi
+        - name: postprocessor
+          image: python:3.14-slim
+          resources:
+            requests:
+              cpu: 11m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          env:
+            - name: INCOMING_DIR
+              value: /incoming
+            - name: ORGANIZED_DIR
+              value: /organized
+            - name: STABLE_SECONDS
+              value: "15"
+            - name: UNKNOWN_ARTIST
+              value: "Unknown Artist"
+            - name: COPY_MODE
+              value: "0"
+            - name: CLAUDE_MODEL
+              value: "claude-haiku-4-5-20251001"
+            - name: USE_CLAUDE
+              value: "1"
+            - name: CONF_AUTO
+              value: "0.85"
+            - name: CONF_REVIEW
+              value: "0.70"
+            - name: ENABLE_EMBEDDINGS
+              value: "0"
+            - name: EMBEDDING_MODEL
+              value: "text-embedding-3-small"
+            - name: PLEX_URL
+              value: "http://192.168.1.210:32400"
+            - name: PLEX_SECTION_ID
+              value: "6"
+            - name: PLEX_PATH_PREFIX
+              value: "/mnt/unas/Media/video/youtube/Organized"
+          command: [ "sh","-lc" ]
+          args:
+            - >
+              pip install --no-cache-dir watchdog anthropic openai sqlite-vec &&
+              python /app/watcher.py
+          envFrom:
+            # Reuses the existing youtubedl-1pw item (ANTHROPIC_API_KEY,
+            # OPENAI_API_KEY, DISCORD_WEBHOOK_URL, PLEX_TOKEN) — same
+            # credentials, no need for a second copy.
+            - secretRef:
+                name: youtubedl-1pw
+          volumeMounts:
+            - name: media
+              mountPath: /incoming
+              subPath: video/youtube/YoutarrOutput
+            - name: media
+              mountPath: /organized
+              subPath: video/youtube/Organized
+            - name: script
+              mountPath: /app/watcher.py
+              subPath: watcher.py
+              readOnly: true
+            - name: script
+              mountPath: /app/backfill_labels.py
+              subPath: backfill_labels.py
+              readOnly: true
+            - name: script
+              mountPath: /app/backfill_artist_filenames.py
+              subPath: backfill_artist_filenames.py
+              readOnly: true
+            - name: cache
+              mountPath: /cache
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: longhorn-youtarr-config
+        - name: jobs
+          persistentVolumeClaim:
+            claimName: longhorn-youtarr-jobs
+        - name: images
+          persistentVolumeClaim:
+            claimName: longhorn-youtarr-images
+        - name: media
+          persistentVolumeClaim:
+            claimName: smb-media-claim
+        - name: script
+          configMap:
+            name: ytarr-postprocessor-script
+        - name: cache
+          emptyDir: { }

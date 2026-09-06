@@ -62,6 +62,7 @@ spec:
           - name: sabnzbd
           - name: kometa
           - name: youtubedl
+          - name: youtarr
           - name: dispatcharr
           - name: ersatztv
   template:

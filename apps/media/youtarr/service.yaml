@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtarr
+  labels:
+    app.kubernetes.io/instance: youtarr
+    app.kubernetes.io/name: youtarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: youtarr
+    app.kubernetes.io/instance: youtarr

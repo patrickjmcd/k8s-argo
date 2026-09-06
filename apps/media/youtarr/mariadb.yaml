@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtarr-mariadb
+  labels:
+    app.kubernetes.io/instance: youtarr-mariadb
+    app.kubernetes.io/name: youtarr-mariadb
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: youtarr-mariadb
+      app.kubernetes.io/name: youtarr-mariadb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: youtarr-mariadb
+        app.kubernetes.io/name: youtarr-mariadb
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:11.4.13
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MARIADB_DATABASE
+              value: youtarr
+            - name: MARIADB_USER
+              value: youtarr
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-db-1pw
+                  key: password
+                  optional: true # starts + retries even before the item is made
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-db-1pw
+                  key: root-password
+                  optional: true
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+          livenessProbe:
+            exec:
+              command: ["healthcheck.sh", "--connect", "--innodb_initialized"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["healthcheck.sh", "--connect"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 25m
+              memory: 200Mi
+            limits:
+              cpu: 1
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-youtarr-mariadb-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtarr-mariadb
+  labels:
+    app.kubernetes.io/instance: youtarr-mariadb
+    app.kubernetes.io/name: youtarr-mariadb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: mysql
+      protocol: TCP
+      name: mysql
+  selector:
+    app.kubernetes.io/name: youtarr-mariadb
+    app.kubernetes.io/instance: youtarr-mariadb
