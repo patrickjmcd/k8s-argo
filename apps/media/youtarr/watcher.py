@@ -450,6 +450,39 @@ def load_info(p: Optional[Path]) -> Optional[dict]:
     except Exception:
         return None
 
+def load_nfo_as_info(p: Optional[Path]) -> Optional[dict]:
+    """
+    Youtarr's nfoGenerator.js relocates the real .info.json into its own
+    /app/jobs/info/ (never leaves it next to the video), but does write a
+    Kodi/Jellyfin .nfo with the same underlying yt-dlp fields (nfoGenerator.js
+    writeVideoNfoFile: title/plot/studio/tag/genre/youtubeid). Parse that XML
+    into the same shape as a real .info.json so every downstream heuristic
+    (channel_from_info, publisher detection, Claude fallback) keeps working
+    unmodified — without depending on Youtarr's internal jobs directory.
+    """
+    if not p or not p.exists():
+        return None
+    try:
+        root = ET.parse(p).getroot()
+    except Exception:
+        return None
+
+    def text(tag: str) -> str:
+        el = root.find(tag)
+        return (el.text or "").strip() if el is not None and el.text else ""
+
+    studio = text("studio")
+    return {
+        "title": text("title"),
+        "fulltitle": text("title"),
+        "description": text("plot"),
+        "channel": studio,
+        "uploader": studio,
+        "id": text("youtubeid"),
+        "tags": [t.text.strip() for t in root.findall("tag") if t.text and t.text.strip()],
+        "categories": [g.text.strip() for g in root.findall("genre") if g.text and g.text.strip()],
+    }
+
 def channel_from_info(info: dict) -> str:
     for k in ("channel", "uploader", "creator"):
         v = info.get(k)
@@ -852,6 +885,13 @@ def find_info_json(media_path: Path) -> Optional[Path]:
     p2 = media_path.with_suffix(".info.json")
     return p2 if p2.exists() else None
 
+def find_nfo(media_path: Path) -> Optional[Path]:
+    p = media_path.with_suffix(media_path.suffix + ".nfo")
+    if p.exists():
+        return p
+    p2 = media_path.with_suffix(".nfo")
+    return p2 if p2.exists() else None
+
 def bundle_paths(media_path: Path) -> List[Path]:
     """
     Return paths that belong to this media, located next to it.
@@ -943,6 +983,8 @@ def process_media(media_path: Path) -> None:
 
     info_path = find_info_json(media_path)
     info = load_info(info_path)
+    if not info:
+        info = load_nfo_as_info(find_nfo(media_path))
 
     artist, aconf, song, tconf, is_full_set, src, key = decide(info, media_path)
 
