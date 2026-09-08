@@ -151,6 +151,16 @@ spec:
           applicationSet:
             # Leader-elected; the second replica only watches.
             replicas: 1
+            # Enables both the metrics Service (picked up automatically by the
+            # argocd-metrics ServiceMonitor, same as every other component) and,
+            # as a side effect, the chart's NetworkPolicy for this component --
+            # its networkpolicy.yaml template is gated on metrics/ingress/httproute
+            # being enabled, not just global.networkPolicy.create. Without this,
+            # applicationset-controller had no chart-managed NetworkPolicy at all;
+            # the only thing covering it was a stale, untracked manual NetworkPolicy
+            # (deleted as part of the NetworkPolicy audit, see git history).
+            metrics:
+              enabled: true
             resources:
               requests:
                 cpu: 23m
