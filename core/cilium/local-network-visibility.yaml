@@ -1,22 +1,26 @@
-# DISABLED (2026-09-08) — removed from kustomization.yaml, kept here for reference.
+# Purely for Hubble labeling: makes Cilium allocate a distinct identity per local
+# VLAN (see ./local-cidr-groups.yaml) instead of collapsing all non-cluster traffic
+# into generic reserved:world. `endpointSelector: {}` selects every pod in the
+# cluster, same as before.
 #
-# WRONG ASSUMPTION when this was written: "safe once enforcement is re-enabled,
-# since it's a superset allow of the existing LAN" is false. `endpointSelector: {}`
-# selects EVERY pod in the cluster, and this policy's egress rule lists ONLY the
-# 6 local CIDR groups — no toEntities: [cluster, kube-apiserver, world], no pod-to-pod
-# allow. Under policyEnforcementMode: never this was inert, so the mistake went
-# unnoticed for 2 days. The moment policyEnforcementMode flipped to "default"
-# (2026-09-08), this became a cluster-wide default-deny-except-LAN egress policy on
-# every pod — broke DNS, kube-apiserver ClusterIP access, and everything else that
-# isn't the local LAN. Caused a real (if brief) cluster-wide outage; diagnosed via
-# a hostNetwork pod succeeding where a normal pod failed (hostNetwork bypasses
-# Cilium identity-based enforcement entirely) — that asymmetry was the key clue.
+# RE-ADDED 2026-09-08 after being removed the same day for causing a cluster-wide
+# outage — see git log for the incident (identify-local-vlans, commits around
+# b7869eb) and memory/cilium-migration-progress.md for the full writeup. Root
+# cause: the egress/ingress rules ONLY listed the 6 CIDR groups, no broad allow,
+# so the moment policyEnforcementMode left "never" this became a cluster-wide
+# default-deny-except-LAN policy on every pod.
 #
-# If this Hubble-visibility feature is wanted again, it MUST also carry a broad
-# allow (e.g. toEntities: [cluster, kube-apiserver, world] alongside the CIDR
-# groups) so it only adds identity labels without narrowing anything. Test it
-# under policyEnforcementMode: default specifically, not "never" — "never" cannot
-# catch this class of bug since it disables enforcement entirely.
+# THE FIX: `toEntities: [all]` / `fromEntities: [all]` below are a second rule in
+# each direction's list (rules within a policy are OR'd/unioned per standard
+# NetworkPolicy semantics), so this policy can only ever ADD identity labels —
+# it can never narrow traffic, regardless of what the CIDR-group rule does or
+# doesn't cover. The CIDR-group rule is kept purely to force per-VLAN identity
+# allocation for Hubble; `toEntities: [all]` alone would not create those labels.
+#
+# Verified live under policyEnforcementMode: default (not "never" — "never" can't
+# catch this class of bug) before committing: applied via kubectl first, confirmed
+# DNS + kube-apiserver + a real cross-namespace app (Longhorn scrape) all still
+# worked, THEN committed to git.
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
@@ -31,6 +35,8 @@ spec:
         - cidrGroupRef: jolly-roger-lan
         - cidrGroupRef: cari-ads-lan
         - cidrGroupRef: home-automation-lan
+    - toEntities:
+        - all
   ingress:
     - fromCIDRSet:
         - cidrGroupRef: kube-lan
@@ -39,3 +45,5 @@ spec:
         - cidrGroupRef: jolly-roger-lan
         - cidrGroupRef: cari-ads-lan
         - cidrGroupRef: home-automation-lan
+    - fromEntities:
+        - all
