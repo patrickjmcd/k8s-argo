@@ -69,10 +69,15 @@ spec:
           # them for real the moment it's active, and many turned out to be too
           # restrictive/stale, breaking legitimate traffic cluster-wide the moment of
           # cutover (argocd, prometheus, cnpg, immich, etc. all went CrashLoopBackOff).
-          # Disabled for now - matches the de-facto "not really enforced" behavior of
-          # the recent past - until each existing policy is re-audited one at a time as
-          # a deliberate follow-up, not mid-cutover. TODO: re-enable once audited.
-          policyEnforcementMode: never
+          # Was "never" until every existing policy was re-audited one at a time as a
+          # deliberate follow-up (2026-09-08, see memory/cilium-migration-progress.md):
+          # deleted 8 stale/orphaned NetworkPolicy objects (minio/minio-console fully
+          # decommissioned; 6 untracked ~2yo argocd duplicates), and closed a real gap
+          # where argocd-applicationset-controller had zero chart-managed coverage.
+          # "default" enforces only on endpoints actually selected by a policy (unlike
+          # "always", which default-denies everything) -- matches standard Kubernetes
+          # NetworkPolicy semantics, so unselected pods stay fully open.
+          policyEnforcementMode: default
 
           # During the flannel -> Cilium cutover, don't let Cilium take sole
           # ownership of /etc/cni/net.d — a half-migrated node would otherwise
