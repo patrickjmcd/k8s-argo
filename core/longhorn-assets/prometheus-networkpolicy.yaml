@@ -1,0 +1,28 @@
+# Supplementary NetworkPolicy -- additive to (not a replacement for) the
+# Longhorn chart's own `longhorn-manager` NetworkPolicy. That chart-managed
+# policy only allows ingress via bare podSelectors, which (per standard
+# Kubernetes NetworkPolicy semantics) only match pods in the SAME namespace
+# as the policy. Prometheus lives in a different namespace (`prometheus`),
+# so its ServiceMonitor scrape of the manager port (9500) was silently
+# blocked the moment policyEnforcementMode moved off "never" (2026-09-08) --
+# NetworkPolicy rules for a pod are additive/unioned across all matching
+# policies, so this doesn't touch or need to replace the chart's own policy.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: longhorn-system
+spec:
+  podSelector:
+    matchLabels:
+      app: longhorn-manager
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prometheus
+      ports:
+        - port: manager
+          protocol: TCP
