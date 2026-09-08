@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - httproute.yaml
   - local-cidr-groups.yaml
-  - local-network-visibility.yaml
