@@ -1,0 +1,25 @@
+---
+# Exposes the MQTT port on a LAN-reachable IP so Home Assistant (external to
+# this cluster, at ha.pmcd.dev) can connect. The Deployment's own Service
+# stays ClusterIP for in-cluster access (Ignition); this is a second,
+# LAN-facing Service we own -- same pattern as apps/nats/loadbalancer-service.yaml.
+apiVersion: v1
+kind: Service
+metadata:
+  name: hivemq-lan
+  namespace: hivemq
+  annotations:
+    # See apps/nats/loadbalancer-service.yaml for why kube-vip is excluded
+    # from MetalLB-managed LoadBalancer IPs on this cluster.
+    kube-vip.io/ignore: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.8.206
+  selector:
+    app.kubernetes.io/name: hivemq
+    app.kubernetes.io/instance: hivemq
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: mqtt
+      protocol: TCP
