@@ -8,6 +8,14 @@ metadata:
     app.kubernetes.io/instance: hivemq
 spec:
   replicas: 1
+  # Default RollingUpdate can schedule the new pod on a different node before
+  # the old one terminates -- with a ReadWriteOnce Longhorn volume that's a
+  # deadlock (new pod's node can't attach while the old pod still holds it).
+  # Recreate avoids it: old pod fully terminates (and detaches) before the
+  # new one is created. Fine for a single-replica broker; a few seconds of
+  # downtime on rollout is acceptable here.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: hivemq
