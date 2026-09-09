@@ -12,7 +12,7 @@ spec:
       port: 1883
       targetPort: mqtt
       protocol: TCP
-    - name: control-center
-      port: 8080
-      targetPort: control-center
+    - name: websocket
+      port: 8000
+      targetPort: websocket
       protocol: TCP

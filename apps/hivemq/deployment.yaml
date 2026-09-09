@@ -41,8 +41,8 @@ spec:
             - name: mqtt
               containerPort: 1883
               protocol: TCP
-            - name: control-center
-              containerPort: 8080
+            - name: websocket
+              containerPort: 8000
               protocol: TCP
           volumeMounts:
             - name: data
