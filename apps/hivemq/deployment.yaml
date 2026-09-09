@@ -18,6 +18,13 @@ spec:
         app.kubernetes.io/name: hivemq
         app.kubernetes.io/instance: hivemq
     spec:
+      # Image runs as uid=10000/gid=0 (non-root). Longhorn PVCs provision
+      # root:root with no group-write, so the container can't write its
+      # data.lock/persistence files without this -- fsGroup makes k8s chown
+      # the volume to this group (and applies it as a supplemental group to
+      # the container) regardless of the exact uid the image happens to use.
+      securityContext:
+        fsGroup: 10000
       containers:
         - name: hivemq
           image: hivemq/hivemq-ce:2024.3
