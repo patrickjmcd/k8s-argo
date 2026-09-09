@@ -67,8 +67,18 @@ spec:
           envFrom:
             - configMapRef:
                 name: ia-ignition-config
-            - secretRef:
-                name: ia-ignition-1pw
+          # Only GATEWAY_ADMIN_PASSWORD from ia-ignition-1pw is used -- deliberately
+          # NOT pulling IGNITION_ACTIVATION_TOKEN/IGNITION_LICENSE_KEY via envFrom.
+          # This gateway runs Maker Edition (free, no activation needed), and the
+          # stored token is orphaned from before the data volume was wiped/reseeded
+          # (leased activation is bound to gateway identity). Feeding it in just
+          # made every boot burn ~1-2 minutes retrying a rejected lease renewal.
+          env:
+            - name: GATEWAY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ia-ignition-1pw
+                  key: GATEWAY_ADMIN_PASSWORD
           ports:
             - containerPort: 8088
               name: http
