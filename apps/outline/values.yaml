@@ -3,7 +3,7 @@ glance:
 
 image:
   repository: outlinewiki/outline
-  tag: "1.10.0"
+  tag: "1.10.1"
 
 service:
   port: 80
