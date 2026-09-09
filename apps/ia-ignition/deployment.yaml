@@ -36,6 +36,29 @@ spec:
               name: ignition-config-files
             - mountPath: /config/scripts
               name: ignition-config-scripts
+        # MQTT Engine + Transmission (Cirrus Link) aren't in the base image and
+        # user-lib/modules/ isn't on the PVC -- it's baked into the image, so
+        # anything copied there directly on a running pod is lost on restart.
+        # This seeds a shared emptyDir with the image's ORIGINAL modules (so we
+        # don't lose alarm-notification/opcua/etc by overlaying the path) plus
+        # the two extra .modl files staged on the data PVC (uploaded once via
+        # `kubectl cp` -- proprietary Cirrus Link binaries, not committed to
+        # git). modules.json (on the PVC, /data/modules.json) already has both
+        # module IDs registered pointing at these exact filenames.
+        - name: install-mqtt-modules
+          image: inductiveautomation/ignition:latest
+          command:
+            - sh
+            - -c
+            - |
+              cp -a /usr/local/bin/ignition/user-lib/modules/. /shared-modules/
+              cp "/data/extra-modules/MQTT Engine-module.modl" "/shared-modules/MQTT Engine-module.modl"
+              cp "/data/extra-modules/MQTT Transmission-module.modl" "/shared-modules/MQTT Transmission-module.modl"
+          volumeMounts:
+            - mountPath: /data
+              name: appconfig
+            - mountPath: /shared-modules
+              name: extra-modules
       containers:
         - name: ia-ignition
           image: ia-ignition
@@ -66,10 +89,14 @@ spec:
           volumeMounts:
             - mountPath: /usr/local/bin/ignition/data
               name: appconfig
+            - mountPath: /usr/local/bin/ignition/user-lib/modules
+              name: extra-modules
       volumes:
         - name: appconfig
           persistentVolumeClaim:
             claimName: longhorn-ia-ignition-config
+        - name: extra-modules
+          emptyDir: {}
         - name: ignition-config-scripts
           configMap:
             name: ignition-config-scripts
