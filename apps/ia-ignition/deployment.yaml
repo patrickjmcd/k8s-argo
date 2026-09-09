@@ -36,16 +36,16 @@ spec:
               name: ignition-config-files
             - mountPath: /config/scripts
               name: ignition-config-scripts
-        # MQTT Engine + Transmission (Cirrus Link) aren't in the base image and
-        # user-lib/modules/ isn't on the PVC -- it's baked into the image, so
-        # anything copied there directly on a running pod is lost on restart.
-        # This seeds a shared emptyDir with the image's ORIGINAL modules (so we
-        # don't lose alarm-notification/opcua/etc by overlaying the path) plus
-        # the two extra .modl files staged on the data PVC (uploaded once via
-        # `kubectl cp` -- proprietary Cirrus Link binaries, not committed to
-        # git). modules.json (on the PVC, /data/modules.json) already has both
+        # MQTT Engine + Transmission (Cirrus Link) and the Flint Designer Bridge
+        # aren't in the base image and user-lib/modules/ isn't on the PVC -- it's
+        # baked into the image, so anything copied there directly on a running
+        # pod is lost on restart. This seeds a shared emptyDir with the image's
+        # ORIGINAL modules (so we don't lose alarm-notification/opcua/etc by
+        # overlaying the path) plus the extra .modl files staged on the data PVC
+        # (uploaded once via `kubectl cp` -- third-party binaries, not committed
+        # to git). modules.json (on the PVC, /data/modules.json) already has all
         # module IDs registered pointing at these exact filenames.
-        - name: install-mqtt-modules
+        - name: install-extra-modules
           image: inductiveautomation/ignition:latest
           command:
             - sh
@@ -54,6 +54,7 @@ spec:
               cp -a /usr/local/bin/ignition/user-lib/modules/. /shared-modules/
               cp "/data/extra-modules/MQTT Engine-module.modl" "/shared-modules/MQTT Engine-module.modl"
               cp "/data/extra-modules/MQTT Transmission-module.modl" "/shared-modules/MQTT Transmission-module.modl"
+              cp "/data/extra-modules/Flint-Designer-Bridge-1.2.0-8.3.modl" "/shared-modules/Flint-Designer-Bridge-1.2.0-8.3.modl"
           volumeMounts:
             - mountPath: /data
               name: appconfig
