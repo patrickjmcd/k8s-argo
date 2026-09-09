@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: hivemq
-          image: hivemq/hivemq-ce:2024.3
+          image: hivemq/hivemq-ce:2024.9
           imagePullPolicy: IfNotPresent
           ports:
             - name: mqtt
