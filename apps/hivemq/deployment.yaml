@@ -35,7 +35,7 @@ spec:
         fsGroup: 10000
       containers:
         - name: hivemq
-          image: hivemq/hivemq-ce:2024.9
+          image: hivemq/hivemq-ce:2026.5
           imagePullPolicy: IfNotPresent
           ports:
             - name: mqtt
