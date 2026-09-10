@@ -10,6 +10,11 @@ env:
   UNIFI_MCP_HOST: "0.0.0.0"
   UNIFI_MCP_PORT: "3000"
   UNIFI_NETWORK_VERIFY_SSL: "false"
+  # unifi-mcp's DNS-rebinding protection rejects any Host header outside
+  # this list — this is the documented mechanism for reverse-proxy setups
+  # (see apps/network/src/unifi_network_mcp/runtime.py upstream). The
+  # earlier httproute hostnameRewrite: localhost trick did not satisfy it.
+  UNIFI_MCP_ALLOWED_HOSTS: "unifi-mcp.x.pmcd.io"
 
 onePassword:
   enabled: true
@@ -31,4 +36,27 @@ httproute:
   enabled: true
   hostnames:
     - unifi-mcp.x.pmcd.io
-  hostnameRewrite: localhost
+  middlewares:
+    - name: unifi-mcp-basicauth
+
+# unifi-mcp has no authentication of its own (HTTP transport is documented as
+# "unauthenticated, keep it on loopback"). BasicAuth here is the "authenticated
+# proxy" the maintainer's docs call for when exposing it beyond localhost.
+# Secret has a single 'users' key (htpasswd-format lines) per Traefik's
+# loadAuthCredentials — https://doc.traefik.io/traefik/middlewares/http/basicauth/
+extraObjects:
+  - apiVersion: onepassword.com/v1
+    kind: OnePasswordItem
+    metadata:
+      name: unifi-mcp-basicauth
+      namespace: default
+    spec:
+      itemPath: "vaults/Kubernetes/items/unifi-mcp-basicauth"
+  - apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: unifi-mcp-basicauth
+      namespace: default
+    spec:
+      basicAuth:
+        secret: unifi-mcp-basicauth  # security-agent: ignore — k8s Secret name, not a credential

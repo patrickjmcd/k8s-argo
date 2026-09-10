@@ -19,11 +19,20 @@ spec:
         - path:
             type: PathPrefix
             value: /
-      {{- if .Values.httproute.hostnameRewrite }}
+      {{- if or .Values.httproute.hostnameRewrite .Values.httproute.middlewares }}
       filters:
+        {{- if .Values.httproute.hostnameRewrite }}
         - type: URLRewrite
           urlRewrite:
             hostname: {{ .Values.httproute.hostnameRewrite | quote }}
+        {{- end }}
+        {{- range .Values.httproute.middlewares }}
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: {{ .name }}
+        {{- end }}
       {{- end }}
       backendRefs:
         - name: {{ include "homelab-app.fullname" . }}

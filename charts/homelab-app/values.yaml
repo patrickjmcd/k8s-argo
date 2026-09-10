@@ -52,6 +52,9 @@ httproute:
     name: traefik-gateway
     namespace: default
   hostnames: []
+  # ExtensionRef filters, e.g. [{name: some-traefik-middleware}] — for
+  # gating an app behind Traefik auth/allowlist middleware.
+  middlewares: []
 
 persistence:
   enabled: false
