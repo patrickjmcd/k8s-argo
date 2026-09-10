@@ -24,7 +24,9 @@ probes:
     type: tcpSocket
 
 httproute:
-  enabled: false
+  enabled: true
+  hostnames:
+    - homelable-mcp.x.pmcd.io
 
 # Reuses the OnePasswordItem created by the backend app (apps/homelable-backend) —
 # same secret, MCP_API_KEY / MCP_SERVICE_KEY fields. Not owned here to avoid two

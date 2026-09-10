@@ -3,6 +3,13 @@
     "unifi-mcp": {
       "type": "http",
       "url": "https://unifi-mcp.x.pmcd.io/mcp"
+    },
+    "homelable-mcp": {
+      "type": "http",
+      "url": "https://homelable-mcp.x.pmcd.io/mcp",
+      "headers": {
+        "X-API-Key": "${HOMELABLE_MCP_API_KEY}"
+      }
     }
   }
 }
