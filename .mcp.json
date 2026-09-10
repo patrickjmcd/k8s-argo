@@ -2,7 +2,10 @@
   "mcpServers": {
     "unifi-mcp": {
       "type": "http",
-      "url": "https://unifi-mcp.x.pmcd.io/mcp"
+      "url": "https://unifi-mcp.x.pmcd.io/mcp",
+      "headers": {
+        "Authorization": "Basic ${UNIFI_MCP_BASIC_AUTH_B64}"
+      }
     },
     "homelable-mcp": {
       "type": "http",
