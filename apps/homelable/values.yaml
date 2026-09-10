@@ -1,0 +1,41 @@
+image:
+  repository: ghcr.io/pouzor/homelable-frontend
+  tag: "3.4.1"
+
+service:
+  port: 80
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 5
+  startup:
+    enabled: true
+    type: httpGet
+    path: /
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - homelable.x.pmcd.io

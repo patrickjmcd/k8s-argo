@@ -1,0 +1,73 @@
+image:
+  repository: ghcr.io/pouzor/homelable-backend
+  tag: "3.4.1"
+
+service:
+  port: 8000
+  containerPort: 8000
+
+# hostNetwork so nmap can see real LAN traffic (ARP/MAC addresses) instead of
+# scanning from behind the pod bridge. Pinned to one node so the exposed host
+# port (8000) and scan-source IP are predictable.
+hostNetwork: true
+nodeSelector:
+  kubernetes.io/hostname: pi5-kube0
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 200Mi
+  limits:
+    memory: 768Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /api/v1/health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /api/v1/health
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 5
+  startup:
+    enabled: true
+    type: httpGet
+    path: /api/v1/health
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: false
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 2Gi
+  mountPath: /app/data
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/homelable-backend"
+  secretName: homelable-backend-1pw
+
+env:
+  SQLITE_PATH: /app/data/homelab.db
+  CORS_ORIGINS: '["https://homelable.x.pmcd.io"]'
+  AUTH_MODE: local
+  AUTH_USERNAME: admin
+  # All six VLANs from core/cilium/local-cidr-groups.yaml. Cross-VLAN hosts
+  # only get discovered where UniFi's firewall actually routes the Kube VLAN
+  # (192.168.8.0/24, where this pod lives) to them.
+  SCANNER_RANGES: '["192.168.1.0/24","192.168.3.0/24","192.168.4.0/24","192.168.5.0/24","192.168.8.0/24","192.168.10.0/24"]'
+  STATUS_CHECKER_INTERVAL: "60"
+
+envFrom:
+  - secretRef:
+      name: homelable-backend-1pw

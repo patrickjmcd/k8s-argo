@@ -105,6 +105,13 @@ extraObjects: []
 podSecurityContext: {}
 securityContext: {}
 affinity: {}
+nodeSelector: {}
+
+# hostNetwork: true binds the pod directly to the node's network namespace
+# instead of the normal isolated pod network. Needed when a container has to
+# see real LAN traffic (e.g. ARP for MAC addresses, which is invisible from
+# behind a bridge/overlay). Pair with nodeSelector to pin it to one node.
+hostNetwork: false
 
 tolerations:
   - key: node.kubernetes.io/not-ready
