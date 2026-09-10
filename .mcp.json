@@ -10,6 +10,13 @@
       "headers": {
         "X-API-Key": "${HOMELABLE_MCP_API_KEY}"
       }
+    },
+    "home-assistant": {
+      "type": "http",
+      "url": "http://192.168.1.21:8123/mcp_server/sse",
+      "headers": {
+        "Authorization": "Bearer ${HOME_ASSISTANT_MCP_TOKEN}"
+      }
     }
   }
 }
