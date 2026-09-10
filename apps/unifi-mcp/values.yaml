@@ -10,11 +10,16 @@ env:
   UNIFI_MCP_HOST: "0.0.0.0"
   UNIFI_MCP_PORT: "3000"
   UNIFI_NETWORK_VERIFY_SSL: "false"
-  # unifi-mcp's DNS-rebinding protection rejects any Host header outside
-  # this list — this is the documented mechanism for reverse-proxy setups
-  # (see apps/network/src/unifi_network_mcp/runtime.py upstream). The
-  # earlier httproute hostnameRewrite: localhost trick did not satisfy it.
+  # UNIFI_MCP_ALLOWED_HOSTS is set correctly but the SDK's host-and-port
+  # matcher still rejects the bare hostname after its own normalization —
+  # confirmed at the exact deployed tag (network/v0.32.5), looks like an
+  # upstream matcher bug. The maintainer's own comment in runtime.py says to
+  # disable DNS-rebinding protection for "Kubernetes/proxy deployments where
+  # allowed_hosts is insufficient" — exactly this case. Safe to do because
+  # BasicAuth (below) now provides the actual authentication this check was
+  # compensating for on an otherwise-unauthenticated server.
   UNIFI_MCP_ALLOWED_HOSTS: "unifi-mcp.x.pmcd.io"
+  UNIFI_MCP_ENABLE_DNS_REBINDING_PROTECTION: "false"
 
 onePassword:
   enabled: true
