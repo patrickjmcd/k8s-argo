@@ -80,7 +80,15 @@ spec:
               enabled: false
           providers:
             kubernetesCRD:
-              enabled: false
+              # Not used for routing (all routing stays on Gateway API/HTTPRoute
+              # per convention) — enabled solely because Traefik's Gateway API
+              # provider only registers `traefik.io/Middleware` as a valid
+              # ExtensionRef filter kind when this provider is also running
+              # (see FillExtensionBuilderRegistry in Traefik's CRD provider).
+              # With this off, every HTTPRoute Middleware ExtensionRef silently
+              # fails ("unsupported filter extension ref") — discovered via
+              # jellyfin's ipAllowList never actually being enforced.
+              enabled: true
             kubernetesGateway:
               enabled: true
           gateway:
