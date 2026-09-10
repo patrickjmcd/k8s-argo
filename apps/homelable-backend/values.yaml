@@ -15,10 +15,14 @@ nodeSelector:
 
 resources:
   requests:
-    cpu: 50m
-    memory: 200Mi
+    cpu: 100m
+    memory: 250Mi
   limits:
-    memory: 768Mi
+    # 768Mi OOMKilled the pod mid-scan (Phase 2 runs ~8 concurrent nmap -sV
+    # workers) on 2026-09-10 — real usage exceeds it, not a ratchet-derived
+    # estimate. pi5-kube0 has ~4.6Gi free, plenty of room for headroom here.
+    cpu: 2000m
+    memory: 2Gi
 
 probes:
   readiness:
