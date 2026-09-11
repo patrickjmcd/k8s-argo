@@ -245,6 +245,25 @@ spec:
           grafana:
             deploymentStrategy:
               type: Recreate
+            # pi4-kube0 and pi4-kube1 run sustained 98-99% CPU (2026-09-11:
+            # argocd-application-controller alone over 1 full core there,
+            # plus general cluster load) — a startupProbe budget can't fix a
+            # node that's genuinely out of CPU, only a slow boot on an idle
+            # one. Grafana landed on pi4-kube0 and crash-looped for over an
+            # hour despite the startupProbe below. Soft-prefer every other
+            # node instead of hard-pinning elsewhere, so this still
+            # schedules somewhere if those are the only nodes with room.
+            affinity:
+              nodeAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    preference:
+                      matchFields:
+                        - key: metadata.name
+                          operator: NotIn
+                          values:
+                            - pi4-kube0
+                            - pi4-kube1
             # No startupProbe by default, only a livenessProbe that starts at
             # 60s and gives up ~160s later. On a Pi5 node, registering
             # Grafana's bundled app plugins alone can take 2-2.5 minutes
