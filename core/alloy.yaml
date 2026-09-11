@@ -57,12 +57,18 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 64Mi
+              memory: 96Mi
             limits:
               # No CPU limit: log tailing is the same bursty,
               # fsnotify/inotify-adjacent pattern CLAUDE.md's CPU-limit
               # doctrine warns about (config reloaders, log tailers).
-              memory: 256Mi
+              #
+              # 256Mi OOMKilled on first rollout (2026-09-11) — the
+              # discovery.kubernetes/loki.source.kubernetes fan-out opens a
+              # log stream per running container across the whole cluster
+              # simultaneously at startup, which spikes well above
+              # steady-state usage. 512Mi gives headroom for that burst.
+              memory: 512Mi
           mounts:
             extra:
               - name: journal
