@@ -77,6 +77,8 @@ configMap:
   subPath: go2rtc.yaml
   data:
     go2rtc.yaml: |
+      log:
+        level: debug
       api:
         listen: ":1984"
       rtsp:
