@@ -37,15 +37,25 @@ httproute:
   hostnames:
     - go2rtc.x.pmcd.io
 
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/go2rtc"
+
+envFrom:
+  - secretRef:
+      name: go2rtc-1pw
+
 command:
   - "/usr/local/bin/go2rtc"
   - "-config"
   - "/config/go2rtc.yaml"
 
-# Streams are added here once RTSP is enabled per-camera in UniFi Protect and
-# we have the resulting rtsp:// URLs -- both Home Assistant and the Ignition
-# dashboard consume the same restreamed source from here rather than each
-# pulling RTSP from Protect independently.
+# Both Home Assistant and the Ignition dashboard pull live video from here
+# rather than each maintaining its own RTSPS/token plumbing back to UniFi
+# Protect. Source URLs are Protect's internal secure RTSPS streams (port
+# 7441, same ones Home Assistant's own UniFi Protect integration uses),
+# stored in the go2rtc 1Password item and expanded by go2rtc itself at
+# startup ($VAR syntax is a native go2rtc config feature).
 configMap:
   enabled: true
   mountPath: /config/go2rtc.yaml
@@ -58,4 +68,10 @@ configMap:
         listen: ":8554"
       webrtc:
         listen: ":8555"
-      streams: {}
+      streams:
+        living_room: ${LIVING_ROOM_RTSP_URL}
+        james_bedroom: ${JAMES_BEDROOM_RTSP_URL}
+        backyard: ${BACKYARD_RTSP_URL}
+        front_yard: ${FRONT_YARD_RTSP_URL}
+        doorbell: ${DOORBELL_RTSP_URL}
+        scotties_bedroom: ${SCOTTIES_BEDROOM_RTSP_URL}
