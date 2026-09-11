@@ -245,6 +245,21 @@ spec:
           grafana:
             deploymentStrategy:
               type: Recreate
+            # No startupProbe by default, only a livenessProbe that starts at
+            # 60s and gives up ~160s later. On a Pi5 node, registering
+            # Grafana's bundled app plugins alone can take 2-2.5 minutes
+            # before it's even listening — kubelet was killing it mid-boot
+            # and crash-looping (hit 2026-09-11 after a Recreate rollout).
+            # Budget 5m (well above the observed ~150s worst case) before
+            # liveness/readiness kick in at all.
+            startupProbe:
+              httpGet:
+                path: /api/health
+                port: grafana
+              failureThreshold: 30
+              periodSeconds: 10
+              timeoutSeconds: 10
+              successThreshold: 1
             tolerations:
               - effect: NoExecute
                 key: node.kubernetes.io/not-ready
