@@ -50,18 +50,25 @@ envFrom:
 # the streams file is generated at container start from real shell
 # variable expansion, then merged with the static config via go2rtc's
 # multiple -config flag support.
+#
+# Streams are pulled via go2rtc's bundled ffmpeg rather than its native RTSP
+# client: go2rtc's own SRTP decryption silently fails on UniFi Protect's
+# "enableSrtp" RTSPS streams (handshake succeeds, then it drops the producer
+# ~0.5s later with nothing logged, even at trace level) -- confirmed ffmpeg
+# handles the exact same stream fine. video/audio=copy avoids transcoding
+# since the source codecs (H264/opus) are already browser-compatible.
 command:
   - "sh"
   - "-c"
   - |
     cat > /tmp/streams.yaml <<EOF
     streams:
-      living_room: $LIVING_ROOM_RTSP_URL
-      james_bedroom: $JAMES_BEDROOM_RTSP_URL
-      backyard: $BACKYARD_RTSP_URL
-      front_yard: $FRONT_YARD_RTSP_URL
-      doorbell: $DOORBELL_RTSP_URL
-      scotties_bedroom: $SCOTTIES_BEDROOM_RTSP_URL
+      living_room: ffmpeg:$LIVING_ROOM_RTSP_URL#video=copy#audio=copy
+      james_bedroom: ffmpeg:$JAMES_BEDROOM_RTSP_URL#video=copy#audio=copy
+      backyard: ffmpeg:$BACKYARD_RTSP_URL#video=copy#audio=copy
+      front_yard: ffmpeg:$FRONT_YARD_RTSP_URL#video=copy#audio=copy
+      doorbell: ffmpeg:$DOORBELL_RTSP_URL#video=copy#audio=copy
+      scotties_bedroom: ffmpeg:$SCOTTIES_BEDROOM_RTSP_URL#video=copy#audio=copy
     EOF
     exec /usr/local/bin/go2rtc -config /config/go2rtc.yaml -config /tmp/streams.yaml
 
@@ -78,7 +85,7 @@ configMap:
   data:
     go2rtc.yaml: |
       log:
-        level: debug
+        level: info
       api:
         listen: ":1984"
       rtsp:
