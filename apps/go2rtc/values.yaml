@@ -37,6 +37,26 @@ httproute:
   hostnames:
     - go2rtc.x.pmcd.io
 
+# Gateway API/HTTPRoute is HTTP-only (L7), so go2rtc's plain RTSP restream
+# (port 8554) needs its own LoadBalancer Service to be reachable from the
+# LAN at all -- this is what Home Assistant (running outside the cluster)
+# points its camera config at, instead of pulling RTSPS from Protect itself.
+extraObjects:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: go2rtc-rtsp
+    spec:
+      type: LoadBalancer
+      selector:
+        app.kubernetes.io/name: go2rtc
+        app.kubernetes.io/instance: go2rtc
+      ports:
+        - name: rtsp
+          port: 8554
+          targetPort: 8554
+          protocol: TCP
+
 onePassword:
   enabled: true
   itemPath: "vaults/Kubernetes/items/go2rtc"
