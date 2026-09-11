@@ -79,6 +79,14 @@ spec:
                 secretKeyRef:
                   name: ia-ignition-1pw
                   key: GATEWAY_ADMIN_PASSWORD
+            # Reuses unifi-toolkit's existing Protect-scoped API key (no new
+            # 1Password item) so Perspective gateway scripts can pull camera
+            # snapshots from the UniFi Protect integration API.
+            - name: UNIFI_PROTECT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unifi-toolkit-1pw
+                  key: UNIFI_API_KEY
           ports:
             - containerPort: 8088
               name: http

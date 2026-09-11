@@ -10,7 +10,11 @@ resources:
 images:
 - name: ia-ignition
   newName:  inductiveautomation/ignition
-  newTag: "8.3"
+  # Pinned exact patch version -- the floating "8.3" tag let nodes cache
+  # different patch releases via imagePullPolicy: IfNotPresent, and scheduling
+  # onto a node with an older cached patch than what's already on the PVC
+  # causes Ignition to refuse to start ("Version mismatch on existing volume").
+  newTag: "8.3.9"
 
 configMapGenerator:
   - name: ia-ignition-config
