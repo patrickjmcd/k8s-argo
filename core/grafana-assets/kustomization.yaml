@@ -35,3 +35,6 @@ configMapGenerator:
   - name: grafana-dashboard-trivy-operator  # home-built, from core/trivy-operator metrics
     files:
       - dashboards/trivy-operator.json
+  - name: grafana-dashboard-nut-ups         # from DRuggeri/nut_exporter's dashboard/dashboard.json
+    files:
+      - dashboards/nut-ups.json
