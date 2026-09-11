@@ -312,8 +312,30 @@ spec:
                 memory: 512Mi
             # Infinity datasource: lets the ADS-B Station dashboard read
             # ultrafeeder's live aircraft.json into a native Geomap panel.
+            # Grafana 13 moved several core datasource plugins (loki,
+            # grafana-postgresql-datasource, etc.) out of the compiled-in
+            # binary into separate plugin bundles shipped read-only inside
+            # the image at /usr/share/grafana/data/plugins-bundled. This
+            # container runs with readOnlyRootFilesystem: true, so every
+            # boot Grafana's own plugin auto-updater tries to sync those
+            # bundled plugins to match its version, fails with "unlinkat
+            # ...: read-only file system", and leaves them broken —
+            # confirmed 2026-09-11 as the actual cause of Loki showing
+            # "Data source with UID loki not found" in the UI (the raw
+            # datasource config was always fine; the plugin backing it
+            # was getting killed and never reinstalled). shadowBundledPlugins
+            # mounts an emptyDir over that read-only path so listed plugins
+            # install cleanly into /var/lib/grafana/plugins instead — but
+            # its side effect is any bundled plugin NOT listed under
+            # `plugins:` stops being available at all, so everything
+            # currently in use must be listed explicitly.
+            shadowBundledPlugins: true
             plugins:
               - yesoreyeram-infinity-datasource
+              - loki
+              - prometheus
+              - alertmanager
+              - grafana-postgresql-datasource
             grafana.ini:
               server:
                 root_url: https://grafana.x.pmcd.io
