@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nut-ups
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: nut-ups
+      rules:
+        # UPS is on the Tripp Lite attached via USB to pve (192.168.1.12,
+        # Trigkey), scraped by apps/nut-exporter over the network from the
+        # NUT server (upsd) already running on pve. pve also hosts
+        # kube-leader-2 (a k3s control-plane VM), haos, and homebridge.
+        - alert: NutUpsOnBattery
+          expr: network_ups_tools_ups_status{flag="OB"} == 1
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "UPS {{ $labels.ups }} is running on battery"
+            description: >-
+              pve has lost mains power and is running on the Tripp Lite UPS.
+              pve's local upsmon (/etc/nut/upsmon.conf) will force a shutdown
+              of pve (and kube-leader-2) once the battery runs low.
+
+        - alert: NutUpsLowBattery
+          expr: network_ups_tools_ups_status{flag="LB"} == 1
+          labels:
+            severity: critical
+          annotations:
+            summary: "UPS {{ $labels.ups }} battery is low"
+            description: >-
+              pve's local upsmon will trigger an automatic shutdown of pve
+              (and kube-leader-2, a k3s control-plane VM) imminently.

@@ -12,6 +12,7 @@ resources:
   - adsb-postgres-1pw.yaml
   - prometheus-usb-pv.yaml
   - homelab-storage-rules.yaml
+  - nut-ups-rules.yaml
   - argocd-servicemonitor.yaml
   - local-usb.storageclass.yaml
 
