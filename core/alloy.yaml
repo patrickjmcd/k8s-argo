@@ -39,6 +39,18 @@ spec:
 
         controller:
           type: daemonset
+          # Without this, the DaemonSet skips the 3 control-plane nodes
+          # (node-role.kubernetes.io/control-plane:NoSchedule) and
+          # media-server (dedicated=heavy:NoSchedule) — discovered on first
+          # rollout (2026-09-11), only 6/10 nodes got a pod. Those are
+          # exactly the nodes where etcd/control-plane incidents happen, so
+          # skipping them defeats the point. Matches the broad toleration
+          # cilium/flannel already use.
+          tolerations:
+            - effect: NoSchedule
+              operator: Exists
+            - effect: NoExecute
+              operator: Exists
           volumes:
             extra:
               # journald IS host-local — no Kubernetes API equivalent, so this
