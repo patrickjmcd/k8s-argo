@@ -68,7 +68,20 @@ spec:
             runAsGroup: 0
           resources:
             requests:
-              cpu: 50m
+              # Goldilocks/VPA target after the first ~100min live on this
+              # cluster (2026-09-11): 442m. The original 50m badly
+              # understated real usage — on pi4-kube0/pi4-kube1 specifically,
+              # alloy settled at 337-436m steady-state (vs 16-54m on every
+              # other node), and the scheduler had no way to know that,
+              # since a request is the only signal it uses for bin-packing.
+              # That under-request let it overcommit both Pi4s, which
+              # combined with a heavy rollout evening (4 DaemonSet restarts)
+              # starved them to 98% CPU and crash-looped Grafana, which
+              # happened to land on pi4-kube0 at the same time. No CPU
+              # limit either way, so this only changes scheduling headroom,
+              # not alloy's own ceiling. Re-check `kubectl describe vpa
+              # goldilocks-alloy -n loki` after this has more history.
+              cpu: 442m
               memory: 96Mi
             limits:
               # No CPU limit: log tailing is the same bursty,
@@ -79,8 +92,11 @@ spec:
               # discovery.kubernetes/loki.source.kubernetes fan-out opens a
               # log stream per running container across the whole cluster
               # simultaneously at startup, which spikes well above
-              # steady-state usage. 512Mi gives headroom for that burst.
-              memory: 512Mi
+              # steady-state usage. 512Mi gave headroom for that burst but
+              # Goldilocks' target (628Mi) already exceeds it after 100min
+              # of real data — bumped to 768Mi for actual headroom rather
+              # than pinning close to a number that's already moving up.
+              memory: 768Mi
           mounts:
             extra:
               - name: journal
