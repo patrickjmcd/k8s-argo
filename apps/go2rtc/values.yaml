@@ -1,0 +1,61 @@
+image:
+  repository: alexxit/go2rtc
+  tag: "1.9.9"
+
+service:
+  port: 1984
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 15
+    failureThreshold: 3
+    periodSeconds: 10
+    timeoutSeconds: 1
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 30
+    periodSeconds: 2
+
+httproute:
+  enabled: true
+  hostnames:
+    - go2rtc.x.pmcd.io
+
+command:
+  - "/usr/local/bin/go2rtc"
+  - "-config"
+  - "/config/go2rtc.yaml"
+
+# Streams are added here once RTSP is enabled per-camera in UniFi Protect and
+# we have the resulting rtsp:// URLs -- both Home Assistant and the Ignition
+# dashboard consume the same restreamed source from here rather than each
+# pulling RTSP from Protect independently.
+configMap:
+  enabled: true
+  mountPath: /config/go2rtc.yaml
+  subPath: go2rtc.yaml
+  data:
+    go2rtc.yaml: |
+      api:
+        listen: ":1984"
+      rtsp:
+        listen: ":8554"
+      webrtc:
+        listen: ":8555"
+      streams: {}
