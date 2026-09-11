@@ -1,12 +1,11 @@
 # Cilium CNI — Phase 1 of the flannel -> Cilium migration.
 #
-# ORDERING — DO NOT merge this to `main` and let ArgoCD sync it as a
-# big-bang install. Cilium taking over CNI on every node at once, while
-# flannel is still present, will disrupt pod networking cluster-wide.
-# Follow docs/cilium-migration.md: install Cilium out-of-band and migrate
-# node-by-node FIRST, then merge this Application so ArgoCD *adopts* the
-# already-running install (a no-op reconcile). Delete core/flannel.yaml
-# only once every node is migrated (last step of the runbook).
+# Migration complete (2026-09-11): core/flannel.yaml deleted, flannel's
+# DaemonSet pruned by ArgoCD. Cilium has been the sole CNI on all 10 nodes
+# since the 2026-09-06 cutover (flannel had been present but inert since
+# then — Cilium's conflist always won CNI priority regardless of
+# cni.exclusive). See memory/cilium-migration-progress.md for the full
+# history, including the two incidents along the way.
 #
 # Scope of Phase 1: Cilium replaces flannel as the CNI and adds
 # NetworkPolicy + Hubble. kube-proxy, MetalLB, kube-vip and Traefik are
@@ -79,12 +78,10 @@ spec:
           # NetworkPolicy semantics, so unselected pods stay fully open.
           policyEnforcementMode: default
 
-          # During the flannel -> Cilium cutover, don't let Cilium take sole
-          # ownership of /etc/cni/net.d — a half-migrated node would otherwise
-          # lose all CNI config. Flip back to the default (true) in a
-          # follow-up once flannel is fully removed.
+          # Back to the chart default now that flannel is fully removed —
+          # Cilium owns /etc/cni/net.d exclusively.
           cni:
-            exclusive: false
+            exclusive: true
 
           # cilium-agent is squarely on the pod-networking critical path, so
           # NO CPU limit — same reasoning as flannel in CLAUDE.md "Resource
