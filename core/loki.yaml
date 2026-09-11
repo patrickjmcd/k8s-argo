@@ -1,0 +1,102 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  destination:
+    namespace: loki
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    chart: loki
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 7.3.0
+    helm:
+      releaseName: loki
+      valuesObject:
+        # SingleBinary, not the default SimpleScalable/Distributed modes —
+        # this is a homelab log volume, not the >1TB/day scale those modes
+        # are built for.
+        deploymentMode: SingleBinary
+
+        loki:
+          auth_enabled: false
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: filesystem
+          schemaConfig:
+            configs:
+              - from: "2024-01-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+          limits_config:
+            # 30 days — a starting point, easy to raise/lower later by
+            # resizing the PVC to match.
+            retention_period: 720h
+            reject_old_samples: true
+            reject_old_samples_max_age: 168h
+          compactor:
+            retention_enabled: true
+            delete_request_store: filesystem
+
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 20Gi
+            storageClass: longhorn
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+
+        # No gateway/read/write/backend split, no memcached caches, no
+        # loki-canary, no bundled test pod, no MinIO — all of that is
+        # SimpleScalable/Distributed-mode scaffolding this deployment
+        # doesn't use.
+        gateway:
+          enabled: false
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+        resultsCache:
+          enabled: false
+        chunksCache:
+          enabled: false
+        memcached:
+          enabled: false
+        test:
+          enabled: false
+        lokiCanary:
+          enabled: false
+        monitoring:
+          serviceMonitor:
+            enabled: false
+          selfMonitoring:
+            enabled: false
+          lokiCanary:
+            enabled: false
+        minio:
+          enabled: false

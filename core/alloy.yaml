@@ -1,0 +1,120 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alloy
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  destination:
+    namespace: loki
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    chart: alloy
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 1.12.1
+    helm:
+      releaseName: alloy
+      valuesObject:
+        rbac:
+          create: true
+          clusterRules:
+            # Needed for discovery.kubernetes (role: pod) + loki.source.kubernetes
+            # to discover pods and tail their logs via the kubelet API — no
+            # /var/log or /var/lib/docker/containers hostPath mount needed for
+            # container logs, unlike Promtail.
+            - apiGroups: [""]
+              resources: ["pods", "pods/log", "namespaces", "nodes"]
+              verbs: ["get", "list", "watch"]
+
+        controller:
+          type: daemonset
+          volumes:
+            extra:
+              # journald IS host-local — no Kubernetes API equivalent, so this
+              # one genuinely needs a hostPath mount.
+              - name: journal
+                hostPath:
+                  path: /var/log/journal
+
+        alloy:
+          # journal files are root:systemd-journal 0640 on Debian/Ubuntu, and
+          # the systemd-journal GID isn't guaranteed consistent across nodes —
+          # running as root sidesteps that instead of chasing per-node GIDs.
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              # No CPU limit: log tailing is the same bursty,
+              # fsnotify/inotify-adjacent pattern CLAUDE.md's CPU-limit
+              # doctrine warns about (config reloaders, log tailers).
+              memory: 256Mi
+          mounts:
+            extra:
+              - name: journal
+                mountPath: /var/log/journal
+                readOnly: true
+          configMap:
+            content: |
+              discovery.kubernetes "pods" {
+                role = "pod"
+              }
+
+              discovery.relabel "pods" {
+                targets = discovery.kubernetes.pods.targets
+
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  target_label  = "namespace"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_name"]
+                  target_label  = "pod"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
+                  target_label  = "container"
+                }
+              }
+
+              loki.source.kubernetes "pods" {
+                targets    = discovery.relabel.pods.output
+                forward_to = [loki.write.default.receiver]
+              }
+
+              // Host-level systemd units that have actually been the root
+              // cause of real incidents in this cluster (k3s-agent
+              // crash-loops, containerd CNI failures, netpol/conntrack
+              // issues) — scoped rather than the full journald firehose to
+              // keep ingestion volume down.
+              loki.source.journal "system" {
+                path    = "/var/log/journal"
+                matches = "_SYSTEMD_UNIT=k3s.service _SYSTEMD_UNIT=k3s-agent.service _SYSTEMD_UNIT=containerd.service _SYSTEMD_UNIT=systemd-networkd.service"
+                labels = {
+                  job  = "systemd-journal",
+                  node = sys.env("K8S_NODE_NAME"),
+                }
+                forward_to = [loki.write.default.receiver]
+              }
+
+              loki.write "default" {
+                endpoint {
+                  url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
+                }
+              }

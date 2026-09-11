@@ -315,6 +315,12 @@ spec:
                 type: yesoreyeram-infinity-datasource
                 access: proxy
                 jsonData: {}
+              - name: Loki
+                uid: loki
+                type: loki
+                access: proxy
+                url: http://loki.loki.svc.cluster.local:3100
+                jsonData: {}
             persistence:
               type: pvc
               enabled: true
