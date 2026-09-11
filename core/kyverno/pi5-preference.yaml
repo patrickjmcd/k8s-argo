@@ -2,8 +2,14 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: prefer-pi5-nodes
-  annotations:
-    kyverno.io/pod-controllers: none
+  # No `kyverno.io/pod-controllers: none` annotation — it looked like it
+  # should suppress autogen (mutate only bare Pods), but the live
+  # ClusterPolicy's status.autogen.rules showed it doesn't in this Kyverno
+  # chart version (confirmed 2026-09-11 while debugging a Grafana
+  # scheduling issue). Autogen is actually wanted here anyway: almost
+  # everything in this cluster is a Deployment/DaemonSet/StatefulSet, not
+  # a bare Pod, so without autogen this policy would barely apply to
+  # anything.
 spec:
   validationFailureAction: Audit
   background: false
@@ -36,3 +42,24 @@ spec:
                           operator: In
                           values:
                             - "5"
+                  # Soft-avoid the two Pi4 nodes — pi4-kube0/pi4-kube1 run
+                  # meaningfully weaker CPUs than everything else in the
+                  # cluster (Pi5s, x86 VMs) and both sat at a sustained
+                  # 98-99% CPU on 2026-09-11, crash-looping grafana in the
+                  # process. `NotIn ["4"]` is satisfied by every node that
+                  # either has a different pi-model value OR has no
+                  # pi-model label at all (Kubernetes NotIn semantics: a
+                  # missing key satisfies NotIn) — so this rewards Pi5s
+                  # *and* the unlabeled x86 nodes equally, while only the
+                  # two Pi4s score 0 on this term. Combined with the Pi5
+                  # preference above, effective priority order becomes:
+                  # Pi5 (130) > x86/other (50) > Pi4 (0) — Pi4 still gets
+                  # used if it's genuinely the only node with room, which
+                  # is the point: last resort, not never.
+                  - weight: 50
+                    preference:
+                      matchExpressions:
+                        - key: node.kubernetes.io/pi-model
+                          operator: NotIn
+                          values:
+                            - "4"
