@@ -121,11 +121,16 @@ spec:
               // crash-loops, containerd CNI failures, netpol/conntrack
               // issues) — scoped rather than the full journald firehose to
               // keep ingestion volume down.
+              //
+              // Query with {job="loki.source.journal.system"} — Alloy always
+              // sets `job` to the component's own path for loki.source.*
+              // components and a "job" key in `labels` below does not
+              // override it (confirmed empirically on rollout, 2026-09-11);
+              // don't rely on job="systemd-journal" ever showing up.
               loki.source.journal "system" {
                 path    = "/var/log/journal"
                 matches = "_SYSTEMD_UNIT=k3s.service _SYSTEMD_UNIT=k3s-agent.service _SYSTEMD_UNIT=containerd.service _SYSTEMD_UNIT=systemd-networkd.service"
                 labels = {
-                  job  = "systemd-journal",
                   node = sys.env("K8S_NODE_NAME"),
                 }
                 forward_to = [loki.write.default.receiver]
