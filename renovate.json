@@ -50,8 +50,20 @@
   ],
   "packageRules": [
     {
+      "description": "Label PRs by update type so the auto-review workflow can route them. Patch and minor updates auto-merge without a Claude review; the critical-infra groups below override this back to automerge=false and add the needs-review label.",
       "matchUpdateTypes": ["patch"],
+      "addLabels": ["renovate/patch"],
       "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "addLabels": ["renovate/minor"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["renovate/major"],
+      "automerge": false
     },
     {
       "description": "ArgoCD native OCI sources use repoURL as the full chart path, but Renovate's argocd manager appends the chart name — strip the duplicate segment",
@@ -65,11 +77,13 @@
         "argo-cd"
       ],
       "groupName": "ArgoCD",
-      "automerge": false
+      "automerge": false,
+      "addLabels": ["needs-review"]
     },
     {
       "groupName": "Infrastructure Charts",
       "automerge": false,
+      "addLabels": ["needs-review"],
       "matchPackageNames": [
         "/^traefik/",
         "/^cert-manager/",
@@ -79,6 +93,7 @@
     {
       "groupName": "Monitoring Stack",
       "automerge": false,
+      "addLabels": ["needs-review"],
       "matchPackageNames": [
         "/^kube-prometheus/",
         "/^prometheus/",
@@ -90,14 +105,16 @@
         "longhorn"
       ],
       "groupName": "Longhorn",
-      "automerge": false
+      "automerge": false,
+      "addLabels": ["needs-review"]
     },
     {
       "matchPackageNames": [
         "flannel-io/flannel"
       ],
       "groupName": "Flannel",
-      "automerge": false
+      "automerge": false,
+      "addLabels": ["needs-review"]
     },
     {
       "matchDepNames": [
@@ -105,6 +122,7 @@
       ],
       "groupName": "k3s",
       "automerge": false,
+      "addLabels": ["needs-review"],
       "prBodyNotes": [
         "Merging starts the node upgrade rollout immediately (ArgoCD auto-sync). Servers upgrade first, then agents, one node at a time. Never merge a minor-version jump larger than one; check no Proxmox host maintenance is in progress."
       ]

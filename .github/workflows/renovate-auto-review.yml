@@ -2,7 +2,11 @@ name: Renovate Auto-Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    # Deliberately NOT triggering on 'synchronize' — Renovate rebases branches
+    # frequently, and re-running the Claude review on every rebase burns tokens
+    # for no benefit. Labels are set by Renovate at PR creation, so 'opened'
+    # (and 'labeled', in case a label lands slightly after open) is enough.
+    types: [opened, reopened, labeled]
 
 permissions:
   contents: write
@@ -12,14 +16,20 @@ env:
   PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
-  # Patch updates: auto-merge immediately, no Claude needed
-  auto-merge-patch:
+  # Patch + minor updates for non-critical deps: auto-merge immediately, no Claude.
+  # Renovate also auto-merges these natively (automerge=true in renovate.json); this
+  # job is a zero-token backstop in case platform auto-merge isn't enabled. The
+  # critical-infra groups carry the 'needs-review' label and are excluded here so
+  # they always go through the Claude review job below.
+  auto-merge-simple:
     if: |
       github.actor == 'renovate[bot]' &&
-      contains(github.event.pull_request.labels.*.name, 'patch')
+      (contains(github.event.pull_request.labels.*.name, 'renovate/patch') ||
+       contains(github.event.pull_request.labels.*.name, 'renovate/minor')) &&
+      !contains(github.event.pull_request.labels.*.name, 'needs-review')
     runs-on: ubuntu-latest
     steps:
-      - name: Auto-merge patch update
+      - name: Auto-merge simple update
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -28,11 +38,13 @@ jobs:
             --auto \
             --repo ${{ github.repository }}
 
-  # Minor and major updates: Claude reviews and fixes if needed
+  # Major updates and critical-infra groups: Claude reviews and fixes if needed.
+  # Everything else (patch/minor for ordinary apps) is handled token-free above.
   auto-review:
     if: |
       github.actor == 'renovate[bot]' &&
-      !contains(github.event.pull_request.labels.*.name, 'patch')
+      (contains(github.event.pull_request.labels.*.name, 'renovate/major') ||
+       contains(github.event.pull_request.labels.*.name, 'needs-review'))
     runs-on: ubuntu-latest
     steps:
       - name: Get PR info
