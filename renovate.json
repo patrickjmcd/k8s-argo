@@ -50,15 +50,17 @@
   ],
   "packageRules": [
     {
-      "description": "Label PRs by update type so the auto-review workflow can route them. Patch and minor updates auto-merge without a Claude review; the critical-infra groups below override this back to automerge=false and add the needs-review label.",
+      "description": "Label PRs by update type so the auto-review workflow can route them. Patch and minor updates auto-merge without a Claude review; automergeType=branch merges them straight to the base branch WITHOUT opening a PR (no PR = no notification email). If branch automerge can't complete, Renovate falls back to opening a labelled PR, which the auto-merge-simple workflow job then merges. The critical-infra groups below override this back to automerge=false and add the needs-review label so they always open a PR for review.",
       "matchUpdateTypes": ["patch"],
       "addLabels": ["renovate/patch"],
-      "automerge": true
+      "automerge": true,
+      "automergeType": "branch"
     },
     {
       "matchUpdateTypes": ["minor"],
       "addLabels": ["renovate/minor"],
-      "automerge": true
+      "automerge": true,
+      "automergeType": "branch"
     },
     {
       "matchUpdateTypes": ["major"],
