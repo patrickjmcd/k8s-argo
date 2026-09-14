@@ -4,5 +4,10 @@ metadata:
   name: postgresql-standard-trixie
 spec:
   images:
+    # Pinned to a digest (rather than the floating :18-system-trixie tag) after
+    # nodes ended up caching two different builds behind the same tag: one with
+    # pgvector 0.8.5, one with only 0.8.2. A CNPG failover promoted a replica on
+    # the stale 0.8.2 build as primary, crashing immich-server. See Sep 2026
+    # incident: git log for this file.
     - major: 18
-      image: ghcr.io/cloudnative-pg/postgresql:18-system-trixie
+      image: ghcr.io/cloudnative-pg/postgresql@sha256:9287ce030c6f3ce822e383b019ae4aaf1e8370bff3b39f9c51dc10d69dc97219
