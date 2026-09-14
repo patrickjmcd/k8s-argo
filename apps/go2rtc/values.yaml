@@ -105,7 +105,8 @@ configMap:
   data:
     go2rtc.yaml: |
       log:
-        level: info
+        level: debug
+        format: text
       api:
         listen: ":1984"
       rtsp:
