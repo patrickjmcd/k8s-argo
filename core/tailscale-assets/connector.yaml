@@ -8,8 +8,9 @@ spec:
   exitNode: true
   subnetRouter:
     advertiseRoutes:
-      - "192.168.8.0/24"  # node/MetalLB network — reaches Traefik at .200
-      - "10.43.0.0/16"    # k3s service CIDR
-      - "10.42.0.0/16"    # k3s pod CIDR (flannel)
+      - "192.168.8.0/24" # node/MetalLB network — reaches Traefik at .200
+      - "182.168.1.0/24" # default network
+      - "10.43.0.0/16" # k3s service CIDR
+      - "10.42.0.0/16" # k3s pod CIDR (flannel)
   tags:
     - tag:k8s-operator
