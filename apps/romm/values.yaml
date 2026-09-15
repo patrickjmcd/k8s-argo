@@ -64,7 +64,9 @@ env:
   DB_PORT: "5432"
   DB_NAME: romm
   DB_USER: romm
-  DB_PASSWD: ""
+  # pg_hba trust auth means this value is never actually checked by postgres,
+  # but ROMM's config_manager hard-requires a non-empty string.
+  DB_PASSWD: "trust-auth-unused"
   SCAN_WORKERS: "4"
   WEB_SERVER_CONCURRENCY: "2"
   HASHEOUS_API_ENABLED: "true"
