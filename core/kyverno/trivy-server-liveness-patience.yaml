@@ -1,0 +1,41 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: trivy-server-liveness-patience
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
+    policies.kyverno.io/title: Trivy Server Liveness Patience
+    policies.kyverno.io/category: Resiliency
+    policies.kyverno.io/description: >-
+      The trivy-operator chart's built-in trivy-server (core/trivy-operator.yaml,
+      operator.builtInTrivyServer) hardcodes livenessProbe.failureThreshold: 10 /
+      periodSeconds: 10 (~105s) with no values.yaml override for it. On first boot
+      it has to download the full vulnerability DB before /healthz responds, and
+      on this cluster's link that consistently takes longer than 105s -- observed
+      it get killed mid-download on 3 consecutive attempts, restarting the
+      download from zero each time (no resume) rather than ever completing. This
+      patches the liveness probe's failureThreshold up to give a cold DB pull
+      room to finish; steady-state behavior (fast /healthz once the DB is warm)
+      is unaffected since the probe still fails fast once something is actually
+      broken, just with a longer leash.
+spec:
+  background: false
+  rules:
+    - name: relax-trivy-server-liveness
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              namespaces:
+                - trivy-system
+              selector:
+                matchLabels:
+                  app.kubernetes.io/name: trivy-server
+      mutate:
+        patchesJson6902: |-
+          - op: replace
+            path: /spec/containers/0/livenessProbe/failureThreshold
+            value: 60

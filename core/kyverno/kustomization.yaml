@@ -6,5 +6,6 @@ resources:
   - node-failure-tolerations.yaml
   - metallb-speaker-tolerations.yaml
   - cpu-limit-guard.yaml
+  - trivy-server-liveness-patience.yaml
 
 
