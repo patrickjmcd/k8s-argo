@@ -37,6 +37,11 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      # Kubernetes' legacy Docker-links env vars (<SVC>_PORT, <SVC>_SERVICE_HOST,
+      # etc.) get injected for every Service in the namespace and can silently
+      # shadow an app's own same-named env var (e.g. release "romm" + its
+      # ROMM_PORT). Service discovery here is DNS-based, so disable them.
+      enableServiceLinks: false
       {{- if .Values.hostNetwork }}
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
