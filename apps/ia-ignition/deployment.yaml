@@ -10,6 +10,13 @@ spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 3
+  # Sep 2026: required now that the PVC is ReadWriteOnce (see storage.yaml).
+  # Default RollingUpdate tries to bring up the new pod before tearing down
+  # the old one -- but RWO can only attach to one node at a time, so the new
+  # pod deadlocks waiting for a volume the old pod won't release until the
+  # new one is Ready. Recreate tears down first, avoiding the deadlock.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/instance: ia-ignition
@@ -108,12 +115,19 @@ spec:
             - containerPort: 8088
               name: http
               protocol: TCP
+          # Sep 2026: no CPU limit -- confirmed via cgroup cpu.stat that the
+          # previous 2000m limit was throttling ~33% of scheduling periods
+          # (parallel class-loading/JIT/GC threads briefly want more than 2
+          # cores even though average usage is ~150-230m), directly slowing
+          # startup. Matches this repo's own policy (see CLAUDE.md) for
+          # latency-sensitive/critical-path components. CPU request dropped
+          # from 1200m (way over actual usage) to 250m, headroom above the
+          # ~150-230m steady state and Goldilocks' ~109-150m recommendation.
           resources:
             limits:
-              cpu: 2000m
               memory: 2Gi
             requests:
-              cpu: 1200m
+              cpu: 250m
               memory: 1500Mi
           readinessProbe:
             httpGet:
