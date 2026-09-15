@@ -39,19 +39,34 @@ spec:
         # MQTT Engine + Transmission (Cirrus Link) and the Flint Designer Bridge
         # aren't in the base image and user-lib/modules/ isn't on the PVC -- it's
         # baked into the image, so anything copied there directly on a running
-        # pod is lost on restart. This seeds a shared emptyDir with the image's
-        # ORIGINAL modules (so we don't lose alarm-notification/opcua/etc by
-        # overlaying the path) plus the extra .modl files staged on the data PVC
-        # (uploaded once via `kubectl cp` -- third-party binaries, not committed
-        # to git). modules.json (on the PVC, /data/modules.json) already has all
-        # module IDs registered pointing at these exact filenames.
+        # pod is lost on restart. This seeds a shared emptyDir with only the base
+        # image modules this project actually uses (Perspective + WebDev -- this
+        # project has no PLC/OPC-UA, historian, reporting, SFC, JDBC, or Kafka
+        # use) plus the extra .modl files staged on the data PVC (uploaded once
+        # via `kubectl cp` -- third-party binaries, not committed to git).
+        #
+        # Sep 2026: trimmed from 24 active modules to 5. Not omitting a file
+        # here is NOT enough on its own -- Ignition's real module registry is
+        # /usr/local/bin/ignition/data/modules.json on the PVC, which also
+        # needs each dropped module's "onStartup" set to "disabled" (not just
+        # "enabled" left stale), or it logs errors trying to load a module
+        # whose file it still expects. A reference copy of the resulting
+        # modules.json (5 enabled / 20 disabled) is committed at
+        # config/modules.json.trimmed-backup for restoring after a PVC
+        # rebuild: `kubectl cp` it to /usr/local/bin/ignition/data/modules.json
+        # then restart. Non-fatal side effects observed after disabling:
+        # MQTT Engine logs a NoClassDefFoundError probing for the (now absent)
+        # Historian module on startup, and a pre-existing OPC-UA server
+        # resource fails to deserialize since OPC-UA is disabled -- neither
+        # affects Perspective/MQTT Engine/MQTT Transmission functionality.
         - name: install-extra-modules
           image: inductiveautomation/ignition:latest
           command:
             - sh
             - -c
             - |
-              cp -a /usr/local/bin/ignition/user-lib/modules/. /shared-modules/
+              cp "/usr/local/bin/ignition/user-lib/modules/Perspective-module.modl" "/shared-modules/Perspective-module.modl"
+              cp "/usr/local/bin/ignition/user-lib/modules/Web Developer Module.modl" "/shared-modules/Web Developer Module.modl"
               cp "/data/extra-modules/MQTT Engine-module.modl" "/shared-modules/MQTT Engine-module.modl"
               cp "/data/extra-modules/MQTT Transmission-module.modl" "/shared-modules/MQTT Transmission-module.modl"
               cp "/data/extra-modules/Flint-Designer-Bridge-1.2.0-8.3.modl" "/shared-modules/Flint-Designer-Bridge-1.2.0-8.3.modl"
