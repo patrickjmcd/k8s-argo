@@ -36,6 +36,16 @@ spec:
                 memory: 128Mi
             metricsConfigAuditInfo: true
             metricsExposedSecretInfo: true
+            # Sep 2026: standalone mode has every scan-job container download its
+            # own copy of the trivy-db into a fresh per-pod emptyDir cache. A scan
+            # job gets one container per container in the target workload's pod,
+            # started in parallel -- for any multi-container workload they raced
+            # to open the same boltdb cache file and lost: "Failed to acquire
+            # cache or database lock ... cache may be in use by another process:
+            # timeout", failing every such scan with BackoffLimitExceeded. The
+            # built-in server downloads the DB once and scan jobs become thin
+            # HTTP clients against it, removing the race entirely.
+            builtInTrivyServer: true
           trivy:
             ignoreUnfixed: true
             resources:
