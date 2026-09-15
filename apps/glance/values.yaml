@@ -155,6 +155,8 @@ configMap:
                       url: https://pihole.x.pmcd.io
                     - title: Prometheus
                       url: https://prometheus.x.pmcd.io
+                    - title: Romm
+                      url: https://romm.x.pmcd.io
                     - title: Traefik
                       url: https://traefik.x.pmcd.io
                     - title: Tronbyt
