@@ -22,7 +22,8 @@ spec:
     spec:
       initContainers:
         - name: preconfigure
-          image: inductiveautomation/ignition:latest
+          image: ia-ignition
+          imagePullPolicy: IfNotPresent
           command:
             - /config/scripts/invoke-args.sh
           args:
@@ -60,7 +61,8 @@ spec:
         # resource fails to deserialize since OPC-UA is disabled -- neither
         # affects Perspective/MQTT Engine/MQTT Transmission functionality.
         - name: install-extra-modules
-          image: inductiveautomation/ignition:latest
+          image: ia-ignition
+          imagePullPolicy: IfNotPresent
           command:
             - sh
             - -c
