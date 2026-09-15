@@ -130,7 +130,7 @@ spec:
       volumes:
         - name: appconfig
           persistentVolumeClaim:
-            claimName: longhorn-ia-ignition-config
+            claimName: longhorn-ia-ignition-config-rwo
         - name: extra-modules
           emptyDir: {}
         - name: ignition-config-scripts

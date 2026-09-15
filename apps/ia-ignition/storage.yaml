@@ -1,12 +1,21 @@
+# Sep 2026: migrated from RWX (longhorn-ia-ignition-config) to RWO. This PVC
+# is only ever mounted by a single pod (replicas: 1, no redundant backup
+# instance sharing it) -- RWX served no purpose here but forced every mount
+# through Longhorn's NFS-Ganesha share-manager, which repeatedly crash-looped
+# and, worse, caused actual recurring ext4 corruption on abrupt kills (fixed
+# with fsck -y each time, but kept recurring). RWO uses Longhorn's direct
+# iSCSI block path instead, sidestepping that whole failure class. The old
+# longhorn-ia-ignition-config RWX PVC is kept (not deleted) as a rollback
+# fallback -- see git history around this commit if this one has problems.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: longhorn-ia-ignition-config
+  name: longhorn-ia-ignition-config-rwo
   labels:
     recurring-job-group.longhorn.io/b2-backup: enabled
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: longhorn
   resources:
     requests:
