@@ -34,6 +34,7 @@ spec:
       - host all n8n all trust
       - host all homebox all trust
       - host all dispatcharr all trust
+      - host all romm all trust
       - host all backup all trust
 
   managed:
@@ -94,6 +95,11 @@ spec:
         inherit: true
         connectionLimit: -1
       - name: dispatcharr
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+      - name: romm
         ensure: present
         login: true
         inherit: true

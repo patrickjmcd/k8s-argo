@@ -206,3 +206,14 @@ spec:
   owner: adsb
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: romm
+  namespace: postgres
+spec:
+  name: romm
+  owner: romm
+  cluster:
+    name: shared-postgres

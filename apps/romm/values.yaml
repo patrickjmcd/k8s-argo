@@ -1,0 +1,96 @@
+glance:
+  monitor: true
+
+image:
+  repository: rommapp/romm
+  tag: "5.2.0"
+
+service:
+  port: 8080
+  containerPort: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 512Mi
+  limits:
+    memory: 2Gi
+
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 60
+    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 10
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 60
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - romm.x.pmcd.io
+
+# Longhorn volume for app state (IGDB/metadata resources, embedded redis
+# cache, uploaded saves/states, optional config.yml). Mounted via subPaths
+# below instead of directly, since ROMM needs several distinct directories.
+persistence:
+  enabled: true
+  type: longhorn
+  size: 15Gi
+  mountPath: ""
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/romm"
+
+# ROMM_AUTH_SECRET_KEY (openssl rand -hex 32) is required. SCREENSCRAPER_USER,
+# SCREENSCRAPER_PASSWORD, RETROACHIEVEMENTS_API_KEY, STEAMGRIDDB_API_KEY are
+# optional metadata-provider credentials — add whichever fields to the
+# 1Password item.
+env:
+  ROMM_DB_DRIVER: postgresql
+  DB_HOST: "shared-postgres-rw.postgres.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: romm
+  DB_USER: romm
+  DB_PASSWD: ""
+  SCAN_WORKERS: "4"
+  WEB_SERVER_CONCURRENCY: "2"
+  HASHEOUS_API_ENABLED: "true"
+
+envFrom:
+  - secretRef:
+      name: romm-1pw
+
+# ROM library on the media NAS share, dedicated to this app.
+extraVolumes:
+  - name: library
+    persistentVolumeClaim:
+      claimName: smb-romm-library-claim
+
+extraVolumeMounts:
+  - mountPath: /romm/resources
+    name: data
+    subPath: resources
+  - mountPath: /redis-data
+    name: data
+    subPath: redis-data
+  - mountPath: /romm/assets
+    name: data
+    subPath: assets
+  - mountPath: /romm/config
+    name: data
+    subPath: config
+  - mountPath: /romm/library
+    name: library
