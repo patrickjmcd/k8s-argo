@@ -61,7 +61,7 @@ env:
   NODE_ENV: production
   TZ: America/Chicago
   SPARKY_FITNESS_LOG_LEVEL: INFO
-  SPARKY_FITNESS_DISABLE_SIGNUP: "false"
+  SPARKY_FITNESS_DISABLE_SIGNUP: "true"
   SPARKY_FITNESS_ADMIN_EMAIL: patrickjmcd@gmail.com
   # Public origin of the frontend; the server uses it for CORS + auth callbacks.
   SPARKY_FITNESS_FRONTEND_URL: https://sparkyfitness.x.pmcd.io
