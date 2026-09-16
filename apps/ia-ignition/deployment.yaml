@@ -100,6 +100,21 @@ spec:
         - name: ia-ignition
           image: ia-ignition
           imagePullPolicy: IfNotPresent
+          # Sep 2026: the Tag CICD module (see ignition-tag-sync sidecar
+          # below) ships freeModule=false, which Ignition Maker Edition
+          # rejects outright -- rebuilt from source with that flipped
+          # (MIT-licensed upstream) at
+          # github.com/bw-design-group/ignition-tag-cicd, self-signed since
+          # we have no code-signing cert. A self-signed .modl gets quarantined
+          # ("Certificate has not been signed and developer mode is
+          # disabled") unless the gateway JVM has this flag -- passed the way
+          # the official image documents (args after `--`, read by the
+          # wrapper as supplemental JVM args), not a plain env var. Fine for
+          # a private homelab gateway; would NOT be appropriate on a
+          # gateway that installs modules from untrusted sources.
+          args:
+            - "--"
+            - "-Dignition.allowunsignedmodules=true"
           envFrom:
             - configMapRef:
                 name: ia-ignition-config
