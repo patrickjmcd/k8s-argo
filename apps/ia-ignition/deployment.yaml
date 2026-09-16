@@ -67,17 +67,6 @@ spec:
         # Historian module on startup, and a pre-existing OPC-UA server
         # resource fails to deserialize since OPC-UA is disabled -- neither
         # affects Perspective/MQTT Engine/MQTT Transmission functionality.
-        #
-        # Sep 2026: added Tag-CICD-3.2.1-8.3.modl (bw-design-group/ignition-tag-cicd) so
-        # the ignition-tag-sync sidecar below can import tag config pulled from
-        # the ignition-ha repo. Same staging convention: .modl downloaded from
-        # the module's GitHub releases and `kubectl cp`'d to
-        # /data/extra-modules/, not committed to git. Once confirmed loading
-        # cleanly, config/modules.json.trimmed-backup needs a matching update
-        # -- it's a snapshot of the gateway's real modules.json (with its
-        # gateway-generated certFingerprint/licenseAgreementHash), not
-        # something to hand-edit; re-capture it from the live gateway with
-        # `kubectl cp` after Tag-CICD is confirmed enabled there.
         - name: install-extra-modules
           image: ia-ignition
           imagePullPolicy: IfNotPresent
@@ -90,7 +79,6 @@ spec:
               cp "/data/extra-modules/MQTT Engine-module.modl" "/shared-modules/MQTT Engine-module.modl"
               cp "/data/extra-modules/MQTT Transmission-module.modl" "/shared-modules/MQTT Transmission-module.modl"
               cp "/data/extra-modules/Flint-Designer-Bridge-1.2.0-8.3.modl" "/shared-modules/Flint-Designer-Bridge-1.2.0-8.3.modl"
-              cp "/data/extra-modules/Tag-CICD-3.2.1-8.3.modl" "/shared-modules/Tag-CICD-3.2.1-8.3.modl"
           volumeMounts:
             - mountPath: /data
               name: appconfig
@@ -100,21 +88,6 @@ spec:
         - name: ia-ignition
           image: ia-ignition
           imagePullPolicy: IfNotPresent
-          # Sep 2026: the Tag CICD module (see ignition-tag-sync sidecar
-          # below) ships freeModule=false, which Ignition Maker Edition
-          # rejects outright -- rebuilt from source with that flipped
-          # (MIT-licensed upstream) at
-          # github.com/bw-design-group/ignition-tag-cicd, self-signed since
-          # we have no code-signing cert. A self-signed .modl gets quarantined
-          # ("Certificate has not been signed and developer mode is
-          # disabled") unless the gateway JVM has this flag -- passed the way
-          # the official image documents (args after `--`, read by the
-          # wrapper as supplemental JVM args), not a plain env var. Fine for
-          # a private homelab gateway; would NOT be appropriate on a
-          # gateway that installs modules from untrusted sources.
-          args:
-            - "--"
-            - "-Dignition.allowunsignedmodules=true"
           envFrom:
             - configMapRef:
                 name: ia-ignition-config
@@ -169,19 +142,27 @@ spec:
             - mountPath: /usr/local/bin/ignition/user-lib/modules
               name: extra-modules
             # Read-only mirror of the ignition-ha checkout the sidecar below
-            # maintains. The Tag CICD import endpoint reads tag files from a
-            # gateway-local path (same as its export side, see sync-tags.sh),
-            # so the gateway process itself -- not just the sidecar -- needs
-            # this on its filesystem.
+            # maintains, at a fixed absolute path -- the Gateway Timer Script
+            # that imports tags (configured in Designer, not in this repo;
+            # see ignition-ha/README.md) reads
+            # /usr/local/bin/ignition/ignition-ha/repo/tags/tags.json via
+            # system.tag.importTags(). No Tag-CICD-module REST call involved
+            # -- that module is permanently ineligible for Maker Edition (its
+            # signing cert isn't on Inductive Automation's Maker allowlist,
+            # confirmed by rebuilding and self-signing it: still rejected).
+            # system.tag.importTags()/exportTags() are core scripting
+            # functions, no module needed.
             - mountPath: /usr/local/bin/ignition/ignition-ha
               name: ignition-ha-tags
               readOnly: true
         # Git -> gateway one-way sync for tag configuration. Source of truth
         # is github.com/patrickjmcd/ignition-ha (private); exporting FROM the
         # gateway stays a manual Designer -> PR -> merge step (see that repo's
-        # README) -- this sidecar only ever pulls and imports, it never pushes.
-        # No maintained image exists for this, hence installing git/curl at
-        # startup on a pinned alpine base rather than a purpose-built one.
+        # README) -- this sidecar only ever pulls, it never pushes. Its job
+        # ends at getting the checkout onto the shared volume; the Gateway
+        # Timer Script (in Designer) does the actual tag import. No
+        # maintained image exists for this, hence installing git at startup
+        # on a pinned alpine base rather than a purpose-built one.
         - name: ignition-tag-sync
           image: alpine:3.22
           imagePullPolicy: IfNotPresent
@@ -189,26 +170,13 @@ spec:
             - sh
             - -c
             - |
-              apk add --no-cache git curl jq openssh-client
+              apk add --no-cache git openssh-client
               exec /config/scripts/sync-tags.sh
           env:
-            - name: GATEWAY_URL
-              value: http://localhost:8088
             - name: IGNITION_HA_REPO
               value: git@github.com:patrickjmcd/ignition-ha.git
-            # Path the gateway container sees the same checkout at (see its
-            # ignition-ha-tags mount above) -- passed to the import endpoint
-            # as filePath, gateway-install-dir-relative, not this container's
-            # own /data mount path.
-            - name: GATEWAY_LOCAL_REPO_PATH
-              value: ignition-ha
             - name: SYNC_INTERVAL_SECONDS
               value: "300"
-            - name: TAG_CICD_API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: ia-ignition-1pw
-                  key: TAG_CICD_API_TOKEN
           resources:
             limits:
               memory: 128Mi
