@@ -35,6 +35,7 @@ spec:
       - host all homebox all trust
       - host all dispatcharr all trust
       - host all romm all trust
+      - host all sparkyfitness all trust
       - host all backup all trust
 
   managed:
@@ -104,6 +105,16 @@ spec:
         login: true
         inherit: true
         connectionLimit: -1
+      - name: sparkyfitness
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        # SparkyFitness' server boots as this owner role to run migrations and
+        # to create its own least-privilege runtime role (sparkyfitness_app),
+        # so it needs CREATEROLE. sparkyfitness_app is created by the app, not
+        # managed here, and authenticates via scram (no pg_hba trust line).
+        createrole: true
       - name: adsb
         ensure: present
         login: true

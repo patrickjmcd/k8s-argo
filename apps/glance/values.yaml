@@ -157,6 +157,8 @@ configMap:
                       url: https://prometheus.x.pmcd.io
                     - title: Romm
                       url: https://romm.x.pmcd.io
+                    - title: SparkyFitness
+                      url: https://sparkyfitness.x.pmcd.io
                     - title: Traefik
                       url: https://traefik.x.pmcd.io
                     - title: Tronbyt

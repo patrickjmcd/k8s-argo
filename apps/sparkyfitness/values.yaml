@@ -1,0 +1,54 @@
+# SparkyFitness web frontend (nginx). Public-facing; reverse-proxies /api to
+# the backend release "sparkyfitness-server" in this namespace.
+glance:
+  monitor: true
+  title: SparkyFitness
+
+image:
+  repository: codewithcj/sparkyfitness
+  tag: "v1.7.1"
+
+service:
+  port: 80
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+probes:
+  readiness:
+    type: httpGet
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: httpGet
+    path: /
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 5
+  startup:
+    enabled: true
+    type: httpGet
+    path: /
+    failureThreshold: 30
+    periodSeconds: 5
+
+httproute:
+  enabled: true
+  hostnames:
+    - sparkyfitness.x.pmcd.io
+
+env:
+  TZ: America/Chicago
+  # nginx upstream for the API — matches the backend Service (release name).
+  SPARKY_FITNESS_SERVER_HOST: sparkyfitness-server
+  SPARKY_FITNESS_SERVER_PORT: "3010"
+  SPARKY_FITNESS_FRONTEND_URL: https://sparkyfitness.x.pmcd.io

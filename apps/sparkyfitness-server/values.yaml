@@ -1,0 +1,86 @@
+# SparkyFitness backend API server. Internal only — the frontend (release
+# "sparkyfitness") proxies /api to this service on port 3010.
+image:
+  repository: codewithcj/sparkyfitness_server
+  tag: "v1.7.1"
+
+service:
+  port: 3010
+  containerPort: 3010
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 256Mi
+  limits:
+    # No CPU limit: a Node API on a request/OIDC critical path. Memory only,
+    # with headroom over observed idle.
+    memory: 512Mi
+
+# The server has no lightweight HTTP health endpoint we rely on here, so probe
+# the listening socket.
+probes:
+  readiness:
+    type: tcpSocket
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    type: tcpSocket
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 5
+  startup:
+    enabled: true
+    type: tcpSocket
+    failureThreshold: 60
+    periodSeconds: 5
+
+httproute:
+  enabled: false
+
+# Uploads and backups written by the server. One Longhorn volume, split into
+# subdirs via the app's custom-directory env vars below.
+persistence:
+  enabled: true
+  type: longhorn
+  size: 5Gi
+  mountPath: /data
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/sparkyfitness"
+  secretName: sparkyfitness-1pw
+
+env:
+  NODE_ENV: production
+  TZ: America/Chicago
+  SPARKY_FITNESS_LOG_LEVEL: INFO
+  SPARKY_FITNESS_DISABLE_SIGNUP: "false"
+  SPARKY_FITNESS_ADMIN_EMAIL: patrickjmcd@gmail.com
+  # Public origin of the frontend; the server uses it for CORS + auth callbacks.
+  SPARKY_FITNESS_FRONTEND_URL: https://sparkyfitness.x.pmcd.io
+  # Shared CNPG cluster. sparkyfitness (db owner, CREATEROLE) runs migrations
+  # and provisions sparkyfitness_app, the least-privilege runtime role.
+  SPARKY_FITNESS_DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+  SPARKY_FITNESS_DB_PORT: "5432"
+  SPARKY_FITNESS_DB_NAME: sparkyfitness
+  SPARKY_FITNESS_DB_USER: sparkyfitness
+  SPARKY_FITNESS_APP_DB_USER: sparkyfitness_app
+  # Keep uploads/backups on the persistent volume mounted at /data.
+  SPARKY_FITNESS_CUSTOM_UPLOADS_DIRECTORY: /data/uploads
+  SPARKY_FITNESS_CUSTOM_BACKUP_DIRECTORY: /data/backup
+
+# Passwords + secrets from 1Password (sparkyfitness item). Keys:
+#   SPARKY_FITNESS_DB_PASSWORD        - owner role (trust auth; non-empty)
+#   SPARKY_FITNESS_APP_DB_PASSWORD    - runtime role, set by the app on boot
+#   SPARKY_FITNESS_API_ENCRYPTION_KEY - 64-char hex (openssl rand -hex 32)
+#   BETTER_AUTH_SECRET                - session/2FA signing secret
+envFrom:
+  - secretRef:
+      name: sparkyfitness-1pw

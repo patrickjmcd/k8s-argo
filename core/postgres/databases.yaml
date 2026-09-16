@@ -217,3 +217,14 @@ spec:
   owner: romm
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: sparkyfitness
+  namespace: postgres
+spec:
+  name: sparkyfitness
+  owner: sparkyfitness
+  cluster:
+    name: shared-postgres
