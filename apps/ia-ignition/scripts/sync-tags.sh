@@ -20,7 +20,17 @@ set -eu
 
 REPO_DIR="/data/repo"
 STATE_FILE="/data/.last-synced-sha"
-SSH_KEY="/run/secrets/ignition-ha-deploy-key/id_ed25519"
+SSH_KEY="/data/id_ed25519"
+
+# The 1Password field stores the deploy key base64-encoded on a single line --
+# concealed fields aren't guaranteed to round-trip an embedded-newline PEM
+# block faithfully (observed: ssh-keygen/ssh both fail with "error in
+# libcrypto" on a key stored raw), so this decodes it once into a writable
+# volume rather than relying on the multiline Secret mount directly.
+if [ ! -f "${SSH_KEY}" ]; then
+  base64 -d /run/secrets/ignition-ha-deploy-key/id_ed25519.b64 > "${SSH_KEY}"
+  chmod 600 "${SSH_KEY}"
+fi
 
 export GIT_SSH_COMMAND="ssh -i ${SSH_KEY} -o StrictHostKeyChecking=accept-new"
 

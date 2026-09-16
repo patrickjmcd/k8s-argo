@@ -235,5 +235,8 @@ spec:
             secretName: ia-ignition-1pw
             defaultMode: 0400
             items:
+              # 1Password field is stored base64-encoded (see sync-tags.sh
+              # comment for why) -- decoded into the id_ed25519 sync-tags.sh
+              # actually uses on first run.
               - key: IGNITION_HA_DEPLOY_KEY
-                path: id_ed25519
+                path: id_ed25519.b64
