@@ -147,8 +147,6 @@ configMap:
                       url: https://mealie.x.pmcd.io
                     - title: N8N
                       url: https://n8n.x.pmcd.io
-                    - title: Octoprint
-                      url: https://octoprint.x.pmcd.io
                     - title: Outline
                       url: https://outline.x.pmcd.io
                     - title: PiHole
@@ -500,8 +498,6 @@ configMap:
                           url: https://ha.pmcd.dev
                         - title: N8N
                           url: https://n8n.x.pmcd.io
-                        - title: Octoprint
-                          url: https://octoprint.x.pmcd.io
                         - title: ISS Tracker
                           url: https://iss.x.pmcd.io
 
