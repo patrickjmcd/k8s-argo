@@ -36,6 +36,12 @@ spec:
               - argocd
           webhookLabels:
             app.kubernetes.io/managed-by: argocd
+          admissionController:
+            # Single replica was a cluster-wide SPOF: its webhook has
+            # failurePolicy=Fail, so one slow/overloaded pod blocks every
+            # pod admission cluster-wide. Caused a wide BackOff cascade on
+            # 2026-09-17 when it landed on the most memory-pressured node.
+            replicas: 2
 
 
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
