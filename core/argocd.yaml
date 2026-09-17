@@ -100,7 +100,10 @@ spec:
               targetMemoryUtilizationPercentage: 90
             resources:
               requests:
-                cpu: 15m
+                # Raised from 15m: with 85 Applications reconciling every ~3m,
+                # brief bursts trivially crossed 70% of 15m (10.5m), pinning
+                # the HPA at max and tripping KubeHpaMaxedOut on noise alone.
+                cpu: 30m
                 # VPA target ~105Mi; kept well above it so the 90% memory HPA
                 # threshold stays far from idle baseline
                 memory: 192Mi
@@ -134,7 +137,10 @@ spec:
               timeoutSeconds: 10
             resources:
               requests:
-                cpu: 100m
+                # Raised from 100m for the same reason as server above: 70%
+                # of 100m (70m) was too small a buffer for reconcile bursts
+                # across 85 Applications, keeping the HPA pinned at max.
+                cpu: 150m
                 memory: 200Mi
               limits:
                 cpu: 500m
