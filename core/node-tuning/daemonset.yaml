@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-tuning
+  namespace: kube-system
+  labels:
+    app: node-tuning
+spec:
+  selector:
+    matchLabels:
+      app: node-tuning
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: node-tuning
+    spec:
+      priorityClassName: system-node-critical
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - operator: Exists
+      initContainers:
+        - name: sysctl-inotify
+          image: busybox:1.38
+          imagePullPolicy: IfNotPresent
+          # fs.inotify.* are per-user-namespace, not per-pod-namespace, so a
+          # privileged container without userns remapping writes the
+          # cluster-wide (host) value straight through /proc/sys. Also
+          # persist to a sysctl.d drop-in on the host so the value survives
+          # a reboot even before this DaemonSet's pod is rescheduled.
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              sysctl -w fs.inotify.max_user_instances=1024
+              sysctl -w fs.inotify.max_user_watches=1048576
+              mkdir -p /host-etc/sysctl.d
+              cat > /host-etc/sysctl.d/99-inotify.conf <<EOF
+              fs.inotify.max_user_instances=1024
+              fs.inotify.max_user_watches=1048576
+              EOF
+          securityContext:
+            # fs.inotify.* are node-level (non-namespaced) sysctls, unsettable via
+            # pod securityContext.sysctls. Writing /proc/sys/fs/inotify/* from a
+            # container requires CAP_SYS_ADMIN and a writable /proc/sys, which only
+            # a privileged container gets. Scoped to this one initContainer only —
+            # the long-running main container stays unprivileged.
+            privileged: true # security-agent: ignore
+          volumeMounts:
+            - name: host-sysctl-d
+              mountPath: /host-etc/sysctl.d
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
+      containers:
+        - name: pause
+          image: registry.k8s.io/pause:3.10
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              memory: 16Mi
+      volumes:
+        - name: host-sysctl-d
+          hostPath:
+            path: /etc/sysctl.d
+            type: DirectoryOrCreate
