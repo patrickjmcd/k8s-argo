@@ -132,13 +132,20 @@ jobs:
 
       - name: Parse Claude result
         id: result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          OUTPUT_FILE="/home/runner/work/_temp/claude-execution-output.json"
-          if [ -f "$OUTPUT_FILE" ]; then
-            RESULT=$(python3 -c "import json; items=json.load(open('$OUTPUT_FILE')); r=[i for i in items if isinstance(i,dict) and i.get('type')=='result']; print(r[0].get('result','') if r else '')")
-          else
-            RESULT="${{ steps.claude.outputs.response }}"
-          fi
+          # The claude-code-action's `result.result` field is an SDK-generated
+          # paraphrase of the run, not the literal final text — it can drop the
+          # MERGE_APPROVED/NEEDS_HUMAN_REVIEW sentinel even when Claude's own
+          # posted PR comment contains it verbatim (confirmed on PR #828: Claude
+          # approved and posted MERGE_APPROVED in its comment, but the summary
+          # field said "safe to merge" instead, so the old grep on `result.result`
+          # missed it and the PR silently sat un-merged with no fallback comment
+          # either). Read the actual PR comment Claude posted instead — that's
+          # the same artifact a human reviewer would see, so it's guaranteed to
+          # carry whatever sentinel the prompt asked Claude to end with.
+          RESULT=$(gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/comments --jq '[.[] | select(.user.login == "github-actions[bot]")] | last | .body // ""')
           echo "text<<EOF" >> $GITHUB_OUTPUT
           echo "$RESULT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
