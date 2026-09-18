@@ -8,7 +8,10 @@ metadata:
   namespace: default
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
+  # Sep 2026: scaled to zero on request -- gateway parked while not in use.
+  # Set back to 1 to bring it up again. PVC (longhorn-ia-ignition-config-rwo)
+  # is retained, so no data is lost while parked.
+  replicas: 0
   revisionHistoryLimit: 3
   # Sep 2026: required now that the PVC is ReadWriteOnce (see storage.yaml).
   # Default RollingUpdate tries to bring up the new pod before tearing down
