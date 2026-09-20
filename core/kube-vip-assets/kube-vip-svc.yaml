@@ -64,7 +64,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-          image: ghcr.io/kube-vip/kube-vip:v1.2.3
+          image: ghcr.io/kube-vip/kube-vip:v1.2.4
           imagePullPolicy: IfNotPresent
           name: kube-vip
           securityContext:
