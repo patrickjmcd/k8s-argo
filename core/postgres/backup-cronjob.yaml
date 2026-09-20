@@ -35,7 +35,7 @@ spec:
                   set -e
                   mkdir -p /backup/shared
                   TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-                  for DB in mealie radarr-main radarr-logs sonarr-main sonarr-logs prowlarr-main prowlarr-logs readarr-main readarr-logs lidarr-main lidarr-logs; do
+                  for DB in mealie radarr-main radarr-logs sonarr-main sonarr-logs prowlarr-main prowlarr-logs readarr-main readarr-logs lidarr-main lidarr-logs pocketid outline reedme n8n homebox dispatcharr adsb romm sparkyfitness; do
                     echo "Backing up $DB..."
                     pg_dump -h shared-postgres-rw -U "$PGUSER" -d "$DB" -Fc -f "/backup/shared/${DB}_${TIMESTAMP}.dump"
                   done
