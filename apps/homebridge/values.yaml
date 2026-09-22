@@ -1,0 +1,43 @@
+image:
+  repository: homebridge/homebridge
+  # Date-stamped tags are this image's stable releases (also aliased as
+  # "latest"/"ubuntu" as of 2026-09-22) — pinned instead of floating.
+  tag: "2026-09-02"
+
+service:
+  port: 8581
+  containerPort: 8581
+
+# Migrated from the "homebridge" LXC on pve (192.168.1.23, untagged/main LAN).
+# HomeKit pairing (mDNS/avahi advertisement + the HAP bridge port) needs to
+# see real LAN broadcast traffic, which isn't possible from behind the pod
+# network — same reasoning as apps/homelable-backend. media-server is the
+# only cluster node on the untagged main LAN (192.168.1.x), matching where
+# the LXC lived, so pairing survives the move unchanged.
+hostNetwork: true
+nodeSelector:
+  kubernetes.io/hostname: media-server
+tolerations:
+  - key: node.kubernetes.io/not-ready
+    operator: Exists
+    effect: NoExecute
+    tolerationSeconds: 30
+  - key: node.kubernetes.io/unreachable
+    operator: Exists
+    effect: NoExecute
+    tolerationSeconds: 30
+  - key: dedicated
+    operator: Equal
+    value: heavy
+    effect: NoSchedule
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 1Gi
+  mountPath: /homebridge
+
+httproute:
+  enabled: true
+  hostnames:
+    - homebridge.x.pmcd.io
