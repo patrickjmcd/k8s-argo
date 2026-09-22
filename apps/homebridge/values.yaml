@@ -31,11 +31,19 @@ tolerations:
     value: heavy
     effect: NoSchedule
 
-persistence:
-  enabled: true
-  type: longhorn
-  size: 1Gi
-  mountPath: /homebridge
+# media-server never joined the Longhorn cluster (root disk is reserved for
+# Plex/Jellyfin, per CLAUDE.md) — confirmed via `kubectl get nodes.longhorn.io`
+# omitting it entirely, which failed the PVC attach (CSINode has no
+# driver.longhorn.io). Use a hostPath on the 4.6T USB drive instead, same
+# pattern as core/prometheus-assets/prometheus-usb-pv.yaml on this node.
+extraVolumes:
+  - name: data
+    hostPath:
+      path: /mnt/usb/homebridge-data
+      type: DirectoryOrCreate
+extraVolumeMounts:
+  - name: data
+    mountPath: /homebridge
 
 httproute:
   enabled: true
