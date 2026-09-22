@@ -111,6 +111,14 @@
       "addLabels": ["needs-review"]
     },
     {
+      "description": "A digest bump here is effectively a Postgres binary swap - CNPG rolls it onto replicas first via switchover, and can't do that safely without an already-healthy replica present. Automerged digest bumps for this image caused two separate shared-postgres outages (Sep 2026, #830 and #837): pg_basebackup refuses to join a replica whose image doesn't match the primary's, and the primary can only pick up the new image once a replica has already switched over to it - a deadlock when no replica is healthy.",
+      "matchPackageNames": [
+        "ghcr.io/cloudnative-pg/postgresql"
+      ],
+      "automerge": false,
+      "addLabels": ["needs-review"]
+    },
+    {
       "matchPackageNames": [
         "flannel-io/flannel"
       ],
