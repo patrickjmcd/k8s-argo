@@ -18,6 +18,25 @@ spec:
 
   primaryUpdateMethod: switchover
 
+  # Soft-prefer the Pi 5s over the Pi 4s. CNPG's own anti-affinity only
+  # spreads replicas of *this* cluster apart from each other - it has no
+  # concept of weaker vs. stronger nodes, so without this, replicas from
+  # unrelated CNPG clusters (e.g. immich) can all land on the same weak
+  # nodes by chance, as happened Sep 2026 when both shared-postgres
+  # replicas and immich's postgres-1/2 ended up on pi4-kube0/1.
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 80
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi5-kube0
+                  - pi5-kube1
+                  - pi5-kube2
+
   enableSuperuserAccess: true
 
   postgresql:
