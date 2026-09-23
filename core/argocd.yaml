@@ -123,6 +123,25 @@ spec:
                 memory: 1792Mi
               limits:
                 memory: 4Gi
+            # Soft-prefer the Pi 5s over the Pi 4s - same rationale as
+            # core/postgres/cluster.yaml. This is the single reconciliation
+            # engine for the whole repo (StatefulSet, one replica) and
+            # regularly runs ~1 core against a 500m request; parked on
+            # pi4-kube1 it was enough to trip NodeSystemSaturation /
+            # NodeCPUHighUsage overnight (Sep 2026) even after the earlier
+            # Postgres/Kyverno rebalance.
+            affinity:
+              nodeAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 80
+                    preference:
+                      matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: In
+                          values:
+                            - pi5-kube0
+                            - pi5-kube1
+                            - pi5-kube2
 
           repoServer:
             autoscaling:
