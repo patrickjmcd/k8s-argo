@@ -43,6 +43,25 @@ spec:
             # 2026-09-17 when it landed on the most memory-pressured node.
             replicas: 2
 
+          # background-controller and reports-controller watch a large
+          # number of CRD types each. Their watches periodically drop
+          # ("http2: client connection lost") and all reconnect/re-list at
+          # once, which was enough to exhaust the default 300 QPS/burst
+          # client-side rate limit - starving the leader-election lease
+          # renewal itself, so they'd lose leadership and cleanly exit
+          # every few minutes (482+ and 500+ restarts respectively as of
+          # Sep 2026). Doesn't fix the underlying watch drops, but gives
+          # enough headroom to survive a reconnect storm without cascading
+          # into a leadership-loss restart loop.
+          backgroundController:
+            extraArgs:
+              clientRateLimitQPS: "600"
+              clientRateLimitBurst: "1200"
+          reportsController:
+            extraArgs:
+              clientRateLimitQPS: "600"
+              clientRateLimitBurst: "1200"
+
 
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
