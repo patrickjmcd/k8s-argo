@@ -58,12 +58,20 @@ spec:
               # This policy mutates pod specs (and pod controller templates) to add 30s
               # eviction tolerations for not-ready/unreachable nodes. ArgoCD's selfHeal
               # would otherwise fight Kyverno in an infinite loop.
+              #
+              # Also ignore kubectl.kubernetes.io/restartedAt: `kubectl rollout restart`
+              # writes this onto the live pod template but it's never in git, so every
+              # manual restart left permanent OutOfSync drift with no way to clear it
+              # short of a sync (found Sep 2026: 7 apps stuck OutOfSync this way, one
+              # from as far back as Sep 6).
               resource.customizations.ignoreDifferences.apps_Deployment: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
+                  - '.spec.template.metadata.annotations."kubectl.kubernetes.io/restartedAt"?'
               resource.customizations.ignoreDifferences.apps_DaemonSet: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable" or .key == "node-role.kubernetes.io/master" or .key == "node-role.kubernetes.io/control-plane")'
+                  - '.spec.template.metadata.annotations."kubectl.kubernetes.io/restartedAt"?'
               # HTTPRoute backendRefs get group:"" and weight:1 defaulted by the API server.
               resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
                 jqPathExpressions:
@@ -72,6 +80,7 @@ spec:
               resource.customizations.ignoreDifferences.apps_StatefulSet: |
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable")'
+                  - '.spec.template.metadata.annotations."kubectl.kubernetes.io/restartedAt"?'
               # Only exclude core Endpoints (auto-managed by kube-controller); allow
               # EndpointSlice so manually-created slices for external services sync normally.
               resource.exclusions: |
