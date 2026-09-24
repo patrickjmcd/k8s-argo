@@ -6,7 +6,7 @@ glance:
 
 image:
   repository: codewithcj/sparkyfitness
-  tag: "v1.7.1"
+  tag: "v1.7.2"
 
 service:
   port: 80
