@@ -2,7 +2,7 @@
 # "sparkyfitness") proxies /api to this service on port 3010.
 image:
   repository: codewithcj/sparkyfitness_server
-  tag: "v1.7.1"
+  tag: "v1.7.2"
 
 service:
   port: 3010
