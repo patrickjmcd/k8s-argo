@@ -75,6 +75,13 @@
       "overridePackageName": "ghcr.io/containers/charts/kubernetes-mcp-server"
     },
     {
+      "description": "Same duplicate chart-name segment as above, for the kro OCI chart",
+      "matchPackageNames": [
+        "registry.k8s.io/kro/charts/kro/kro"
+      ],
+      "overridePackageName": "registry.k8s.io/kro/charts/kro"
+    },
+    {
       "matchPackageNames": [
         "argo-cd"
       ],

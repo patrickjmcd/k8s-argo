@@ -1,0 +1,20 @@
+# Runs alongside the Helm-based apps/iss-in-space.yaml as a kro experiment,
+# on its own hostname so the two don't fight over iss.x.pmcd.io.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: iss-in-space-kro
+  namespace: default
+spec:
+  image: ghcr.io/patrickjmcd/iss-in.space:v1.10.0
+  port: 4321
+  imagePullSecrets:
+    - ghcr-registry-cred
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 128Mi
+    cpuLimit: 200m
+    memoryLimit: 256Mi
+  route:
+    hostnames:
+      - iss-kro.x.pmcd.io

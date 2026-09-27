@@ -28,6 +28,7 @@ spec:
     - https://helm.cilium.io/
     - https://aquasecurity.github.io/helm-charts/
     - https://kubernetes-sigs.github.io/external-dns/
+    - oci://registry.k8s.io/kro/charts/kro
   destinations:
     - namespace: "*"
       name: in-cluster

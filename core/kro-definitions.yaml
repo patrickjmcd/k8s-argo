@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kro-definitions
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  destination:
+    namespace: kro-system
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      # The ResourceGraphDefinition CRD comes from the kro chart; on a fresh
+      # cluster it may not exist yet when this app first syncs.
+      - SkipDryRunOnMissingResource=true
+  source:
+    path: core/kro-definitions
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
