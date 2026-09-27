@@ -6,14 +6,16 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: .
+    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/joshhawleygop
 spec:
   destination:
     namespace: default
     name: in-cluster
   project: apps
-  #  syncPolicy:
-  #    automated: { }
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
   sources:
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main

@@ -51,7 +51,10 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: .
+    # Multi-source: list the chart and the values dir explicitly. "." only
+    # covers the chart source, so a values-only commit would be served from
+    # Argo's manifest cache and never deployed.
+    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/myapp
 spec:
   destination:
     namespace: myapp
@@ -312,7 +315,7 @@ Verify with: `sudo sysctl net.netfilter.nf_conntrack_checksum` → should be `0`
 
 - Always use `ServerSideApply=true` in syncOptions
 - Always set `CreateNamespace=true` when the namespace isn't pre-existing
-- Use `argocd.argoproj.io/manifest-generate-paths: .` annotation on all Applications
+- Use `argocd.argoproj.io/manifest-generate-paths: .` on single-source Applications; for multi-source (homelab-app chart + `$values`) use absolute paths `/charts/homelab-app;/apps/<name>`
 - Prefer `selfHeal: true` and `prune: true` for automated apps
 - Never use `latest` image tags
 - HTTPRoute `backendRef` API defaults cause ArgoCD diff noise — suppress with `ignoreDifferences` if needed

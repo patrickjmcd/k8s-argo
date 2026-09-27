@@ -13,6 +13,9 @@ spec:
       name: traefik-gateway
       namespace: default
   hostnames:
+    # pics.pmcd.dev stays here too: LAN DNS overrides it to 192.168.8.200, so
+    # LAN clients reach this route; everyone else comes in via immich-public.
+    - pics.pmcd.dev
     - immich.x.pmcd.io
   rules:
     - matches:
