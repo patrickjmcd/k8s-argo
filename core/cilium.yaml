@@ -18,7 +18,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    # Earlier than flannel (-3): the CNI must be the first thing reconciled.
+    # Earliest wave: the CNI must be the first thing reconciled.
     argocd.argoproj.io/sync-wave: "-4"
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
@@ -50,10 +50,10 @@ spec:
           # network. Native routing is a later optimisation, not Phase 1.
           routingMode: tunnel
           tunnelProtocol: vxlan
-          # flannel's VXLAN backend also defaults to UDP 8472 - since flannel stays
-          # running alongside Cilium during this migration, Cilium must use a
-          # different port or its own cilium_vxlan device fails to bind ("address
-          # already in use"). Per Cilium's own migration docs:
+          # Non-default port chosen during the migration, when flannel's VXLAN
+          # still held UDP 8472 (Cilium's cilium_vxlan failed to bind: "address
+          # already in use"). flannel is gone, but changing the port now means
+          # every node's overlay flips at once - not worth it, so it stays.
           # https://docs.cilium.io/en/stable/installation/k8s-install-migration/
           tunnelPort: 8473
 

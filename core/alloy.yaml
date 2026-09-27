@@ -45,7 +45,7 @@ spec:
           # rollout (2026-09-11), only 6/10 nodes got a pod. Those are
           # exactly the nodes where etcd/control-plane incidents happen, so
           # skipping them defeats the point. Matches the broad toleration
-          # cilium/flannel already use.
+          # cilium already uses.
           tolerations:
             - effect: NoSchedule
               operator: Exists

@@ -162,7 +162,42 @@ Hubble.
 3. Flip `cni.exclusive` back to the chart default (`true`) once flannel is gone,
    so Cilium owns `/etc/cni/net.d` cleanly.
 4. Update `CLAUDE.md`: the "CNI plugins / flannel DaemonSet" node-bootstrap note
-   no longer applies; replace it with the Cilium bootstrap facts.
+   no longer applies; replace it with the Cilium bootstrap facts. ✅ 2026-09-27
+5. **Clean flannel's host state off every node.** Pruning the DaemonSet (6.2)
+   removes nothing from the hosts, and only a reboot clears most of it. Found
+   2026-09-27 on 8 of 10 nodes (all except `kube-leader-2`, `pi4-kube0`):
+   `cni0` (holding the `.1` of the node's podCIDR), `flannel.1`, an active
+   `/etc/cni/net.d/10-flannel.conflist`, `/run/flannel`, and the `FLANNEL-FWD` /
+   `FLANNEL-POSTRTG` iptables chains (incl. MASQUERADE rules). Not cosmetic:
+   with `ipam.mode: kubernetes` Cilium also hands out `.1`, and a pod that gets
+   it can't receive replies because the host owns that address (a Traefik pod
+   on `pi5-kube2` crashlooped on API cache-sync timeouts). On each node, as root:
+
+   ```bash
+   # abort if anything is still attached to cni0
+   [ "$(ip -o link show | grep -c 'master cni0')" = 0 ] || exit 1
+   ip link delete cni0 2>/dev/null
+   ip link delete flannel.1 2>/dev/null
+   mv /etc/cni/net.d/10-flannel.conflist /etc/cni/net.d/10-flannel.conflist.cilium_bak 2>/dev/null
+   rm -rf /run/flannel /opt/cni/bin/flannel
+   iptables -D FORWARD -m comment --comment "flanneld forward" -j FLANNEL-FWD 2>/dev/null
+   iptables -F FLANNEL-FWD 2>/dev/null; iptables -X FLANNEL-FWD 2>/dev/null
+   iptables -t nat -D POSTROUTING -m comment --comment "flanneld masq" -j FLANNEL-POSTRTG 2>/dev/null
+   iptables -t nat -F FLANNEL-POSTRTG 2>/dev/null; iptables -t nat -X FLANNEL-POSTRTG 2>/dev/null
+   ```
+
+   No drain or restart needed; verify with `cilium-dbg status` (Cluster health
+   10/10) and that the node's pods stay Running. Rebooting the node gets the
+   same result for everything but the conflist (cilium-agent renames that
+   itself on start, since `cni.exclusive: true`).
+
+   | Node | Status |
+   |---|---|
+   | `kube-leader-2`, `pi4-kube0` | clean (already) |
+   | `pi5-kube0`, `pi5-kube1`, `pi5-kube2` | cleaned 2026-09-27 |
+   | `pi4-kube1`, `media-server`, `macpro-kube0`, `kube-n3160`, `kube-macmini` | **pending** |
+6. Delete the empty `kube-flannel` namespace (left behind when the DaemonSet
+   was pruned).
 
 ---
 

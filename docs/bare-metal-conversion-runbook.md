@@ -133,7 +133,7 @@ the same base Proxmox already ran on this hardware (proven boot/EFI/NIC support)
 sudo apt-get update
 sudo apt-get install -y containernetworking-plugins nfs-common cifs-utils open-iscsi
 sudo mkdir -p /opt/cni/bin
-sudo cp /usr/lib/cni/* /opt/cni/bin/          # flannel runs as a DaemonSet; base CNI plugins must exist
+sudo cp /usr/lib/cni/* /opt/cni/bin/          # Cilium only installs cilium-cni; base CNI plugins must exist
 ```
 Conntrack check (x86 trixie also runs the 6.12 kernel that needs the RPi fix on some
 NICs — verify, and apply if you see DNS/UDP flakiness after join):
@@ -143,7 +143,7 @@ sudo sysctl net.netfilter.nf_conntrack_checksum          # want 0
 ```
 
 ### 5. Join as a k3s **server**, matching the existing server config
-The existing servers run with a specific config (flannel-backend=none, disables, etc.).
+The existing servers run with a specific config (flannel-backend=none, disables, etc.; the CNI is Cilium).
 **Copy the authoritative flags from a live server rather than guessing:**
 ```bash
 # on kube-leader-2 (or any current server):
@@ -155,12 +155,12 @@ sudo cat /var/lib/rancher/k3s/server/token    # capture the server token
 `systemctl cat k3s | grep -A20 ExecStart`. On kube-leader-2 that is:
 ```
 --server https://192.168.8.23:6443     # <- NOTE: points at kube-leader, not the VIP. Repoint survivors to the VIP.
---flannel-backend=none                 # REQUIRED - flannel runs as a DaemonSet
+--flannel-backend=none                 # REQUIRED - Cilium is the CNI; no built-in flannel
 --disable=traefik
 --node-taint node-role.kubernetes.io/control-plane:NoSchedule
 ```
-Omitting `--flannel-backend=none` makes the node start its own flannel and fight the
-DaemonSet. Pass every one of these explicitly.
+Omitting `--flannel-backend=none` makes the node start k3s's built-in flannel and fight
+Cilium. Pass every one of these explicitly.
 
 **With k3sup** (preferred here — `--server-url` keeps the join pointed at the VIP
 while SSHing to a real server for the token):

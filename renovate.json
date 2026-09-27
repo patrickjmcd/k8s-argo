@@ -126,14 +126,6 @@
       "addLabels": ["needs-review"]
     },
     {
-      "matchPackageNames": [
-        "flannel-io/flannel"
-      ],
-      "groupName": "Flannel",
-      "automerge": false,
-      "addLabels": ["needs-review"]
-    },
-    {
       "matchDepNames": [
         "k3s-io/k3s"
       ],

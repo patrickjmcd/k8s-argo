@@ -324,7 +324,7 @@ This repository uses Renovate for automated dependency updates. Configuration is
 Package rules:
 - ArgoCD updates are grouped and require manual approval
 - Infrastructure charts (traefik, cert-manager, external-secrets) are grouped
-- Longhorn and Flannel updates are grouped
+- Longhorn and k3s updates are grouped and need review
 
 ### Adding New Applications
 

@@ -272,7 +272,7 @@ The cluster has no GPU nodes. The Jetson Nano (`jetson-nano-kube0`) was retired 
 
 ## Node Bootstrap Requirements (all nodes)
 
-**CNI plugins** — the cluster runs flannel as a DaemonSet (`kube-flannel`), not k3s's built-in flannel, so k3s does NOT provide the standard CNI plugins. Every new node needs the base plugins (`loopback`, `bridge`, `portmap`, …) present in `/opt/cni/bin` before pods can start; the flannel DaemonSet only drops in the `flannel` binary itself. Symptom when missing: `FailedCreatePodSandBox … failed to find plugin "loopback" in path [/opt/cni/bin]`.
+**CNI** — the cluster runs **Cilium** (`core/cilium.yaml`) as its only CNI; flannel was removed in Sept 2026 (`docs/cilium-migration.md`). k3s still runs with `--flannel-backend=none` — required, or k3s starts its built-in flannel alongside Cilium. Cilium's `install-cni-binaries` init container only drops in `cilium-cni` and writes `/etc/cni/net.d/05-cilium.conflist`, so k3s does NOT provide the standard CNI plugins either: every new node needs the base plugins (`loopback`, `portmap`, …) in `/opt/cni/bin` before pods can start. Symptom when missing: `FailedCreatePodSandBox … failed to find plugin "loopback" in path [/opt/cni/bin]`.
 
 ```bash
 sudo apt-get install -y containernetworking-plugins
@@ -281,6 +281,8 @@ sudo cp /usr/lib/cni/* /opt/cni/bin/
 ```
 
 Also install the storage clients so CSI mounts work: `nfs-common` and `cifs-utils`.
+
+**No flannel leftovers** — a node that ever ran flannel keeps its host state until cleaned or rebooted: a `cni0` bridge holding the `.1` of the node's pod CIDR, `flannel.1`, `/etc/cni/net.d/10-flannel.conflist`, `/run/flannel` and `FLANNEL-*` iptables chains. The stale `cni0` is not cosmetic: Cilium (`ipam.mode: kubernetes`) hands out the same `.1`, and a pod that gets it can't receive replies because the host owns that address — seen Sept 2026 as a Traefik pod on `pi5-kube2` crashlooping on "timed out waiting for controller caches to sync". Clean-up steps are in `docs/cilium-migration.md` §6.5.
 
 **inotify instance limit** — `fs.inotify.max_user_instances` is a per-UID limit shared by every root-owned container on the node (not namespaced per-pod), and most system/sidecar containers run as root. A node hosting many containers with fsnotify-based watchers (config reloaders, log tailers, etc.) can silently approach the default cap of 128 as container density grows, at which point the next container to request an inotify instance crash-loops with `OSError: [Errno 24] inotify instance limit reached` — a red herring that looks like an app bug. Confirmed on `pi5-kube0/1/2` in Sept 2026 (91, 72, and 127 of 128 respectively) when the `youtubedl` postprocessor's `watchdog` Observer tipped `pi5-kube2` over the edge. It recurred in Sept 2026 via Grafana Alloy (`core/alloy.yaml`, tails every pod's log file over inotify) exhausting the limit and breaking ArgoCD's CronJob log stream.
 
