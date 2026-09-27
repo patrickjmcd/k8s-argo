@@ -92,13 +92,20 @@ spec:
                 type: ClusterIP
           additionalArguments:
             - "--api.insecure=true"
+          # Memory request follows Goldilocks (~260Mi target; observed peak
+          # 221Mi over 7 days) - 160Mi was below real usage.
           resources:
             requests:
               cpu: 25m
-              memory: 160Mi
+              memory: 256Mi
             limits:
               cpu: 1000m
               memory: 512Mi
+          # Traefik carries LAN and public (Cloudflare Tunnel) traffic, so a
+          # node drain must never take both replicas down at once.
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: 1
           ingressRoute:
             dashboard:
               enabled: false

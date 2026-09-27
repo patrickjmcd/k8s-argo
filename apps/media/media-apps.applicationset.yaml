@@ -24,7 +24,9 @@ spec:
       finalizers:
         - resources-finalizer.argocd.argoproj.io
       annotations:
-        argocd.argoproj.io/manifest-generate-paths: .
+        # Absolute paths: with multi-source apps "." only covers the chart,
+        # so values-only commits were served from Argo's manifest cache.
+        argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/media/{{name}}
     spec:
       project: apps
       sources:
