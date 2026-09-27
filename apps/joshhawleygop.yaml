@@ -25,3 +25,6 @@ spec:
         releaseName: joshhawleygop
         valueFiles:
           - $values/apps/joshhawleygop/values.yaml
+    - path: apps/joshhawleygop
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main

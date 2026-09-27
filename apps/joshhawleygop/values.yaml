@@ -1,6 +1,8 @@
+# Static site: nginx serving apps/joshhawleygop/site/ (mounted from the
+# joshhawleygop-site ConfigMap built by kustomization.yaml).
 image:
-  repository: ghcr.io/patrickjmcd/website-redirector
-  tag: "6c2cda9"
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.30.5-alpine"
 
 service:
   port: 80
@@ -16,7 +18,8 @@ resources:
 
 probes:
   readiness:
-    type: tcpSocket
+    type: httpGet
+    path: /
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 1
@@ -39,8 +42,13 @@ httproute:
     - joshhawleygop.com
   enabled: false
 
-env:
-  REDIRECT_TO: "https://plannedparenthood.com"
+extraVolumes:
+  - name: site
+    configMap:
+      name: joshhawleygop-site
 
-imagePullSecrets:
-  - name: ghcr-registry-cred
+extraVolumeMounts:
+  # No subPath, so edits to the ConfigMap propagate without a pod restart.
+  - name: site
+    mountPath: /usr/share/nginx/html
+    readOnly: true

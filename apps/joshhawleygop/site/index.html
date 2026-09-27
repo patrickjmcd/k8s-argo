@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hawley Record</title>
+<meta name="description" content="Josh Hawley's record, sourced: the Virginia house, January 6, the Medicaid vote he tried to undo, and more. Independent commentary, not affiliated with Hawley or the GOP.">
+<meta property="og:title" content="The Hawley Record">
+<meta property="og:description" content="Missouri deserves better than Josh Hawley. Here's the record, with sources.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://joshhawleygop.com/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23b3261e'/%3E%3Ctext x='16' y='23' font-family='Arial,sans-serif' font-weight='900' font-size='20' text-anchor='middle' fill='%23fff'%3E%3F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f4ee;
+    --surface: #ffffff;
+    --ink: #1b1a17;
+    --muted: #5c5850;
+    --rule: #ddd6c8;
+    --accent: #b3261e;
+    --accent-ink: #ffffff;
+    --navy: #14213d;
+    --quote-bg: #efe9dc;
+    --display: "Archivo Black", "Arial Black", Impact, sans-serif;
+    --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121212;
+      --surface: #1c1b19;
+      --ink: #ece8e0;
+      --muted: #a8a295;
+      --rule: #34322d;
+      --accent: #ef5a4f;
+      --accent-ink: #120f0e;
+      --navy: #0b1224;
+      --quote-bg: #24221e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121212;
+    --surface: #1c1b19;
+    --ink: #ece8e0;
+    --muted: #a8a295;
+    --rule: #34322d;
+    --accent: #ef5a4f;
+    --accent-ink: #120f0e;
+    --navy: #0b1224;
+    --quote-bg: #24221e;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+
+  .disclaimer-bar {
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--sans);
+    font-size: .8rem;
+    text-align: center;
+    padding: .5rem 16px;
+  }
+
+  header.hero {
+    background: var(--navy);
+    color: #f5f1e8;
+    padding: 4.5rem 16px 4rem;
+    border-bottom: 8px solid var(--accent);
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .kicker {
+    font-family: var(--sans);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #f0a39d;
+    margin: 0 0 1rem;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.4rem, 8vw, 4.4rem);
+    line-height: 1.02;
+    margin: 0 0 1.25rem;
+    letter-spacing: -.01em;
+  }
+  h1 em { font-style: normal; color: #ff7a70; }
+  .lede { font-size: 1.25rem; max-width: 36em; margin: 0 0 2rem; color: #d9d3c5; }
+  .toc {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    padding: 0; margin: 0; list-style: none;
+    font-family: var(--sans); font-size: .85rem;
+  }
+  .toc a {
+    display: inline-block;
+    color: #f5f1e8; text-decoration: none;
+    border: 1px solid rgba(245,241,232,.35);
+    border-radius: 999px;
+    padding: .35rem .8rem;
+  }
+  .toc a:hover { background: rgba(245,241,232,.12); }
+
+  main { padding: 1rem 16px 3rem; }
+  section.count {
+    padding: 3rem 0 2.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  section.count:last-of-type { border-bottom: 0; }
+  .num {
+    font-family: var(--display);
+    color: var(--accent);
+    font-size: 1rem;
+    letter-spacing: .08em;
+    margin: 0 0 .35rem;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 5vw, 2.3rem);
+    line-height: 1.1;
+    margin: 0 0 1.1rem;
+  }
+  p { margin: 0 0 1rem; }
+  .pull {
+    margin: 1.5rem 0;
+    padding: 1.1rem 1.25rem;
+    background: var(--quote-bg);
+    border-left: 5px solid var(--accent);
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+  .pull cite {
+    display: block; margin-top: .5rem;
+    font-style: normal; font-family: var(--sans);
+    font-size: .85rem; color: var(--muted);
+  }
+  .timeline { list-style: none; margin: 1.25rem 0; padding: 0; border-left: 3px solid var(--rule); }
+  .timeline li { position: relative; padding: 0 0 1rem 1.25rem; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -8px; top: .5rem;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--accent); border: 3px solid var(--bg);
+  }
+  .timeline b { font-family: var(--sans); font-size: .9rem; display: block; color: var(--muted); }
+  .fair {
+    font-family: var(--sans); font-size: .9rem; color: var(--muted);
+    border-top: 1px dashed var(--rule); padding-top: .75rem; margin-top: 1.25rem;
+  }
+  .sources {
+    font-family: var(--sans); font-size: .82rem; color: var(--muted);
+    margin: 1rem 0 0; padding-left: 1.1rem;
+  }
+  .sources li { margin-bottom: .2rem; }
+
+  .act {
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 3.5rem 16px;
+  }
+  .act h2 { color: var(--accent-ink); }
+  .act p { font-size: 1.15rem; }
+  .btns { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+  .btn {
+    display: inline-block;
+    font-family: var(--sans); font-weight: 700; font-size: 1rem;
+    text-decoration: none;
+    padding: .8rem 1.3rem; border-radius: 6px;
+    background: var(--accent-ink); color: var(--accent);
+    border: 2px solid var(--accent-ink);
+  }
+  .btn.ghost { background: transparent; color: var(--accent-ink); }
+  .btn:hover { filter: brightness(.95); }
+
+  footer {
+    padding: 2rem 16px 3rem;
+    font-family: var(--sans); font-size: .82rem; color: var(--muted);
+  }
+  footer p { margin-bottom: .6rem; }
+
+  @media (max-width: 520px) {
+    body { font-size: 1.05rem; }
+    header.hero { padding: 3rem 16px 2.75rem; }
+    .lede { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="disclaimer-bar">
+  Independent citizen commentary. Not affiliated with Josh Hawley, his office, his campaign, or the Republican Party.
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">The Hawley Record</p>
+    <h1>Missouri's senator. <em>Virginia's neighbor.</em></h1>
+    <p class="lede">
+      Josh Hawley sells himself as a populist fighting for Missouri. His record tells a different story: a D.C.-area house, a raised fist on January 6, and a vote to cut Medicaid that he spent the next week trying to take back. Everything below is sourced. Read it and decide for yourself.
+    </p>
+    <ul class="toc">
+      <li><a href="#home">Where he lives</a></li>
+      <li><a href="#jan6">January 6</a></li>
+      <li><a href="#medicaid">Medicaid</a></li>
+      <li><a href="#veterans">Veterans</a></li>
+      <li><a href="#choice">Your vote on abortion</a></li>
+      <li><a href="#ladder">The ladder</a></li>
+      <li><a href="#truth">The truth</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section class="count" id="home">
+      <p class="num">01</p>
+      <h2>The Missouri senator with a Virginia house</h2>
+      <p>
+        In January 2019, weeks after being sworn in, Hawley bought a five-bedroom house in Vienna, Virginia, a Washington suburb. It is now valued at around $1.7 million. That spring he sold his home in Columbia, Missouri.
+      </p>
+      <p>
+        So what did he put down as his Missouri address? His sister's house in Ozark. The Kansas City Star reported in 2020 that Hawley was registered to vote at his sister's place, and used it for his Missouri Bar registration too, while he and his family lived full time in Virginia. When the Hawley family was home during a protest in January 2021, the house they were in was the one in Vienna.
+      </p>
+      <p>
+        Only after years of criticism did his Missouri paper trail fill out. A house in Christian County that his parents bought land for, with Hawley on the deed, was finished in 2021. In late 2023, heading into a re-election year, he bought a second house nearby.
+      </p>
+      <div class="pull">
+        Missourians can't vote from a sibling's guest room when they live in another state. For his first years in the Senate, that was essentially Hawley's arrangement.
+      </div>
+      <p class="fair">
+        In fairness: Hawley now owns property in Christian County and filed for re-election from a Missouri address. Members of Congress legally need only be inhabitants of their state when elected. Whether that's the same as living here is for you to judge.
+      </p>
+      <ul class="sources">
+        <li><a href="https://www.aol.com/sen-josh-hawley-once-faced-175323582.html">Kansas City Star via AOL: "Sen. Josh Hawley once faced questions about living in Missouri"</a></li>
+        <li><a href="https://www.columbiamissourian.com/opinion/guest_commentaries/editorial-sen-josh-hawley-pretends-his-lack-of-a-missouri-address-is-an-elitist-attack/article_9d48efa4-2e9c-11eb-aacc-575c134ccefe.html">Columbia Missourian editorial: Hawley pretends his lack of a Missouri address is an elitist attack</a></li>
+        <li><a href="https://www.hannibal.net/opinion/editorials/hawley-scoffs-at-missouri-residency-requirements/article_abd662f0-1b12-5743-8a7b-803d4984d351.html">Hannibal Courier-Post editorial: Hawley scoffs at Missouri residency requirements</a></li>
+        <li><a href="https://wjla.com/news/local/sen-josh-hawley-says-antifa-scumbags-came-to-his-virginia-home-threatened-his-family">WJLA: protest at Hawley's Virginia home, January 2021</a></li>
+      </ul>
+    </section>
+
+    <section class="count" id="jan6">
+      <p class="num">02</p>
+      <h2>He raised a fist to the mob. Then he ran from it.</h2>
+      <p>
+        Hawley was the first senator to say he would object to certifying the 2020 election, and on January 6, 2021 he did it. He objected to Pennsylvania's electoral votes, and the objection failed 92 to 7.
+      </p>
+      <p>
+        That morning, walking into the Capitol, he raised a fist toward the crowd gathered outside. According to the House January 6 committee, a Capitol Police officer said the gesture "riled up the crowd." Hours later, security footage showed Hawley running down a Capitol hallway and hurrying down a staircase to get away from the people he'd saluted.
+      </p>
+      <p>
+        His campaign then sold mugs with the fist-pump picture on them. When Politico, whose photographer took the photo, objected, his lawyer said the campaign would not "engage in self-censorship."
+      </p>
+      <div class="pull">
+        "No one other than President Donald Trump himself is more responsible for Wednesday's coup attempt at the U.S. Capitol than one Joshua David Hawley."
+        <cite>The Kansas City Star Editorial Board, January 2021</cite>
+      </div>
+      <ul class="sources">
+        <li><a href="https://ballotpedia.org/Counting_of_electoral_votes_(January_6-7,_2021)">Ballotpedia: Counting of electoral votes, January 6–7, 2021</a></li>
+        <li><a href="https://www.nbcnews.com/politics/congress/josh-hawley-seen-fleeing-trump-mob-riled-newly-released-jan-6-footage-rcna39490">NBC News: Hawley seen fleeing the mob he "riled up"</a></li>
+        <li><a href="https://www.kcur.org/politics-elections-and-government/2022-03-21/josh-hawley-refuses-to-stop-selling-merchandise-featuring-his-pre-riot-jan-6-fist-pump">KCUR: Hawley refuses to stop selling his Jan. 6 fist-pump merchandise</a></li>
+        <li><a href="https://thehill.com/homenews/news/533071-hawley-hometown-paper-says-he-has-blood-on-his-hands/">The Hill: Kansas City paper says Hawley has "blood on his hands"</a></li>
+        <li><a href="https://www.commondreams.org/news/2022/07/24/major-missouri-newspaper-calls-josh-hawley-laughingstock-fleeing-jan-6-mob">Kansas City Star calls Hawley a "laughingstock" after the fleeing video</a></li>
+      </ul>
+    </section>
+
+    <section class="count" id="medicaid">
+      <p class="num">03</p>
+      <h2>He said Medicaid cuts were "morally wrong." Then he voted for them.</h2>
+      <p>
+        About 1.25 million Missourians rely on Medicaid and CHIP, and rural hospitals depend on it to keep the doors open. Hawley knew that. He said so himself, in public, more than once.
+      </p>
+      <ol class="timeline">
+        <li><b>May 2025</b>Writes in the New York Times: "We must ignore calls to cut Medicaid." He calls benefit cuts "both morally wrong and politically suicidal."</li>
+        <li><b>June 28, 2025</b>Warns that Republicans "cannot take away health care from working people."</li>
+        <li><b>July 1, 2025</b>Votes for the "One Big Beautiful Bill," which includes hundreds of billions of dollars in Medicaid cuts. The Missouri Hospital Association warned that its provider-tax cap alone would cost the state hundreds of millions.</li>
+        <li><b>July 15, 2025</b>Introduces a bill to undo some of the Medicaid cuts he had voted for two weeks earlier.</li>
+      </ol>
+      <p>
+        Hawley says he got $50 billion for a rural hospital fund added in exchange for his vote. But if the cuts were bad enough that he wanted to repeal them two weeks later, they were bad enough to vote no on. His vote counted. The bill passed the Senate by one vote, with the Vice President breaking a tie.
+      </p>
+      <ul class="sources">
+        <li><a href="https://www.ms.now/rachel-maddow-show/maddowblog/gops-josh-hawley-pushes-undo-medicaid-cuts-just-voted-rcna219053">MSNBC: Hawley pushes to undo the Medicaid cuts he just voted for</a></li>
+        <li><a href="https://www.kcur.org/health/2025-07-01/big-beautiful-bill-medicaid-cuts-hawley-schmitt-missouri">KCUR: Missouri's Hawley and Schmitt vote yes on "Big Beautiful Bill"</a></li>
+        <li><a href="https://www.nbcnews.com/politics/congress/trump-megabill-vote-medicaid-josh-hawley-republican-rcna217596">NBC News: Hawley and the megabill vote</a></li>
+        <li><a href="https://mffh.org/wp-content/uploads/2025/02/2025-MO-Medicaid-Basics-fact-sheet.pdf">Missouri Foundation for Health: 2025 Missouri Medicaid Basics</a></li>
+        <li><a href="https://www.fiercehealthcare.com/providers/sen-hawley-introduces-bill-wipe-hospitals-medicaid-funding-cuts-boost-rural-health-fund">Fierce Healthcare: Hawley introduces bill to wipe out hospitals' Medicaid funding cuts</a></li>
+      </ul>
+    </section>
+
+    <section class="count" id="veterans">
+      <p class="num">04</p>
+      <h2>He flip-flopped on sick veterans</h2>
+      <p>
+        The PACT Act extended health care to veterans made sick by toxic burn pits. Hawley voted for it in June 2022. A month later, with the bill nearly finished, he switched to no, part of a Republican bloc that stalled it. Veterans camped on the Capitol steps in protest. Only after the public backlash did Hawley flip back to yes in August.
+      </p>
+      <p>
+        In 2024, Hawley and his campaign accused his opponent, Marine veteran Lucas Kunce, of "stolen valor" over his Border Patrol tactical training. A Border Patrol spokesperson confirmed the training was real. Veterans from both parties condemned the attack.
+      </p>
+      <p class="fair">
+        In fairness: in February 2025 Hawley was the only Republican to vote for a resolution protecting burn-pit veterans' health benefits.
+      </p>
+      <ul class="sources">
+        <li><a href="https://missouriindependent.com/2022/07/28/these-people-dont-care-u-s-senate-gop-stalls-bill-for-veterans-exposed-to-burn-pits/">Missouri Independent: "These people don't care": Senate GOP stalls burn-pit bill</a></li>
+        <li><a href="https://missouriindependent.com/2022/08/02/u-s-senate-in-turnaround-backs-aid-for-veterans-exposed-to-burn-pits/">Missouri Independent: Senate reverses course and backs burn-pit aid</a></li>
+        <li><a href="https://www.npr.org/2022/07/29/1114417097/veterans-burn-pit-bill-republican-senators">NPR: Burn-pit bill stopped by GOP</a></li>
+        <li><a href="https://lucaskunce.com/news/2024/10/17/missouri-veterans-bipartisan-veteran-leaders-and-veteran-organizations-condemn-hawley-for-disgraceful-defamation/">Kunce campaign: Veterans condemn Hawley's "stolen valor" attack (partisan source)</a></li>
+        <li><a href="https://taskandpurpose.com/news/senate-vote-pact-act/">Task &amp; Purpose: 2025 Senate vote on PACT Act protections</a></li>
+      </ul>
+    </section>
+
+    <section class="count" id="choice">
+      <p class="num">05</p>
+      <h2>Missouri voted. Hawley wants a do-over.</h2>
+      <p>
+        In November 2024, Missourians passed Amendment 3 and put reproductive freedom in the state constitution, with 51.7% of the vote. Hawley opposed it.
+      </p>
+      <p>
+        Now he's campaigning for the 2026 Amendment 3 on the <strong>November 3, 2026</strong> ballot. It would repeal most of what voters just approved and replace it with a near-total ban, with rape and incest exceptions only up to 12 weeks. "I absolutely am going to be involved," he told reporters. In September 2026 he took it national, launching a "Declaration for Life" that calls for banning mifepristone, the abortion pill, and urging Republican candidates to sign on.
+      </p>
+      <div class="pull">
+        Missouri voters made their decision in 2024. Hawley's answer is to keep asking until he gets a different one.
+      </div>
+      <ul class="sources">
+        <li><a href="https://missouriindependent.com/2024/11/05/missouri-voters-overturn-states-near-total-abortion-ban/">Missouri Independent: Missouri voters approve Amendment 3</a></li>
+        <li><a href="https://www.kcur.org/politics-elections-and-government/2026-02-22/hawley-and-schmitt-believe-voters-will-restrict-abortion-and-back-a-new-congressional-map">KCUR: Hawley and Schmitt believe Missouri voters will restrict abortion</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/2026_Missouri_Amendment_3">2026 Missouri Amendment 3 overview</a></li>
+        <li><a href="https://thehill.com/homenews/senate/6093111-josh-hawley-abortion-declaration-life-republicans/">The Hill: Hawley pushes Republicans to sign anti-abortion "Declaration for Life"</a></li>
+        <li><a href="https://www.dailysignal.com/2026/09/16/hawley-press-mifepristone-ban/">Daily Signal: Hawley advocates mifepristone ban</a></li>
+      </ul>
+    </section>
+
+    <section class="count" id="ladder">
+      <p class="num">06</p>
+      <h2>"Just climbing the ladder"</h2>
+      <p>
+        In 2016, running for attorney general, Hawley ran a TV ad where he walked through a maze of ladders and attacked "career politicians just climbing the ladder, using one office to get another."
+      </p>
+      <p>
+        He took office as attorney general in January 2017. Ten months later he announced a run for the U.S. Senate. A state audit later found that political consultants who went on to run his Senate campaign had been directing taxpayer-paid staff in the attorney general's office, starting the month he took office.
+      </p>
+      <p class="fair">
+        In fairness: Secretary of State Jay Ashcroft, a Republican, closed his investigation in 2019 and said he found no evidence that Hawley broke election law. Hawley says there was no campaign until October 2017.
+      </p>
+      <ul class="sources">
+        <li><a href="https://unewsonline.com/2018/10/actions-speak-louder-than-words-josh-hawleys-political-climb/">University News: Josh Hawley's political climb</a></li>
+        <li><a href="https://rollcall.com/2017/10/10/hawley-announces-bid-against-mccaskill/">Roll Call: Hawley announces bid against McCaskill</a></li>
+        <li><a href="https://www.kcur.org/government/2018-12-10/under-investigation-sen-elect-josh-hawley-for-his-conduct-as-missouri-attorney-general">KCUR: Under investigation for his conduct as attorney general</a></li>
+        <li><a href="https://www.stltoday.com/news/local/government-politics/hawleys-political-consultants-coordinated-with-his-taxpayer-paid-staff-audit-says/article_77c9d53e-a351-5cdc-847e-55025eb85987.html">St. Louis Post-Dispatch: Consultants coordinated with taxpayer-paid staff, audit says</a></li>
+      </ul>
+    </section>
+
+    <section class="count" id="truth">
+      <p class="num">07</p>
+      <h2>Loose with the truth, quick to play the victim</h2>
+      <p>
+        During Judge Ketanji Brown Jackson's Supreme Court confirmation, Hawley claimed she had a "pattern" of going easy on child pornography offenders. PolitiFact found he had cherry-picked the record. Her sentences were in line with national practice, and Hawley had himself voted to confirm Trump judges who handed down similar sentences.
+      </p>
+      <p>
+        After January 6, when Simon &amp; Schuster canceled his book deal, Hawley called it an attack on the First Amendment. It wasn't: the First Amendment restricts the government, not publishers. He published the book elsewhere anyway. Later, promoting it at a Washington Post event, he told the room, "Don't try to censor, cancel and silence me here." The moderator answered, "Senator, we're hosting you here."
+      </p>
+      <ul class="sources">
+        <li><a href="https://politifact.com/factchecks/2022/mar/24/josh-hawley/josh-hawley-misleads-judge-jackson-and-child-porno/">PolitiFact: Hawley misleads on Judge Jackson and child pornography sentences</a></li>
+        <li><a href="https://abcnews.com/amp/Politics/fact-check-judge-ketanji-brown-jackson-child-porn/story?id=83565833">ABC News fact check: Jackson's sentences "pretty mainstream"</a></li>
+        <li><a href="https://news.yahoo.com/josh-hawley-washington-post-173352024.html">HuffPost via Yahoo: Hawley claims media silencing him during a media event</a></li>
+        <li><a href="https://www.npr.org/2021/01/08/955103447/gop-leaders-condemn-sen-josh-hawley-after-pro-trump-riot-at-u-s-capitol">NPR: GOP leaders condemn Hawley after the riot</a></li>
+      </ul>
+    </section>
+
+  </div>
+</main>
+
+<section class="act" id="act">
+  <div class="wrap">
+    <h2>Missouri deserves a senator who lives here and means what he says.</h2>
+    <p>
+      Hawley's term runs until January 2031. What's on the ballot on November 3, 2026 is the abortion repeal he's campaigning for. The deadline to register is <strong>Wednesday, October 7, 2026</strong>. Make sure you're registered, and bring a friend.
+    </p>
+    <div class="btns">
+      <a class="btn" href="https://www.sos.mo.gov/elections/goVoteMissouri/register">Register to vote in Missouri</a>
+      <a class="btn ghost" href="https://www.sos.mo.gov/elections/goVoteMissouri">Missouri voting info</a>
+      <a class="btn ghost" href="https://www.plannedparenthood.org/planned-parenthood-great-rivers">Support Planned Parenthood Great Rivers</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong>About this site.</strong> This page is independent political commentary by a private Missouri citizen. It is not affiliated with, authorized by, or paid for by Josh Hawley, his Senate office, any campaign or candidate committee, or the Republican Party.</p>
+    <p>Every factual claim links to its source. Opinions are labeled as opinion. Spot an error? Facts matter more than zingers, and corrections will be made.</p>
+    <p>Last updated September 2026.</p>
+  </div>
+</footer>
+
+</body>
+</html>
