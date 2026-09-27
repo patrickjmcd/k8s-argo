@@ -1,0 +1,466 @@
+{
+  "title": "joshhawleygop.com",
+  "uid": "joshhawleygop",
+  "tags": [
+    "web",
+    "loki"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "editable": true,
+  "description": "Visitor stats for joshhawleygop.com from nginx JSON access logs in Loki (30-day retention).",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Page views",
+      "id": 1,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range]))",
+          "queryType": "instant"
+        }
+      ],
+      "description": "Successful GETs of the page by browsers, bots excluded, over the selected time range.",
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Unique visitors",
+      "id": 2,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "count(sum by (ip) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "description": "Distinct client IPs (from Cloudflare's CF-Connecting-IP) over the selected time range.",
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Countries",
+      "id": 3,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "count(sum by (country) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | country!=\"\" [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "description": "Distinct countries (Cloudflare CF-IPCountry).",
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "All requests",
+      "id": 4,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json [$__range]))",
+          "queryType": "instant"
+        }
+      ],
+      "description": "Everything nginx served, including bots, scanners and 404s.",
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Page views over time",
+      "id": 5,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__auto]))",
+          "queryType": "range",
+          "legendFormat": "page views"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Unique visitors per day",
+      "id": 6,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "count(sum by (ip) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [1d])))",
+          "queryType": "range",
+          "legendFormat": "visitors"
+        }
+      ],
+      "interval": "1d",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Top countries",
+      "id": 7,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "topk(20, sum by (country) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | country!=\"\" [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "{{country}}"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Top referrers",
+      "id": 8,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 16,
+        "x": 8,
+        "y": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "topk(20, sum by (referer) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | referer!=\"\" | referer!~`https?://(www\\.)?joshhawleygop\\.com.*` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "{{referer}}"
+        }
+      ],
+      "description": "Where visitors clicked through from. Direct visits and many mobile apps send no referrer.",
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "logs",
+      "title": "Recent page views",
+      "id": 9,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "{namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | line_format `{{.ip}}  {{.country}}  {{.referer}}  {{.ua}}`",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  }
+}

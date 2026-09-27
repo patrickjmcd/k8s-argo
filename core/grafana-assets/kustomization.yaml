@@ -38,3 +38,6 @@ configMapGenerator:
   - name: grafana-dashboard-nut-ups         # from DRuggeri/nut_exporter's dashboard/dashboard.json
     files:
       - dashboards/nut-ups.json
+  - name: grafana-dashboard-joshhawleygop   # home-built, from nginx JSON access logs in Loki
+    files:
+      - dashboards/joshhawleygop.json
