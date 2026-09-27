@@ -14,7 +14,7 @@
   },
   "timezone": "browser",
   "editable": true,
-  "description": "Visitor stats for joshhawleygop.com from nginx JSON access logs in Loki (30-day retention).",
+  "description": "Visitor stats for joshhawleygop.com from nginx JSON access logs in Loki (5-year per-stream retention, see core/loki.yaml).",
   "panels": [
     {
       "type": "stat",

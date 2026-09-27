@@ -50,6 +50,18 @@ spec:
             # 30 days — a starting point, easy to raise/lower later by
             # resizing the PVC to match.
             retention_period: 720h
+            # Per-stream overrides. joshhawleygop.com's nginx access logs are
+            # the only store behind its Grafana visitor dashboard, so keep
+            # them 5 years. It's one low-volume stream; disk cost is tiny.
+            retention_stream:
+              - selector: '{namespace="default", container="joshhawleygop"}'
+                priority: 1
+                period: 43800h
+            # Default is 721h, which would cap every query at 30 days and
+            # make the 5-year stream above unqueryable past that. Nothing
+            # else is retained longer than 30 days, so this only widens
+            # queries against joshhawleygop.
+            max_query_length: 43830h
             reject_old_samples: true
             reject_old_samples_max_age: 168h
           compactor:
