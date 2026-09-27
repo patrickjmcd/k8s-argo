@@ -16,6 +16,8 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
   sources:
     - repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
