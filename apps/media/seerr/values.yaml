@@ -42,6 +42,9 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - seerr.pmcd.io
+    - request.pmcd.dev
   enabled: true
   hostnames:
     - requests.x.pmcd.io

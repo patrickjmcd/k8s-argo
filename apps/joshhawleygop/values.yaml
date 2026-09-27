@@ -35,6 +35,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - joshhawleygop.com
   enabled: false
 
 env:

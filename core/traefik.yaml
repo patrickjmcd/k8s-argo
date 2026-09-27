@@ -68,6 +68,17 @@ spec:
                 default: false
                 internal: true
               protocol: TCP
+              # Only cloudflared (pod network) reaches this entry point. Trust
+              # its X-Forwarded-* headers so apps see the original
+              # https://<host> - otherwise Traefik rewrites X-Forwarded-Proto
+              # to http and OAuth/redirect URLs break (argo, outline, pocketid).
+              forwardedHeaders:
+                trustedIPs:
+                  - 10.42.0.0/16
+              # Same as websecure: immich uploads can run long.
+              transport:
+                respondingTimeouts:
+                  readTimeout: 0
           service:
             annotations:
               # kube-vip's svc_enable watches all type=LoadBalancer Services

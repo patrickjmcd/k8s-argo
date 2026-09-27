@@ -35,6 +35,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - glance.pmcd.io
   enabled: true
   hostnames:
     - glance.x.pmcd.io

@@ -7,6 +7,7 @@ resources:
   - service.yaml
   - clusterrolebinding.yaml
   - 1password.secret.yaml
+  - httproute-public.yaml
 
 images:
   - name: pocketid

@@ -34,6 +34,8 @@ probes:
     enabled: false
 
 httproute:
+  publicHostnames:
+    - uptime-kuma.pmcd.io
   enabled: true
   hostnames:
     - status.x.pmcd.io

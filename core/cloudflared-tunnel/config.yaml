@@ -15,77 +15,21 @@ no-autoupdate: true
 # from the internet to cloudflared, run `cloudflared tunnel route dns <tunnel> <hostname>`.
 # E.g. `cloudflared tunnel route dns example-tunnel tunnel.example.com`.
 ingress:
-  # The first rule proxies traffic to the httpbin sample Service defined in app.yaml
-
-  # DEFAULT
-  - hostname: joshhawleygop.com
-    service: http://joshhawleygop:80
-  - hostname: glance.pmcd.io
-    service: http://glance:80
-  - hostname: uptime-kuma.pmcd.io
-    service: http://uptime-kuma:3001
-
-  # HOME AUTOMATION
+  # Hosts on the LAN outside the cluster - Traefik has no route for these.
   - hostname: homebridge.pmcd.io
     service: http://192.168.1.23:8581
-
-  # MEDIA
-  - hostname: bazarr.pmcd.io
-    service: http://bazarr.media:6767
-  - hostname: seerr.pmcd.io
-    service: http://seerr.media:80
-  - hostname: request.pmcd.dev
-    service: http://seerr.media:80
-  - hostname: youtubedl.pmcd.io
-    service: http://youtubedl.media:80
-  - hostname: tronbyt.pmcd.io
-    service: http://tronbyt-server:8888
-  - hostname: agregarr.pmcd.io
-    service: http://agregarr.media:80
-  - hostname: radarr.pmcd.io
-    service: http://radarr.media:80
-  - hostname: sonarr.pmcd.io
-    service: http://sonarr.media:80
-  - hostname: lidarr.pmcd.io
-    service: http://lidarr.media:80
-  - hostname: prowlarr.pmcd.io
-    service: http://prowlarr.media:80
-  - hostname: sabnzbd.pmcd.io
-    service: http://sabnzbd.media:80
-
-  - hostname: n8n.pmcd.dev
-    service: http://n8n.default:80
-
-  - hostname: pics.pmcd.dev
-    service: http://immich-server.immich:2283
-
-  # ARGO
-  - hostname: argo.pmcd.dev
-    service: http://argocd-server.argocd:80
-
-  - hostname: feed.reedme.dev
-    service: http://reedme.default:80
-
-  - hostname: mealie.pmcd.dev
-    service: http://mealie:9000
-
-  - hostname: auth.pmcd.dev
-    service: http://pocketid.pocketid:80
-
   - hostname: tv.pmcd.io
     service: http://192.168.1.210:8409
 
-  - hostname: outline.pmcd.dev
-    service: http://outline.default:80
-
-  # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
-  # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
-  # in the connection from cloudflared to your local service, not from the internet to cloudflared.
+  # Built-in hello-world server, for debugging tunnel connectivity: if
+  # tunnel.pmcd.io works and an app hostname doesn't, the problem is between
+  # cloudflared and the app, not the internet and cloudflared.
   - hostname: tunnel.pmcd.io
     service: hello_world
+
   # Everything else goes to Traefik's public entry point, which serves only
   # HTTPRoutes attached to public-gateway (core/traefik-assets/public-gateway.yaml).
   # To expose an app, add its hostname to the app's own route (homelab-app:
-  # httproute.publicHostnames) instead of adding a rule here. The explicit rules
-  # above are either LAN hosts outside the cluster or apps not migrated yet.
+  # httproute.publicHostnames) - no rule needed here, and external-dns creates
+  # the DNS record.
   - service: http://traefik-internal.default:8000

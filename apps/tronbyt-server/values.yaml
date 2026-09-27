@@ -32,6 +32,8 @@ probes:
     enabled: false
 
 httproute:
+  publicHostnames:
+    - tronbyt.pmcd.io
   enabled: true
   hostnames:
     - tronbyt.x.pmcd.io

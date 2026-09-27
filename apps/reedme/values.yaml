@@ -38,6 +38,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - feed.reedme.dev
   enabled: true
   hostnames:
     - reedme.x.pmcd.io

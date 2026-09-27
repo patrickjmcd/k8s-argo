@@ -37,6 +37,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - sonarr.pmcd.io
   enabled: true
   hostnames:
     - sonarr.x.pmcd.io

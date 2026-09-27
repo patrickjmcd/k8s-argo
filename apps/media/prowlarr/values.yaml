@@ -38,6 +38,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - prowlarr.pmcd.io
   enabled: true
   hostnames:
     - prowlarr.x.pmcd.io

@@ -29,6 +29,8 @@ probes:
     enabled: false
 
 httproute:
+  publicHostnames:
+    - mealie.pmcd.dev
   enabled: true
   hostnames:
     - mealie.x.pmcd.io

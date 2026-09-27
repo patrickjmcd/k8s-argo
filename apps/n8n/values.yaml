@@ -39,6 +39,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - n8n.pmcd.dev
   enabled: true
   hostnames:
     - n8n.x.pmcd.io

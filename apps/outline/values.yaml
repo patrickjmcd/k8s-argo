@@ -38,6 +38,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - outline.pmcd.dev
   enabled: true
   hostnames:
     - outline.x.pmcd.io

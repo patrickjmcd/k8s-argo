@@ -37,6 +37,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - agregarr.pmcd.io
   enabled: true
   hostnames:
     - agregarr.x.pmcd.io

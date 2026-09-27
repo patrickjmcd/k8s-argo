@@ -37,6 +37,8 @@ probes:
     periodSeconds: 5
 
 httproute:
+  publicHostnames:
+    - radarr.pmcd.io
   enabled: true
   hostnames:
     - radarr.x.pmcd.io
