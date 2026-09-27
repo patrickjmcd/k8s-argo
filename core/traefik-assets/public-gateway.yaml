@@ -1,0 +1,26 @@
+# Public ingress via Cloudflare Tunnel. cloudflared sends every request it
+# doesn't route explicitly to traefik-internal:8000 (the `public` entry point),
+# and only HTTPRoutes attached to this Gateway are served there - so an app is
+# public only if it opts in. Being a separate Gateway (not a listener on
+# traefik-gateway) matters: routes whose parentRef omits sectionName attach to
+# every listener of their Gateway, which would make every existing route public.
+#
+# external-dns reads HTTPRoutes attached here and creates a proxied CNAME to the
+# tunnel for each hostname (see core/external-dns.yaml).
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public-gateway
+  namespace: default
+  annotations:
+    external-dns.alpha.kubernetes.io/target: 960f5948-cdc8-4acd-8cf7-42a89aaa3234.cfargotunnel.com
+    external-dns.kubernetes.io/target: 960f5948-cdc8-4acd-8cf7-42a89aaa3234.cfargotunnel.com
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: public
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All

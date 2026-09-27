@@ -17,6 +17,8 @@ httproute:
   enabled: true
   hostnames:
     - iss.x.pmcd.io
+  publicHostnames:
+    - iss-in.space
 
 imagePullSecrets:
   - name: ghcr-registry-cred

@@ -55,6 +55,15 @@ httproute:
   # ExtensionRef filters, e.g. [{name: some-traefik-middleware}] — for
   # gating an app behind Traefik auth/allowlist middleware.
   middlewares: []
+  # Public hostnames served through Cloudflare Tunnel. Creates a second
+  # HTTPRoute (<release>-public) on publicGateway; external-dns creates the
+  # DNS records. Leave empty to keep the app LAN-only.
+  publicHostnames: []
+  publicGateway:
+    name: public-gateway
+    namespace: default
+  # Middlewares for the public route only, e.g. an auth middleware.
+  publicMiddlewares: []
 
 persistence:
   enabled: false

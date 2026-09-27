@@ -1,0 +1,70 @@
+# Creates Cloudflare DNS records for HTTPRoutes attached to public-gateway
+# (core/traefik-assets/public-gateway.yaml): a proxied CNAME to the tunnel for
+# each hostname, so exposing an app publicly needs no manual DNS step.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: external-dns
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - path: core/external-dns
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+    - chart: external-dns
+      repoURL: https://kubernetes-sigs.github.io/external-dns/
+      targetRevision: 1.22.0
+      helm:
+        releaseName: external-dns
+        valuesObject:
+          provider:
+            name: cloudflare
+          env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: external-dns-cloudflare-1pw
+                  key: CF_API_TOKEN
+          sources:
+            - gateway-httproute
+          # Only routes on the public Gateway get DNS; *.x.pmcd.io routes on
+          # traefik-gateway are ignored.
+          extraArgs:
+            - --gateway-name=public-gateway
+            - --gateway-namespace=default
+            - --cloudflare-proxied
+          domainFilters:
+            - pmcd.dev
+            - pmcd.io
+            - iss-in.space
+            - joshhawleygop.com
+            - reedme.dev
+          # upsert-only never deletes records. Records that already exist
+          # (created by hand for the tunnel) are left alone; external-dns only
+          # manages records it created, tracked via TXT ownership records.
+          policy: upsert-only
+          registry: txt
+          txtOwnerId: k3s-home
+          interval: 5m
+          triggerLoopOnEvent: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 128Mi

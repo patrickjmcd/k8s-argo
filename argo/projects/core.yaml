@@ -27,6 +27,7 @@ spec:
     - https://cloudnative-pg.github.io/charts
     - https://helm.cilium.io/
     - https://aquasecurity.github.io/helm-charts/
+    - https://kubernetes-sigs.github.io/external-dns/
   destinations:
     - namespace: "*"
       name: in-cluster

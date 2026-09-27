@@ -40,3 +40,41 @@ spec:
           namespace: {{ .Release.Namespace }}
           port: {{ .Values.service.port }}
 {{- end }}
+{{- with .Values.httproute.publicHostnames }}
+---
+# Public via Cloudflare Tunnel: attached to public-gateway, which only serves
+# traffic arriving from cloudflared. external-dns creates the DNS records.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "homelab-app.fullname" $ }}-public
+  namespace: {{ $.Release.Namespace }}
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ $.Values.httproute.publicGateway.name }}
+      namespace: {{ $.Values.httproute.publicGateway.namespace }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      {{- with $.Values.httproute.publicMiddlewares }}
+      filters:
+        {{- range . }}
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: {{ .name }}
+        {{- end }}
+      {{- end }}
+      backendRefs:
+        - name: {{ include "homelab-app.fullname" $ }}
+          kind: Service
+          namespace: {{ $.Release.Namespace }}
+          port: {{ $.Values.service.port }}
+{{- end }}

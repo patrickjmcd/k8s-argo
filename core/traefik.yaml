@@ -58,6 +58,16 @@ spec:
               transport:
                 respondingTimeouts:
                   readTimeout: 0
+            # Entry point for Cloudflare Tunnel traffic only. Not on the
+            # LoadBalancer; exposed via the ClusterIP traefik-internal Service
+            # that cloudflared forwards to. Routes opt in by attaching to
+            # public-gateway (core/traefik-assets/public-gateway.yaml).
+            public:
+              port: 8000
+              expose:
+                default: false
+                internal: true
+              protocol: TCP
           service:
             annotations:
               # kube-vip's svc_enable watches all type=LoadBalancer Services
@@ -66,6 +76,9 @@ spec:
               kube-vip.io/ignore: "true"
             spec:
               loadBalancerIP: 192.168.8.200
+            additionalServices:
+              internal:
+                type: ClusterIP
           additionalArguments:
             - "--api.insecure=true"
           resources:
