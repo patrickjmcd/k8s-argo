@@ -1,6 +1,6 @@
 # flannel → Cilium migration
 
-**Phase 1 (CNI + NetworkPolicy + Hubble): ✅ complete since 2026-09-11** (see
+**Phase 1 (CNI + NetworkPolicy + Hubble): ✅ complete since 2026-09-11** (host cleanup finished 2026-09-27) (see
 `core/cilium.yaml`'s header comment for the cutover history). Phase 2
 (kube-proxy replacement) is planned below, not yet started.
 
@@ -191,13 +191,12 @@ Hubble.
    same result for everything but the conflist (cilium-agent renames that
    itself on start, since `cni.exclusive: true`).
 
-   | Node | Status |
-   |---|---|
-   | `kube-leader-2`, `pi4-kube0` | clean (already) |
-   | `pi5-kube0`, `pi5-kube1`, `pi5-kube2` | cleaned 2026-09-27 |
-   | `pi4-kube1`, `media-server`, `macpro-kube0`, `kube-n3160`, `kube-macmini` | **pending** |
+   ✅ **Done 2026-09-27 on all 10 nodes.** `kube-leader-2` and `pi4-kube0` were
+   already clean apart from the binary; the other 8 were cleaned in place. Final
+   sweep: no flannel interfaces, iptables rules, `/run/flannel` or binary on any
+   node, and `05-cilium.conflist` is the only active CNI config everywhere.
 6. Delete the empty `kube-flannel` namespace (left behind when the DaemonSet
-   was pruned).
+   was pruned). ✅ 2026-09-27
 
 ---
 
