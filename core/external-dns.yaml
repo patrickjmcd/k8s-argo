@@ -60,7 +60,6 @@ spec:
           policy: upsert-only
           registry: txt
           txtOwnerId: k3s-home
-          logLevel: debug  # temporary: diagnosing www.joshhawleygop.com
           interval: 5m
           triggerLoopOnEvent: true
           resources:
