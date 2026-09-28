@@ -425,6 +425,57 @@
       }
     },
     {
+      "type": "bargauge",
+      "title": "Visits via other domains",
+      "id": 10,
+      "description": "Hits on senatorjoshhawley.com / joshhawley4senate.com (and www), which 301 to joshhawleygop.com. Those visitors are also counted once in Page views when they land.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "sum by (host) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"301\" | host!~`(www\\.)?joshhawleygop\\.com` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{host}}"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "type": "logs",
       "title": "Recent page views",
       "id": 9,
@@ -436,7 +487,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 28
       },
       "targets": [
         {

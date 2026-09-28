@@ -53,6 +53,8 @@ spec:
             - pmcd.io
             - iss-in.space
             - joshhawleygop.com
+            - senatorjoshhawley.com
+            - joshhawley4senate.com
             - reedme.dev
           # upsert-only never deletes records. Records that already exist
           # (created by hand for the tunnel) are left alone; external-dns only

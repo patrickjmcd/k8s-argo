@@ -41,6 +41,11 @@ httproute:
   publicHostnames:
     - joshhawleygop.com
     - www.joshhawleygop.com
+    # Redirect to joshhawleygop.com (nginx/default.conf)
+    - senatorjoshhawley.com
+    - www.senatorjoshhawley.com
+    - joshhawley4senate.com
+    - www.joshhawley4senate.com
   enabled: false
 
 extraVolumes:
