@@ -37,11 +37,11 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range]))",
+          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range]))",
           "queryType": "instant"
         }
       ],
-      "description": "Successful GETs of the page by browsers, bots excluded, over the selected time range.",
+      "description": "Successful page loads (HTML pages only, bots excluded) across the whole site, over the selected time range.",
       "options": {
         "reduceOptions": {
           "calcs": [
@@ -88,7 +88,7 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "count(sum by (ip) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range])))",
+          "expr": "count(sum by (ip) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__range])))",
           "queryType": "instant"
         }
       ],
@@ -139,7 +139,7 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "count(sum by (country) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | country!=\"\" [$__range])))",
+          "expr": "count(sum by (country) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | country!=\"\" [$__range])))",
           "queryType": "instant"
         }
       ],
@@ -241,7 +241,7 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__auto]))",
+          "expr": "sum(count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [$__auto]))",
           "queryType": "range",
           "legendFormat": "page views"
         }
@@ -292,7 +292,7 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "count(sum by (ip) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [1d])))",
+          "expr": "count(sum by (ip) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` [1d])))",
           "queryType": "range",
           "legendFormat": "visitors"
         }
@@ -333,7 +333,7 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 8,
+        "w": 6,
         "x": 0,
         "y": 12
       },
@@ -344,7 +344,7 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "topk(20, sum by (country) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | country!=\"\" [$__range])))",
+          "expr": "topk(20, sum by (country) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | country!=\"\" [$__range])))",
           "queryType": "instant",
           "legendFormat": "{{country}}"
         }
@@ -375,16 +375,17 @@
     },
     {
       "type": "bargauge",
-      "title": "Top referrers",
-      "id": 8,
+      "title": "Top pages",
+      "id": 11,
+      "description": "Page views by URL path (query strings stripped).",
       "datasource": {
         "type": "loki",
         "uid": "loki"
       },
       "gridPos": {
         "h": 10,
-        "w": 16,
-        "x": 8,
+        "w": 9,
+        "x": 6,
         "y": 12
       },
       "targets": [
@@ -394,7 +395,57 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "topk(20, sum by (referer) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | referer!=\"\" | referer!~`https?://(www\\.)?joshhawleygop\\.com.*` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "{{path}}",
+          "expr": "topk(20, sum by (path) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | label_format path=`{{ regexReplaceAll \"\\\\?.*\" .uri \"\" }}` [$__range])))"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Top referrers",
+      "id": 8,
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 9,
+        "x": 15,
+        "y": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "topk(20, sum by (referer) (count_over_time({namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | referer!=\"\" | referer!~`https?://(www\\.)?joshhawleygop\\.com.*` [$__range])))",
           "queryType": "instant",
           "legendFormat": "{{referer}}"
         }
@@ -496,7 +547,7 @@
             "uid": "loki"
           },
           "refId": "A",
-          "expr": "{namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri=~`/(index\\.html)?(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | line_format `{{.ip}}  {{.country}}  {{.referer}}  {{.ua}}`",
+          "expr": "{namespace=\"default\", container=\"joshhawleygop\"} |= `\"log\":\"access\"` | json | method=\"GET\" | status=\"200\" | uri!~`.*\\.(png|svg|ico|xml|txt|css|js|webmanifest)(\\?.*)?` | ua!~`(?i).*(bot|crawl|spider|slurp|preview|curl|wget|python|go-http|headless|scan|monitor).*` | line_format `{{.ip}}  {{.country}}  {{.referer}}  {{.ua}}`",
           "queryType": "range"
         }
       ],

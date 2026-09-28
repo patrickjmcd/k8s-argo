@@ -71,4 +71,4 @@ extraVolumeMounts:
 
 podAnnotations:
   # Bump when nginx/default.conf changes (see extraVolumeMounts above).
-  joshhawleygop/nginx-conf-rev: "2"
+  joshhawleygop/nginx-conf-rev: "3"

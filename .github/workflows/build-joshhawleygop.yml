@@ -1,0 +1,50 @@
+name: Build joshhawleygop.com
+
+# Adding a news post is one markdown file in apps/joshhawleygop/content/news/.
+# This rebuilds site/ (HTML, sitemap, RSS) and the ConfigMap file list, then
+# commits the result so ArgoCD deploys it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/joshhawleygop/content/**"
+      - "apps/joshhawleygop/src/**"
+      - "apps/joshhawleygop/build.py"
+      - "apps/joshhawleygop/requirements.txt"
+      - ".github/workflows/build-joshhawleygop.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-joshhawleygop
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: pip install -r apps/joshhawleygop/requirements.txt
+
+      - name: Build site
+        run: python3 apps/joshhawleygop/build.py
+
+      - name: Commit and push if changed
+        run: |
+          if [ -z "$(git status --porcelain -- apps/joshhawleygop/site apps/joshhawleygop/kustomization.yaml)" ]; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A apps/joshhawleygop/site apps/joshhawleygop/kustomization.yaml
+          git commit -m "chore(joshhawleygop): rebuild site [skip ci]"
+          git pull --rebase origin main
+          git push
