@@ -15,4 +15,4 @@ spec:
     # it kept "updating" us to it (#830, #837, #840) and replicas crashlooped
     # on the PG18 data directory. The digest still decides what is pulled.
     - major: 18
-      image: ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie@sha256:9287ce030c6f3ce822e383b019ae4aaf1e8370bff3b39f9c51dc10d69dc97219
+      image: ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie@sha256:42708a75345b7a48fdd9257b071830783a97fd228529196b6313187a7198e185
