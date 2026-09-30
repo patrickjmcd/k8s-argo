@@ -4,6 +4,8 @@ description: Josh Hawley filed a bill to undo the Medicaid cuts he voted for. Fo
 h1: Hawley's Medicaid "fix" has sat untouched for 14 months
 crumb: Stalled Medicaid bill
 lede: Two weeks after voting for the Medicaid cuts, Josh Hawley filed a bill to undo some of them. Here's what's happened to it since: nothing.
+blunder: true
+blunder_summary: His bill to undo the Medicaid cuts he voted for has sat in committee for 14 months with zero cosponsors.
 modified: 2026-09-28
 related: medicaid-vote, missouri-residency
 ---

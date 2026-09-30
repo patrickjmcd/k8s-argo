@@ -178,6 +178,7 @@ blockquote cite {
 .card h3 a:hover { color: var(--accent); text-decoration: underline; }
 .card p { margin: 0; font-size: 1rem; }
 .card .date { font-family: var(--sans); font-size: .8rem; color: var(--muted); margin-bottom: .2rem; }
+.card.blunder { border-left: 5px solid var(--accent); }
 @media (min-width: 640px) { .cards.two { grid-template-columns: 1fr 1fr; } }
 
 .numbers main h3 {

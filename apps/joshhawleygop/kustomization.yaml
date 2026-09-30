@@ -11,6 +11,7 @@ configMapGenerator:
       - site/404.html
       - site/abortion-amendment-3.html
       - site/about.html
+      - site/blunders.html
       - site/by-the-numbers.html
       - site/faq.html
       - site/favicon.svg
@@ -26,6 +27,7 @@ configMapGenerator:
       - site/pact-act-veterans.html
       - site/post--amendment-3-2026-ballot-hawley.html
       - site/post--hawley-declaration-for-life-mifepristone-ban.html
+      - site/post--hawley-jack-smith-melania-fox-news-error.html
       - site/post--hawley-medicaid-repeal-bill-stalled.html
       - site/robots.txt
       - site/sitemap.xml

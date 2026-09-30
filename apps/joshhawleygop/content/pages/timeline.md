@@ -7,7 +7,7 @@ crumb: Timeline
 anchor: The Josh Hawley timeline: every key vote and reversal
 lede: Every key vote, promise and reversal in order, each one linked to its source. Free to cite and link.
 published: 2026-09-28
-modified: 2026-09-28
+modified: 2026-09-30
 related: by-the-numbers, ladder-climber, medicaid-vote
 ---
 ## 2016–2018: Attorney general, then Senate candidate
@@ -107,6 +107,10 @@ Commits to campaigning for the 2026 Amendment 3 abortion ban. ([KCUR](https://ww
 ### September 2026: The "Declaration for Life"
 
 Launches a national push to ban mifepristone; the same week, rules out a 2028 presidential run. ([Hawley's Senate office](https://www.hawley.senate.gov/hawley-unveils-declaration-for-life-with-christian-leaders/), [Political Wire](https://politicalwire.com/2026/09/17/josh-hawley-rules-out-2028-run-for-president/))
+
+### September 29, 2026: The Jack Smith mix-up
+
+After Jack Smith's Senate testimony, Hawley tells Fox News that Smith went through Melania Trump's "personal drawers," in a search that happened three months before Smith was appointed. ([HuffPost](https://www.huffpost.com/entry/josh-hawleys-jack-smith-error-on-fox-news_n_6abcd224e4b0ecc03a1da87e)) Details: [the Fox News error, explained](/news/hawley-jack-smith-melania-fox-news-error).
 
 ### November 3, 2026: Missouri votes on Amendment 3 again
 

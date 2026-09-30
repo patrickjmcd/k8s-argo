@@ -45,6 +45,7 @@ ORG = {"@type": "Organization", "name": SITE_NAME, "url": SITE_URL + "/"}
 
 NAV = [
     ("/#record", "The record"),
+    ("/blunders", "Blunders"),
     ("/timeline", "Timeline"),
     ("/by-the-numbers", "By the numbers"),
     ("/faq", "FAQ"),
@@ -267,13 +268,19 @@ def main():
         meta["_md"] = text
         posts.append(meta)
     posts.sort(key=lambda m: (m["published"], m["slug"]), reverse=True)
+    # "blunder: true" in a post's front matter also lists it on the homepage's
+    # "Latest blunders" strip and on /blunders, using its "blunder_summary".
+    blunders = [m for m in posts if m.get("blunder", "").lower() in ("true", "yes")]
+    for m in blunders:
+        if not m.get("blunder_summary"):
+            warn(f"news/{m['slug']}: blunder posts need a blunder_summary")
 
     topics = sorted((m for m in pages.values() if m.get("type") == "topic"), key=lambda m: int(m["order"]))
     FOOTER_LINKS = "".join(
         f'<a href="{m["path"]}">{e(m["anchor"])}</a>' for m in topics
     ) + "".join(
         f'<a href="{href}">{label}</a>'
-        for href, label in [("/timeline", "Hawley timeline"), ("/by-the-numbers", "Hawley by the numbers"), ("/faq", "Josh Hawley FAQ"), ("/news", "Latest news"), ("/about", "About &amp; corrections")]
+        for href, label in [("/timeline", "Hawley timeline"), ("/by-the-numbers", "Hawley by the numbers"), ("/faq", "Josh Hawley FAQ"), ("/blunders", "Hawley's latest blunders"), ("/news", "Latest news"), ("/about", "About &amp; corrections")]
     )
 
     def link_for(slug):
@@ -287,12 +294,15 @@ def main():
         items = "".join(f'<li><a href="{link_for(s)["path"]}">{e(link_for(s).get("anchor") or link_for(s)["h1_text"])}</a></li>' for s in slugs)
         return f'<aside class="related"><h2>Keep reading</h2><ul>{items}<li><a href="/">Back to the full Josh Hawley record</a></li></ul></aside>'
 
-    def post_cards(items):
+    def post_cards(items, summary="description", card_class="card"):
         return '<ul class="cards">' + "".join(
-            f'<li class="card"><p class="date"><time datetime="{m["published"]}">{fmt_date(m["published"])}</time></p>'
-            f'<h3><a href="{m["path"]}">{e(m["h1_text"])}</a></h3><p>{e(m["description"])}</p></li>'
+            f'<li class="{card_class}"><p class="date"><time datetime="{m["published"]}">{fmt_date(m["published"])}</time></p>'
+            f'<h3><a href="{m["path"]}">{e(m["h1_text"])}</a></h3><p>{e(m.get(summary) or m["description"])}</p></li>'
             for m in items
         ) + "</ul>"
+
+    def blunder_cards(items):
+        return post_cards(items, summary="blunder_summary", card_class="card blunder")
 
     OUT.mkdir(exist_ok=True)
     for old in OUT.iterdir():
@@ -326,6 +336,7 @@ def main():
             ) + "</ul>"
             body_html = body_html.replace("<p>{{topics}}</p>", cards)
             body_html = body_html.replace("<p>{{latest}}</p>", post_cards(posts[:3]))
+            body_html = body_html.replace("<p>{{blunders}}</p>", blunder_cards(blunders[:3]))
             schemas += [
                 {"@context": "https://schema.org", "@type": "WebSite", "name": SITE_NAME, "url": SITE_URL + "/",
                  "description": meta["description"], "about": HAWLEY, "publisher": ORG, "inLanguage": "en-US"},
@@ -350,12 +361,14 @@ def main():
                 ],
             })
             body_html += related_block(meta["related"])
-        elif kind == "news":
+        elif kind in ("news", "blunders"):
+            listed = posts if kind == "news" else blunders
             body_html = body_html.replace("<p>{{posts}}</p>", post_cards(posts))
+            body_html = body_html.replace("<p>{{blunders}}</p>", blunder_cards(blunders))
             schemas.append({
                 "@context": "https://schema.org", "@type": "CollectionPage", "name": meta["h1_text"],
                 "url": SITE_URL + meta["path"], "about": HAWLEY, "publisher": ORG,
-                "hasPart": [{"@type": "Article", "headline": m["h1_text"], "url": SITE_URL + m["path"], "datePublished": m["published"]} for m in posts],
+                "hasPart": [{"@type": "Article", "headline": m["h1_text"], "url": SITE_URL + m["path"], "datePublished": m["published"]} for m in listed],
             })
         else:
             if meta.get("published"):
