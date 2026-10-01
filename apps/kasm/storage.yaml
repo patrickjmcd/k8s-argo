@@ -1,0 +1,28 @@
+# /opt holds the Kasm install plus the inner Docker daemon's image store
+# (/opt/docker) -- workspace images are 2-5Gi each, so size for a handful.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-kasm-data
+  namespace: kasm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 50Gi
+---
+# Persistent user profiles (only used by workspaces configured for them).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-kasm-profiles
+  namespace: kasm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 10Gi

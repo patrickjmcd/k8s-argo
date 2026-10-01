@@ -1,0 +1,27 @@
+# Served on its own LAN IP rather than an HTTPRoute: both ports are HTTPS with
+# Kasm's self-signed cert, and the session streams are long-lived websockets
+# that Kasm's own proxy already handles.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kasm
+  namespace: kasm
+  annotations:
+    # See apps/nats/loadbalancer-service.yaml for why kube-vip is excluded
+    # from MetalLB-managed LoadBalancer IPs on this cluster.
+    kube-vip.io/ignore: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.8.207
+  selector:
+    app.kubernetes.io/name: kasm
+    app.kubernetes.io/instance: kasm
+  ports:
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP
+    - name: wizard
+      port: 3000
+      targetPort: wizard
+      protocol: TCP

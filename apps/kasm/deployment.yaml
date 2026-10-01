@@ -1,0 +1,85 @@
+# Kasm Workspaces via the LinuxServer all-in-one image (testing only). The
+# container runs its own Docker daemon and launches every Kasm service and
+# workspace session as a nested container, hence privileged. Kasm's official
+# Helm chart is the multi-pod production route if this graduates.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kasm
+  namespace: kasm
+  labels:
+    app.kubernetes.io/name: kasm
+    app.kubernetes.io/instance: kasm
+spec:
+  replicas: 1
+  # RWO Longhorn volumes: old pod must detach before the new one attaches.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kasm
+      app.kubernetes.io/instance: kasm
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kasm
+        app.kubernetes.io/instance: kasm
+    spec:
+      # Workspace images are amd64-first and sessions are RAM-hungry; keep
+      # this off the Pis.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - amd64
+      containers:
+        - name: kasm
+          image: lscr.io/linuxserver/kasm:1.19.0-ls151
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: TZ
+              value: America/Chicago
+            # Port Kasm's proxy listens on and advertises to sessions; must
+            # match the externally reachable port.
+            - name: KASM_PORT
+              value: "443"
+          ports:
+            - name: wizard
+              containerPort: 3000
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /opt
+            - name: profiles
+              mountPath: /profiles
+          # No CPU limit: session start and image pulls are very bursty.
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              memory: 8Gi
+          # Readiness only -- a liveness restart would kill the inner Docker
+          # daemon and every running session with it. The wizard on 3000 is
+          # up from boot; 443 only after the install completes.
+          readinessProbe:
+            tcpSocket:
+              port: wizard
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-kasm-data
+        - name: profiles
+          persistentVolumeClaim:
+            claimName: longhorn-kasm-profiles
