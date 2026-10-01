@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - storage.yaml
+  - certificate.yaml
+  - configmap-cert-sync.yaml
   - deployment.yaml
   - loadbalancer-service.yaml

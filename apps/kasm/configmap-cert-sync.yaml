@@ -1,0 +1,27 @@
+# LinuxServer custom service (s6, from /custom-services.d): copies the
+# cert-manager certificate over Kasm's self-signed proxy cert and reloads
+# nginx whenever it changes -- covers the first install (the certs dir only
+# exists once the setup wizard has run) and every renewal.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kasm-cert-sync
+  namespace: kasm
+data:
+  kasm-cert-sync: |
+    #!/usr/bin/with-contenv bash
+    SRC=/certs
+    DST=/opt/kasm/current/certs
+    while true; do
+      if [ -d "$DST" ] && [ -s "$SRC/tls.crt" ] && [ -s "$SRC/tls.key" ] \
+        && ! { cmp -s "$SRC/tls.crt" "$DST/kasm_nginx.crt" && cmp -s "$SRC/tls.key" "$DST/kasm_nginx.key"; }; then
+        # Write in place (not cp/mv) so the file's inode, owner and mode stay
+        # the same -- the proxy container bind-mounts these files.
+        cat "$SRC/tls.crt" > "$DST/kasm_nginx.crt"
+        cat "$SRC/tls.key" > "$DST/kasm_nginx.key"
+        echo "kasm-cert-sync: installed kasm.pmcd.dev certificate"
+        docker exec kasm_proxy nginx -s reload \
+          || echo "kasm-cert-sync: kasm_proxy not running; it will load the cert on start"
+      fi
+      sleep 300
+    done

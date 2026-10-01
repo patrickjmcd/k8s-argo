@@ -1,6 +1,7 @@
-# Served on its own LAN IP rather than an HTTPRoute: both ports are HTTPS with
-# Kasm's self-signed cert, and the session streams are long-lived websockets
-# that Kasm's own proxy already handles.
+# Served on its own LAN IP rather than an HTTPRoute: Kasm's proxy terminates
+# TLS itself (kasm.pmcd.dev cert from cert-manager, see certificate.yaml) and
+# already handles the long-lived session websockets. LAN DNS for
+# kasm.pmcd.dev points here (apps/pihole/configmap-local-dns.yaml).
 apiVersion: v1
 kind: Service
 metadata:

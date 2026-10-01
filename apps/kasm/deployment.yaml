@@ -61,6 +61,12 @@ spec:
               mountPath: /opt
             - name: profiles
               mountPath: /profiles
+            - name: tls
+              mountPath: /certs
+              readOnly: true
+            - name: cert-sync
+              mountPath: /custom-services.d
+              readOnly: true
           # No CPU limit: session start and image pulls are very bursty.
           resources:
             requests:
@@ -83,3 +89,10 @@ spec:
         - name: profiles
           persistentVolumeClaim:
             claimName: longhorn-kasm-profiles
+        - name: tls
+          secret:
+            secretName: kasm-tls
+        - name: cert-sync
+          configMap:
+            name: kasm-cert-sync
+            defaultMode: 0755

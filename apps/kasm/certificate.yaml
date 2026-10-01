@@ -1,0 +1,15 @@
+# Kasm serves TLS itself (its nginx proxy on the LoadBalancer IP), so the
+# cert lives in this namespace rather than on the Traefik Gateway.
+# kasm-cert-sync (configmap-cert-sync.yaml) installs it into the proxy.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kasm-tls
+  namespace: kasm
+spec:
+  secretName: kasm-tls
+  dnsNames:
+    - kasm.pmcd.dev
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
