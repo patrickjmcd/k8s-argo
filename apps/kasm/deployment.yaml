@@ -12,7 +12,8 @@ metadata:
     app.kubernetes.io/instance: kasm
 spec:
   replicas: 1
-  # RWO Longhorn volumes: old pod must detach before the new one attaches.
+  # Never run two Kasm installs (and inner Docker daemons) on the same
+  # hostPath at once.
   strategy:
     type: Recreate
   selector:
@@ -25,17 +26,16 @@ spec:
         app.kubernetes.io/name: kasm
         app.kubernetes.io/instance: kasm
     spec:
-      # Workspace images are amd64-first and sessions are RAM-hungry; keep
-      # this off the Pis.
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/arch
-                    operator: In
-                    values:
-                      - amd64
+      # Needs an amd64 node with real headroom: Kasm plus a few sessions runs
+      # 4-8Gi, the Pis and control-plane nodes don't have it. media-server is
+      # the dedicated heavy-workload node.
+      nodeSelector:
+        kubernetes.io/hostname: media-server
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: heavy
+          effect: NoSchedule
       containers:
         - name: kasm
           image: lscr.io/linuxserver/kasm:1.19.0-ls151
@@ -83,12 +83,16 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 10
       volumes:
+        # media-server is not a Longhorn node; use the 4.6T USB drive, same as
+        # apps/homebridge. ext4, so the inner Docker can use overlay2 on /opt.
         - name: data
-          persistentVolumeClaim:
-            claimName: longhorn-kasm-data
+          hostPath:
+            path: /mnt/usb/kasm-data
+            type: DirectoryOrCreate
         - name: profiles
-          persistentVolumeClaim:
-            claimName: longhorn-kasm-profiles
+          hostPath:
+            path: /mnt/usb/kasm-profiles
+            type: DirectoryOrCreate
         - name: tls
           secret:
             secretName: kasm-tls
