@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-minecraft-data
+  namespace: minecraft
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # best-effort keeps a replica on media-server alongside the pod
+  storageClassName: longhorn-best-effort
+  resources:
+    requests:
+      storage: 20Gi

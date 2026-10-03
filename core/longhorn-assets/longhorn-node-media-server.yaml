@@ -1,0 +1,29 @@
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: media-server
+  namespace: longhorn-system
+  finalizers:
+    - longhorn.io
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  # Beelink running bare-metal Plex/Jellyfin: the root disk is theirs, so
+  # replicas go only on the USB drive. That drive occasionally drops off the
+  # bus; with 3 replicas that just faults the local copy, which rebuilds once
+  # it re-mounts. storageReserved leaves room for the Prometheus TSDB and
+  # cluster-backups that share the drive.
+  allowScheduling: true
+  disks:
+    usb-disk:
+      allowScheduling: true
+      diskDriver: ""
+      diskType: filesystem
+      evictionRequested: false
+      path: /mnt/usb/longhorn
+      storageReserved: 214748364800
+      tags: []
+  evictionRequested: false
+  instanceManagerCPURequest: 0
+  name: media-server
+  tags: []

@@ -14,6 +14,9 @@ resources:
   - longhorn-node-pi5-kube0.yaml
   - longhorn-node-pi5-kube1.yaml
   - longhorn-node-pi5-kube2.yaml
+  - longhorn-node-media-server.yaml
+  - longhorn-node-macpro-kube0.yaml
+  - storageclass-best-effort.yaml
   - recurring-jobs.yaml
   - settings.yaml
 

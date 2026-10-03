@@ -1,0 +1,103 @@
+# Paper (Java) with Geyser + Floodgate so Bedrock clients (iPad, iPhone,
+# Switch) share the world with Java clients (MacBook). Floodgate lets Bedrock
+# players sign in with their Microsoft account -- no Java license needed.
+#
+# Keep VERSION within Geyser's supported Java range:
+# https://geysermc.org/wiki/geyser/supported-versions/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft
+  namespace: minecraft
+  labels:
+    app.kubernetes.io/name: minecraft
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minecraft
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minecraft
+    spec:
+      # Fastest single-core CPU and the most free RAM in the cluster.
+      nodeSelector:
+        kubernetes.io/hostname: media-server
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: heavy
+          effect: NoSchedule
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: minecraft
+          image: itzg/minecraft-server:2026.9.2-java25
+          env:
+            - name: EULA
+              value: "TRUE"
+            - name: TYPE
+              value: PAPER
+            - name: VERSION
+              value: "26.2"
+            - name: MEMORY
+              value: 3G
+            - name: USE_AIKAR_FLAGS
+              value: "true"
+            - name: TZ
+              value: America/Chicago
+            - name: PLUGINS
+              value: |
+                https://download.geysermc.org/v2/projects/geyser/versions/2.11.3/builds/1247/downloads/spigot
+                https://download.geysermc.org/v2/projects/floodgate/versions/2.2.5/builds/141/downloads/spigot
+            - name: MOTD
+              value: McDonagh Minecraft
+            - name: DIFFICULTY
+              value: normal
+            - name: MODE
+              value: survival
+            - name: VIEW_DISTANCE
+              value: "10"
+            - name: SIMULATION_DISTANCE
+              value: "8"
+            - name: MAX_PLAYERS
+              value: "10"
+          ports:
+            - name: java
+              containerPort: 25565
+              protocol: TCP
+            - name: bedrock
+              containerPort: 19132
+              protocol: UDP
+          startupProbe:
+            exec:
+              command: ["mc-health"]
+            periodSeconds: 10
+            # first boot downloads Paper + plugins and generates the world
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: ["mc-health"]
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command: ["mc-health"]
+            periodSeconds: 30
+            failureThreshold: 5
+          resources:
+            # No CPU limit: the tick loop is bursty and a quota stalls it.
+            requests:
+              cpu: 1000m
+              memory: 4Gi
+            limits:
+              # 3G heap + metaspace/native/off-heap
+              memory: 5Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-minecraft-data

@@ -11,3 +11,9 @@ data:
     address=/pics.pmcd.dev/192.168.8.200
     host-record=pics.pmcd.dev,192.168.8.200
     address=/jellyfin.pmcd.dev/192.168.8.200
+    # Minecraft (apps/minecraft) has its own MetalLB IP for raw TCP/UDP.
+    address=/minecraft.pmcd.dev/192.168.8.202
+    # Switch has no "Add Server" button: send the Lifeboat featured server to
+    # BedrockConnect, whose server list hands off to minecraft.pmcd.dev.
+    # (Lifeboat itself is unreachable on this network as a result.)
+    address=/mco.lbsg.net/192.168.8.203

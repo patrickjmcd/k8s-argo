@@ -1,0 +1,74 @@
+# BedrockConnect: lets the Switch (which has no "Add Server" button) reach
+# the server. Local DNS points one featured-server hostname, mco.lbsg.net
+# (Lifeboat), at this LoadBalancer; picking Lifeboat on the Switch opens
+# BedrockConnect's server list, which transfers the player to Geyser on
+# 192.168.8.202. Featured servers have to answer on 19132, which Geyser
+# already uses on .202 -- hence a separate IP.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bedrockconnect
+  namespace: minecraft
+  labels:
+    app.kubernetes.io/name: bedrockconnect
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bedrockconnect
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bedrockconnect
+    spec:
+      containers:
+        - name: bedrockconnect
+          image: pugmatt/bedrock-connect:1.71.0
+          env:
+            - name: BC_CUSTOM_SERVERS
+              value: /config/custom_servers.json
+            # no database: per-player server lists aren't persisted, so put
+            # anything everyone needs in custom_servers.json
+            - name: BC_DB_TYPE
+              value: none
+            - name: BC_KICK_INACTIVE
+              value: "false"
+          ports:
+            - name: bedrock
+              containerPort: 19132
+              protocol: UDP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 320Mi
+            limits:
+              # image runs with a fixed -Xmx256M
+              memory: 512Mi
+          volumeMounts:
+            - name: servers
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: servers
+          configMap:
+            name: bedrockconnect-servers
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bedrockconnect
+  namespace: minecraft
+  annotations:
+    kube-vip.io/ignore: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.8.203
+  selector:
+    app.kubernetes.io/name: bedrockconnect
+  ports:
+    - name: bedrock
+      port: 19132
+      targetPort: bedrock
+      protocol: UDP
