@@ -28,12 +28,17 @@ spec:
           preUpgradeChecker:
             jobEnabled: false
           defaultSettings:
-            taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule"
+            # dedicated=heavy lets Longhorn run on media-server (disk at /mnt/usb/longhorn)
+            taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule;dedicated=heavy:NoSchedule"
           longhornManager:
             tolerations:
               - key: "node-role.kubernetes.io/control-plane"
                 effect: "NoSchedule"
                 operator: "Exists"
+              - key: "dedicated"
+                value: "heavy"
+                effect: "NoSchedule"
+                operator: "Equal"
               - key: "node.kubernetes.io/not-ready"
                 effect: "NoExecute"
                 operator: "Exists"
@@ -50,6 +55,11 @@ spec:
                 cpu: 300m
                 memory: 300Mi
           longhornDriver:
+            tolerations:
+              - key: "dedicated"
+                value: "heavy"
+                effect: "NoSchedule"
+                operator: "Equal"
             resources:
               requests:
                 cpu: 25m
