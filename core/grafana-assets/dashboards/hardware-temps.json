@@ -77,7 +77,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (instance) (node_hwmon_temp_celsius * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{chip_name=~\"cpu_thermal|coretemp|k10temp\"})",
+          "expr": "max by (instance) (node_hwmon_temp_celsius * on (instance, chip, pod) group_left (chip_name) node_hwmon_chip_names{chip_name=~\"cpu_thermal|coretemp|k10temp\"})",
           "legendFormat": "{{instance}}",
           "refId": "A",
           "instant": true,
@@ -225,7 +225,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count_over_time((max by (instance) (node_hwmon_temp_celsius * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{chip_name=\"cpu_thermal\"}) > 80)[24h:1m]) or (max by (instance) (node_hwmon_chip_names{chip_name=\"cpu_thermal\"}) * 0)",
+          "expr": "count_over_time((max by (instance) (node_hwmon_temp_celsius * on (instance, chip, pod) group_left (chip_name) node_hwmon_chip_names{chip_name=\"cpu_thermal\"}) > 80)[24h:1m]) or (max by (instance) (node_hwmon_chip_names{chip_name=\"cpu_thermal\"}) * 0)",
           "legendFormat": "{{instance}}",
           "refId": "A",
           "instant": true,
@@ -299,7 +299,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max_over_time((max by (instance) (node_hwmon_temp_celsius * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{chip_name=~\"cpu_thermal|coretemp|k10temp\"}))[24h:1m])",
+          "expr": "max_over_time((max by (instance) (node_hwmon_temp_celsius * on (instance, chip, pod) group_left (chip_name) node_hwmon_chip_names{chip_name=~\"cpu_thermal|coretemp|k10temp\"}))[24h:1m])",
           "legendFormat": "{{instance}}",
           "refId": "A",
           "instant": true,
@@ -386,7 +386,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (instance) (node_hwmon_temp_celsius * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{chip_name=~\"cpu_thermal|coretemp|k10temp\"})",
+          "expr": "max by (instance) (node_hwmon_temp_celsius * on (instance, chip, pod) group_left (chip_name) node_hwmon_chip_names{chip_name=~\"cpu_thermal|coretemp|k10temp\"})",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -600,7 +600,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "node_hwmon_temp_celsius * on (instance, chip) group_left (chip_name) node_hwmon_chip_names{chip_name!~\"cpu_thermal|coretemp|k10temp|nvme\"} > 1",
+          "expr": "node_hwmon_temp_celsius * on (instance, chip, pod) group_left (chip_name) node_hwmon_chip_names{chip_name!~\"cpu_thermal|coretemp|k10temp|nvme\"} > 1",
           "legendFormat": "{{instance}} {{chip_name}} {{sensor}}",
           "refId": "A"
         }

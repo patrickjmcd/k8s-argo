@@ -18,7 +18,7 @@ spec:
           expr: >-
             max by (instance, chip_name) (
               node_hwmon_temp_celsius
-              * on (instance, chip) group_left (chip_name)
+              * on (instance, chip, pod) group_left (chip_name)
               node_hwmon_chip_names{chip_name=~"cpu_thermal|coretemp|k10temp"}
             )
         # NVMe "Composite" sensor (temp1) is the drive's own headline reading.
@@ -98,7 +98,7 @@ spec:
           expr: >-
             (
               homelab:nvme_temp_celsius
-              >= on (instance, chip, sensor)
+              >= on (instance, chip, sensor, pod)
               node_hwmon_temp_max_celsius{chip=~"nvme_.*", sensor="temp1"}
             )
             or
