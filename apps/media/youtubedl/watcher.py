@@ -127,6 +127,11 @@ FULL_SET_HINTS = TINY_DESK_HINTS + LIVE_PERFORMANCE_HINTS
 
 # Plex label used to build the "Music Videos" / "Live Performances" /
 # "Tiny Desk Concerts" smart collections in the Youtube/Other library.
+#
+# DUPLICATION RISK: hand-ported (not a shared dependency) into the
+# ytdl-triage repo (github.com/patrickjmcd/ytdl-triage) as classifyCategory
+# in internal/triage/category.go, which shows this same category in its
+# review UI. If the hint lists or rules here change, update that copy too.
 def classify_category(title: str, desc: str) -> str:
     t = (title or "").lower()
     d = (desc or "").lower()
@@ -369,6 +374,12 @@ def label_in_plex_async(dst_media: Path, category: str) -> None:
 # ============================================================
 # Utilities
 # ============================================================
+# DUPLICATION RISK: sanitize, build_canonical_title, and resolve_collision
+# below are hand-ported (not a shared dependency) into the ytdl-triage repo
+# (github.com/patrickjmcd/ytdl-triage, internal/triage/naming.go) as
+# Sanitize/BuildCanonicalTitle/ResolveCollision, so that a human-corrected
+# triage accept produces the same filename this script would have. If the
+# naming/collision rules here change, update that copy too.
 def sanitize(s: str, fallback: str) -> str:
     s = (s or "").strip()
     s = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", s)
