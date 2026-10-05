@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-piper
+  namespace: voice-assistant
+  annotations:
+    kube-vip.io/ignore: "true"
+spec:
+  type: LoadBalancer
+  # .202 was piper's before the Jetson retirement; minecraft has it now.
+  loadBalancerIP: 192.168.8.207
+  selector:
+    app: wyoming-piper
+  ports:
+    - name: wyoming
+      port: 10200
+      targetPort: 10200
+      protocol: TCP
