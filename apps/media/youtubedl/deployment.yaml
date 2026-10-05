@@ -121,6 +121,8 @@ spec:
               value: "6"
             - name: PLEX_PATH_PREFIX
               value: "/mnt/unas/Media/video/youtube/Organized"
+            - name: TRIAGE_URL
+              value: "https://ytdl-triage.x.pmcd.io"
           command: [ "sh","-lc" ]
           args:
             - >

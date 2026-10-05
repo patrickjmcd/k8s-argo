@@ -57,6 +57,10 @@ CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/media.sqlite3"))
 
 # Discord notifications (optional)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
+# ytdl-triage (github.com/patrickjmcd/ytdl-triage) base URL — when set, a
+# "Needs Review" notification's embed title links there so the alert itself
+# opens the triage UI instead of just announcing the file exists.
+TRIAGE_URL = os.getenv("TRIAGE_URL", "").rstrip("/")
 
 # Plex labeling (optional) — used to build "Music Videos" / "Live Performances" /
 # "Tiny Desk Concerts" smart collections in Kometa via plex_search label filters.
@@ -276,10 +280,15 @@ def vec_exists(key: str) -> bool:
 # ============================================================
 # Discord notifications
 # ============================================================
-def notify_discord(title: str, description: str, color: int, fields: Optional[dict] = None) -> None:
+def notify_discord(title: str, description: str, color: int, fields: Optional[dict] = None, url: str = "") -> None:
     if not DISCORD_WEBHOOK_URL:
         return
     embed = {"title": title, "description": description, "color": color}
+    if url:
+        # Discord embeds have no clickable "button" over a plain incoming
+        # webhook (that needs the bot Interactions API) — a url on the embed
+        # makes its title a link instead, which is the closest equivalent.
+        embed["url"] = url
     if fields:
         embed["fields"] = [
             {"name": k, "value": str(v), "inline": True} for k, v in fields.items()
@@ -1046,6 +1055,7 @@ def process_media(media_path: Path) -> None:
                 "Category": category,
                 "Source": src,
             },
+            url=TRIAGE_URL if (needs_review and TRIAGE_URL) else "",
         )
 
         label_in_plex_async(dst_media, category)
