@@ -1,26 +1,26 @@
 apiVersion: longhorn.io/v1beta2
 kind: Node
 metadata:
-  name: macpro-kube0
+  name: macbook-debian
   namespace: longhorn-system
   finalizers:
     - longhorn.io
   annotations:
     argocd.argoproj.io/sync-options: Replace=true
 spec:
-  # Lima VM on a laptop -- gone whenever the MacBook sleeps, so it must never
-  # hold replicas. Volumes can still attach here if a pod lands on it.
-  allowScheduling: false
+  # Bare-metal Mid-2012 MacBook Pro (replaced the macpro-kube0 Lima VM).
+  # Disk lives on the root filesystem, hence the large reserve.
+  allowScheduling: true
   disks:
-    default-disk-98f3dc154aec32f1:
-      allowScheduling: false
+    default-disk-38cbd75dd7c41cb2:
+      allowScheduling: true
       diskDriver: ""
       diskType: filesystem
       evictionRequested: false
       path: /var/lib/longhorn/
-      storageReserved: 18958516224
+      storageReserved: 216154359398
       tags: []
   evictionRequested: false
   instanceManagerCPURequest: 0
-  name: macpro-kube0
+  name: macbook-debian
   tags: []
