@@ -13,6 +13,7 @@ resources:
   - prometheus-usb-pv.yaml
   - homelab-storage-rules.yaml
   - nut-ups-rules.yaml
+  - macbook-thermal-rules.yaml
   - argocd-servicemonitor.yaml
   - local-usb.storageclass.yaml
 
