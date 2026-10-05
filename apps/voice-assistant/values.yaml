@@ -19,8 +19,10 @@ httproute:
 args:
   - --uri
   - tcp://0.0.0.0:10200
+  # Default voice: downloaded and loaded at startup, so the first request is
+  # fast. HA can still request others (each downloads on first use).
   - --voice
-  - en_US-lessac-medium
+  - en_US-kristin-medium
   - --data-dir
   - /data
   - --download-dir
@@ -42,14 +44,14 @@ probes:
     failureThreshold: 18
     periodSeconds: 10
 
-# Voice model re-downloads on start; not worth a PVC now that the pod moves
-# between nodes.
-extraVolumes:
-  - name: data
-    emptyDir: {}
-extraVolumeMounts:
-  - name: data
-    mountPath: /data
+# Downloaded voices (~60MB each) persist across restarts instead of being
+# re-fetched from Hugging Face. Longhorn can attach on any node, so this
+# doesn't pin the pod.
+persistence:
+  enabled: true
+  type: longhorn
+  size: 1Gi
+  mountPath: /data
 
 # Runs anywhere (multi-arch image, no hardware needs). Prefer the x86 MacBook
 # since synthesis is noticeably faster than on a Pi, but fall back to any
