@@ -1,0 +1,66 @@
+image:
+  repository: rhasspy/wyoming-piper
+  tag: "2.5.2"
+
+# Wyoming TTS for Home Assistant's voice pipeline. Not HTTP: HA connects over
+# raw TCP, so it gets a LAN IP instead of an HTTPRoute. .202 was piper's
+# before the Jetson retirement; minecraft has it now.
+service:
+  port: 10200
+  portName: wyoming
+  type: LoadBalancer
+  loadBalancerIP: 192.168.8.207
+  annotations:
+    kube-vip.io/ignore: "true"
+
+httproute:
+  enabled: false
+
+args:
+  - --uri
+  - tcp://0.0.0.0:10200
+  - --voice
+  - en_US-lessac-medium
+  - --data-dir
+  - /data
+  - --download-dir
+  - /data
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 2000m   # runaway guard only; synthesis briefly bursts across all cores
+    memory: 512Mi
+
+probes:
+  readiness:
+    timeoutSeconds: 5
+  startup:
+    # First start downloads the ~60MB voice model before listening.
+    failureThreshold: 18
+    periodSeconds: 10
+
+# Voice model re-downloads on start; not worth a PVC now that the pod moves
+# between nodes.
+extraVolumes:
+  - name: data
+    emptyDir: {}
+extraVolumeMounts:
+  - name: data
+    mountPath: /data
+
+# Runs anywhere (multi-arch image, no hardware needs). Prefer the x86 MacBook
+# since synthesis is noticeably faster than on a Pi, but fall back to any
+# node when it's down.
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - macbook-debian

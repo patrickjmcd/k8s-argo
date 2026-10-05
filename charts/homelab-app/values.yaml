@@ -8,6 +8,11 @@ service:
   portName: http
   containerPort: 0  # 0 = same as service.port
   extraPorts: []
+  # ClusterIP (default) or LoadBalancer, for non-HTTP services that need a
+  # LAN IP from MetalLB (pool 192.168.8.200-210) instead of an HTTPRoute.
+  type: ClusterIP
+  loadBalancerIP: ""  # pin a specific pool address; empty = MetalLB picks
+  annotations: {}     # e.g. kube-vip.io/ignore: "true" for LoadBalancer services
 
 resources:
   requests:

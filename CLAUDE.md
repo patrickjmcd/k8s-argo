@@ -108,6 +108,9 @@ image:
 service:
   port: 8080
   containerPort: 0  # set if container port ≠ service port
+  type: ClusterIP   # LoadBalancer for non-HTTP LAN services (e.g. apps/voice-assistant)
+  loadBalancerIP: "" # pin a MetalLB pool address
+  annotations: {}   # e.g. kube-vip.io/ignore: "true" on LoadBalancer services
 
 httpRoute:
   enabled: true
