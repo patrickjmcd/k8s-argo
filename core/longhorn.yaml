@@ -30,6 +30,7 @@ spec:
           defaultSettings:
             # dedicated=heavy lets Longhorn run on media-server (disk at /mnt/usb/longhorn)
             taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule;dedicated=heavy:NoSchedule"
+            replicaAutoBalance: "best-effort"
           longhornManager:
             tolerations:
               - key: "node-role.kubernetes.io/control-plane"
