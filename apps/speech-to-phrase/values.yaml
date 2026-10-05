@@ -1,0 +1,78 @@
+image:
+  repository: rhasspy/wyoming-speech-to-phrase
+  tag: "1.4.3"
+
+# Wyoming speech-to-text for Home Assistant's voice pipeline. Matches speech
+# against commands generated from HA's exposed entities/areas, so it's fast
+# and accurate for "turn off the kitchen lights" but can't do free-form text.
+# Raw TCP, so it gets a LAN IP like piper (apps/voice-assistant).
+service:
+  port: 10300
+  portName: wyoming
+  type: LoadBalancer
+  loadBalancerIP: 192.168.8.208
+  annotations:
+    kube-vip.io/ignore: "true"
+
+httproute:
+  enabled: false
+
+# HASS_TOKEN: a Home Assistant long-lived access token, from 1Password item
+# vaults/Kubernetes/items/speech-to-phrase. The CLI only takes it as an
+# argument, so it's expanded into args via $(HASS_TOKEN).
+onePassword:
+  enabled: true
+  itemPath: "vaults/Kubernetes/items/speech-to-phrase"
+
+envFrom:
+  - secretRef:
+      name: speech-to-phrase-1pw
+
+# Appended to the image's run.sh, which already sets --uri; later flags win,
+# so these move models and training output onto the Longhorn volume.
+args:
+  - --models-dir
+  - /data/models
+  - --train-dir
+  - /data/train
+  - --hass-websocket-uri
+  - ws://192.168.1.21:8123/api/websocket
+  - --hass-token
+  - $(HASS_TOKEN)
+  # Retrain on start so new/renamed entities are picked up after a restart.
+  - --retrain-on-start
+
+persistence:
+  enabled: true
+  type: longhorn
+  size: 2Gi
+  mountPath: /data
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    cpu: 2000m   # runaway guard only; training is a short CPU burst
+    memory: 1Gi
+
+probes:
+  readiness:
+    timeoutSeconds: 5
+  startup:
+    # First start downloads the English model and trains against HA's
+    # entities before it listens.
+    failureThreshold: 60
+    periodSeconds: 10
+
+# Same as piper: runs anywhere, prefers the x86 MacBook for speed.
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - macbook-debian

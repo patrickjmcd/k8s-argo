@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: speech-to-phrase
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/speech-to-phrase
+spec:
+  destination:
+    # Shares the namespace with piper (apps/voice-assistant).
+    namespace: voice-assistant
+    name: in-cluster
+  project: apps
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      ref: values
+    - path: charts/homelab-app
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
+      helm:
+        releaseName: speech-to-phrase
+        valueFiles:
+          - $values/apps/speech-to-phrase/values.yaml
