@@ -17,6 +17,7 @@ spec:
           - name: seerr
           - name: medialyze
           - name: concertarr
+          - name: ytdl-triage
   template:
     metadata:
       name: '{{name}}'
