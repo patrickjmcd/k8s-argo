@@ -229,6 +229,12 @@ spec:
                 key: dedicated
                 operator: Equal
                 value: heavy
+              # Overriding tolerations drops the chart default (tolerate all
+              # NoSchedule), so control-plane nodes need listing explicitly or
+              # they get no node metrics at all.
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/control-plane
+                operator: Exists
             resources:
               requests:
                 cpu: 23m

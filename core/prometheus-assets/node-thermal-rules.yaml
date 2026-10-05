@@ -1,0 +1,113 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: node-thermal
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: node-thermal.records
+      rules:
+        # One CPU temperature per node, whatever the platform. Joining on
+        # node_hwmon_chip_names picks the CPU sensor by driver name rather than
+        # by chip path, which differs per board (media-server's
+        # thermal_zone0 is the Wi-Fi card, not the CPU):
+        #   cpu_thermal = Raspberry Pi SoC, coretemp = Intel, k10temp = AMD (Tctl)
+        - record: homelab:node_cpu_temp_celsius:max
+          expr: >-
+            max by (instance, chip_name) (
+              node_hwmon_temp_celsius
+              * on (instance, chip) group_left (chip_name)
+              node_hwmon_chip_names{chip_name=~"cpu_thermal|coretemp|k10temp"}
+            )
+        # NVMe "Composite" sensor (temp1) is the drive's own headline reading.
+        - record: homelab:nvme_temp_celsius
+          expr: node_hwmon_temp_celsius{chip=~"nvme_.*", sensor="temp1"}
+
+    - name: node-thermal
+      rules:
+        # Raspberry Pi firmware soft-throttles the ARM clock at 80°C and
+        # hard-throttles at 85°C, so it rarely gets hotter than that. Being
+        # held there is the failure mode: slow, not dead.
+        - alert: PiCpuThrottling
+          expr: homelab:node_cpu_temp_celsius:max{chip_name="cpu_thermal"} > 80
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.instance }} CPU at {{ $value | humanize }}°C (throttling)"
+            description: >-
+              The Pi has been above its 80°C soft-throttle point for 15 minutes,
+              so its CPU is running slowed down. Check its fan or heatsink and
+              the case airflow.
+
+        - alert: PiCpuHardThrottling
+          expr: homelab:node_cpu_temp_celsius:max{chip_name="cpu_thermal"} >= 84
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.instance }} CPU at {{ $value | humanize }}°C (hard throttle)"
+            description: >-
+              The Pi is at its 85°C hard-throttle ceiling. Pods on it will be
+              badly slowed. Fix cooling or drain the node.
+
+        # Intel (coretemp) and AMD (k10temp Tctl) parts run hotter under load
+        # than Pis and only throttle near TjMax (~100-105°C). Short spikes
+        # past 85°C during image pulls are normal, hence the long `for`.
+        - alert: X86CpuHot
+          expr: homelab:node_cpu_temp_celsius:max{chip_name=~"coretemp|k10temp"} > 88
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.instance }} CPU at {{ $value | humanize }}°C"
+            description: >-
+              CPU has been above 88°C for 10 minutes. Check airflow, fans, and
+              whether something is pegging the CPU (kubectl top pods -A
+              --sort-by=cpu, filtered to this node).
+
+        - alert: X86CpuCritical
+          expr: homelab:node_cpu_temp_celsius:max{chip_name=~"coretemp|k10temp"} > 95
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.instance }} CPU at {{ $value | humanize }}°C, near thermal shutdown"
+            description: >-
+              CPU is close to its TjMax. It will throttle hard or power off.
+              Consider draining the node.
+
+        # Warn at a fixed 75°C (the Pi 5 drives normally peak ~72°C); go
+        # critical at the drive's own warning temperature (WCTEMP, exported as
+        # temp_max). That's 82-100°C depending on the drive. 85°C is the
+        # fallback if a drive doesn't report one.
+        - alert: NvmeHot
+          expr: homelab:nvme_temp_celsius > 75
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.instance }} NVMe at {{ $value | humanize }}°C"
+            description: >-
+              The NVMe drive has been above 75°C for 15 minutes. Sustained heat
+              shortens drive life and leads to I/O throttling.
+
+        - alert: NvmeCritical
+          expr: >-
+            (
+              homelab:nvme_temp_celsius
+              >= on (instance, chip, sensor)
+              node_hwmon_temp_max_celsius{chip=~"nvme_.*", sensor="temp1"}
+            )
+            or
+            homelab:nvme_temp_celsius > 85
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.instance }} NVMe at {{ $value | humanize }}°C, past its rated limit"
+            description: >-
+              The drive is at or above its own warning temperature and will be
+              throttling I/O. Longhorn replicas on this node may fall behind.

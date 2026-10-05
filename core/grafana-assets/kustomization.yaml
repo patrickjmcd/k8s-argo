@@ -41,3 +41,6 @@ configMapGenerator:
   - name: grafana-dashboard-joshhawleygop   # home-built, from nginx JSON access logs in Loki
     files:
       - dashboards/joshhawleygop.json
+  - name: grafana-dashboard-hardware-temps  # home-built, node-exporter hwmon (see prometheus-assets/node-thermal-rules.yaml)
+    files:
+      - dashboards/hardware-temps.json

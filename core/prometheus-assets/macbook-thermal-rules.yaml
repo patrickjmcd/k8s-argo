@@ -10,33 +10,8 @@ spec:
     - name: macbook-thermal
       rules:
         # macbook-debian is a Mid-2012 MacBook Pro running lid-shut in a closet.
-        # Fans are driven by mbpfan via applesmc. Coretemp high = 87C, crit =
-        # 105C; idles ~60C, peaked ~75C during k3s join.
-        - alert: MacbookCpuHot
-          expr: max(node_hwmon_temp_celsius{instance="macbook-debian", chip="platform_coretemp_0"}) > 85
-          for: 10m
-          labels:
-            severity: warning
-          annotations:
-            summary: "macbook-debian CPU at {{ $value | humanize }}°C"
-            description: >-
-              CPU has been above 85°C for 10 minutes. Check closet airflow
-              (hinge vents unobstructed), that mbpfan is running
-              (systemctl status mbpfan), and that dgpu-off.service kept the
-              NVIDIA GPU powered off (cat /sys/kernel/debug/vgaswitcheroo/switch).
-
-        - alert: MacbookCpuCritical
-          expr: max(node_hwmon_temp_celsius{instance="macbook-debian", chip="platform_coretemp_0"}) > 95
-          for: 2m
-          labels:
-            severity: critical
-          annotations:
-            summary: "macbook-debian CPU at {{ $value | humanize }}°C, near 105°C thermal shutdown"
-            description: >-
-              The CPU is approaching its 105°C critical limit and the machine
-              will throttle hard or power off. Consider draining the node
-              (kubectl drain macbook-debian --ignore-daemonsets --delete-emptydir-data).
-
+        # Its CPU temperature is covered by X86CpuHot/X86CpuCritical in
+        # node-thermal-rules.yaml; these are the Mac-specific extras.
         # mbpfan floors the fans at their SMC minimum (~2000 RPM), so a
         # reading near zero means a dead or stalled fan, not a quiet one.
         - alert: MacbookFanStalled
