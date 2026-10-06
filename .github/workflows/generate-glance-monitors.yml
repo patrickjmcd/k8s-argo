@@ -6,6 +6,7 @@ on:
     paths:
       - "**/httproute*.yaml"
       - "apps/**/values.yaml"
+      - "apps/**/homelabapp*.yaml"
       - "scripts/generate_glance_monitors.py"
       - ".github/workflows/generate-glance-monitors.yml"
 

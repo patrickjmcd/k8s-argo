@@ -18,6 +18,14 @@ key the chart itself ignores):
     group: "Services"  # optional
     hostname: "a.b.c"  # optional
 
+or, for HomelabApp (kro) instances, in spec.glance (declared in the RGD
+schema, unused by kro itself); the hostname is spec.route.hostnames[0]:
+  spec:
+    glance:
+      monitor: true
+      title: "Tautulli"  # optional
+      group: "Services"  # optional
+
 Generated sites are spliced between marker comments in apps/glance/values.yaml:
   # BEGIN GLANCE-GENERATED:<group>
   ...
@@ -118,6 +126,40 @@ def collect_from_helm_values():
     return entries
 
 
+def collect_from_homelabapps():
+    entries = []
+    for path in REPO_ROOT.glob("apps/**/*.yaml"):
+        text = path.read_text()
+        if "kind: HomelabApp" not in text:
+            continue
+        rel = path.relative_to(REPO_ROOT).as_posix()
+        try:
+            docs = list(yaml.safe_load_all(text))
+        except yaml.YAMLError as e:
+            print(f"ERROR: failed to parse {rel}: {e}", file=sys.stderr)
+            sys.exit(1)
+        for doc in docs:
+            if not isinstance(doc, dict) or doc.get("kind") != "HomelabApp":
+                continue
+            spec = doc.get("spec") or {}
+            glance_cfg = spec.get("glance") or {}
+            if not glance_cfg.get("monitor"):
+                continue
+            route = spec.get("route") or {}
+            if route.get("enabled") is False:
+                print(f"ERROR: {rel} sets spec.glance.monitor but spec.route.enabled is false", file=sys.stderr)
+                sys.exit(1)
+            hostnames = route.get("hostnames") or []
+            if not hostnames:
+                print(f"ERROR: {rel} sets spec.glance.monitor but has no spec.route.hostnames", file=sys.stderr)
+                sys.exit(1)
+            hostname = hostnames[0]
+            title = glance_cfg.get("title") or title_from_hostname(hostname)
+            group = glance_cfg.get("group") or default_group(path)
+            entries.append((group, title, f"https://{hostname}", rel))
+    return entries
+
+
 def render_sites(sites, indent):
     pad = " " * indent
     lines = []
@@ -128,7 +170,7 @@ def render_sites(sites, indent):
 
 
 def main():
-    all_entries = collect_from_httproutes() + collect_from_helm_values()
+    all_entries = collect_from_httproutes() + collect_from_helm_values() + collect_from_homelabapps()
 
     seen_urls = {}
     by_group = {}
