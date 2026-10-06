@@ -11,6 +11,9 @@
 #   fine at create time, but toggling it off later leaves e.g. a livenessProbe
 #   with no handler, which the API server rejects, wedging the instance.
 # - Lists use `cond ? [...] : []`; an empty list removes the field cleanly.
+# - Iterating a map (env) has no stable order: sort the keys, or every
+#   reconcile renders a different pod template and the Deployment rolls
+#   forever (seen Oct 2026: generation 900+ in minutes).
 # - Map literals are checked against the target struct: an all-string map
 #   (map(string,string)) fails against structs with bool fields, so mounts
 #   carry an explicit "readOnly".
@@ -144,7 +147,7 @@ spec:
                   "containerPort": schema.spec.containerPort != 0 ? schema.spec.containerPort : schema.spec.port,
                   "protocol": "TCP"
                 }],
-                "env": has(schema.spec.env) ? schema.spec.env.map(k, {"name": k, "value": schema.spec.env[k]}) : [],
+                "env": has(schema.spec.env) ? schema.spec.env.map(k, k).sort().map(k, {"name": k, "value": schema.spec.env[k]}) : [],
                 "envFrom":
                   (schema.spec.onePassword.enabled ? [{"secretRef": {"name": schema.metadata.name + "-1pw", "optional": false}}] : [])
                   + (has(schema.spec.envFromSecrets) ? schema.spec.envFromSecrets.map(n, {"secretRef": {"name": n, "optional": false}}) : []),
