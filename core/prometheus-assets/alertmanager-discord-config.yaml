@@ -14,6 +14,12 @@ spec:
       - name: alertname
         matchType: "!~"
         value: "^(Watchdog|InfoInhibitor|KubeSchedulerDown|KubeProxyDown|KubeControllerManagerDown)$"
+      # This route is matched before the root config's routes, so the root's
+      # "CPUThrottlingHigh info -> null" never applied; info alerts (mostly
+      # CPUThrottlingHigh) paged every 5 minutes. Keep them in Prometheus only.
+      - name: severity
+        matchType: "!="
+        value: info
   receivers:
     - name: n8n-claude
       webhookConfigs:
