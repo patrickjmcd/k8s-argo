@@ -1,0 +1,40 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: speech-to-phrase
+  namespace: voice-assistant
+spec:
+  image: rhasspy/wyoming-speech-to-phrase:1.4.3
+  port: 10300
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 256Mi
+    cpuLimit: 2000m
+    memoryLimit: 1Gi
+  probes:
+    readiness:
+      timeoutSeconds: 5
+    startup:
+      failureThreshold: 60
+      periodSeconds: 10
+  route:
+    enabled: false
+  onePassword:
+    enabled: true
+  persistence:
+    claimName: longhorn-speech-to-phrase-data
+  args:
+    - --models-dir
+    - /data/models
+    - --train-dir
+    - /data/train
+    - --hass-websocket-uri
+    - ws://192.168.1.21:8123/api/websocket
+    - --hass-token
+    - $(HASS_TOKEN)
+    - --retrain-on-start
+  loadBalancer:
+    enabled: true
+    ip: 192.168.8.208
+  preferredNodes:
+    - macbook-debian

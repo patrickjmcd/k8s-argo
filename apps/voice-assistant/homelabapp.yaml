@@ -1,0 +1,37 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: piper
+  namespace: voice-assistant
+spec:
+  image: rhasspy/wyoming-piper:2.5.2
+  port: 10200
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 128Mi
+    cpuLimit: 2000m
+    memoryLimit: 512Mi
+  probes:
+    readiness:
+      timeoutSeconds: 5
+    startup:
+      failureThreshold: 18
+      periodSeconds: 10
+  route:
+    enabled: false
+  persistence:
+    claimName: longhorn-piper-data
+  args:
+    - --uri
+    - tcp://0.0.0.0:10200
+    - --voice
+    - en_US-kristin-medium
+    - --data-dir
+    - /data
+    - --download-dir
+    - /data
+  loadBalancer:
+    enabled: true
+    ip: 192.168.8.207
+  preferredNodes:
+    - macbook-debian
