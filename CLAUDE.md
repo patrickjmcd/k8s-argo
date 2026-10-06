@@ -39,7 +39,73 @@ Order matters; set via `argocd.argoproj.io/sync-wave` annotation:
 
 ## Defining Applications
 
-### Helm app using homelab-app chart (preferred for simple apps)
+### HomelabApp (kro) — preferred for single-container apps
+
+`core/kro-definitions/homelabapp.yaml` is a kro ResourceGraphDefinition that
+creates a `HomelabApp` CRD. Each instance gets a Deployment, Service, HTTPRoutes
+(internal + optional public), OnePasswordItem, ConfigMap and ServiceMonitor. It
+is replacing the homelab-app chart (migration started Oct 2026); the schema
+at the top of the RGD is the reference for every field.
+
+```yaml
+# apps/myapp.yaml — single-source kustomize Application
+spec:
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions:
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true   # CRD comes from kro (fresh cluster)
+  source:
+    path: apps/myapp
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
+```
+
+```yaml
+# apps/myapp/homelabapp.yaml (listed in apps/myapp/kustomization.yaml)
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: myapp
+  namespace: default
+spec:
+  image: ghcr.io/example/app:v1.2.3
+  port: 80
+  containerPort: 8080
+  env: {TZ: America/Chicago}
+  onePassword: {enabled: true}          # <name>-1pw from vaults/Kubernetes/items/<name>
+  probes:
+    type: httpGet                       # one handler for startup/readiness/liveness
+    path: /health
+    liveness: {enabled: true}
+  route:
+    hostnames: [myapp.x.pmcd.io]
+  persistence:
+    claimName: longhorn-myapp-data      # existing PVC, defined next to it
+    mountPath: /data
+  glance: {monitor: true}               # scripts/generate_glance_monitors.py
+```
+
+Rules:
+- **Persistence mounts a PVC you define yourself** in `apps/<name>/pvc.yaml`
+  (and `pv.yaml` for SMB). Give it backup labels and
+  `argocd.argoproj.io/sync-options: Delete=false`. kro never owns the PVC:
+  it deletes `includeWhen` resources when the condition turns false, which
+  would lose data if persistence were toggled off.
+- Apps needing extraVolumes, sidecars, hostNetwork, LoadBalancer services,
+  command/args, middlewares or per-probe types stay on the chart for now.
+  When converting a chart app, merge its values over the chart defaults first
+  (Helm does); anything outside the RGD schema blocks the move.
+- Children carry ownerReferences to their HomelabApp, so Argo CD shows them in
+  the app's tree; a Lua health check in `core/argocd.yaml` maps kro's Ready
+  condition to Argo health.
+- Editing the RGD: build the container as one CEL expression and use the
+  optional map-entry syntax (`?"key": cond ? optional.of(v) : optional.none()`),
+  sort map keys before turning them into lists, and validate as a throwaway
+  RGD (different name/kind/group) before touching the real one. Comments at
+  the top of the RGD explain why.
+
+### Helm app using homelab-app chart (for apps HomelabApp can't express yet)
 
 ```yaml
 # apps/myapp.yaml
