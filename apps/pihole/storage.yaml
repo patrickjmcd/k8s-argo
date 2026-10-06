@@ -4,6 +4,8 @@ metadata:
   name: pihole-data
   labels:
     recurring-job-group.longhorn.io/b2-backup: enabled
+    # makes Longhorn sync the label above from this PVC to its volume
+    recurring-job.longhorn.io/source: enabled
 spec:
   accessModes:
     - ReadWriteOnce
