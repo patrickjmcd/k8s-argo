@@ -1,0 +1,40 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: reedme
+  namespace: default
+spec:
+  image: ghcr.io/patrickjmcd/reedme:1.3.0
+  port: 80
+  containerPort: 8080
+  env:
+    TZ: America/Chicago
+    REEDME_PORT: "8080"
+    REEDME_DATABASE_URL: "postgres://reedme@shared-postgres-rw.postgres.svc.cluster.local/reedme?sslmode=disable"
+  onePassword:
+    enabled: true
+    itemPath: vaults/Kubernetes/items/reedme
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 64Mi
+    cpuLimit: 500m
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    path: /
+    readiness:
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      timeoutSeconds: 5
+      failureThreshold: 3
+    liveness:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 5
+  route:
+    hostnames:
+      - reedme.x.pmcd.io
+    publicHostnames:
+      - feed.reedme.dev
