@@ -4,3 +4,15 @@ metadata:
   name: concurrent-automatic-engine-upgrade-per-node-limit
   namespace: longhorn-system
 value: "1"
+---
+# Without this the nightly b2-snapshot/b2-backup jobs silently skip detached
+# volumes -- kometa-config (CronJob, attached ~minutes/day) went 116 days and
+# ia-ignition (scaled to 0) 21 days without a backup before this was noticed
+# (Oct 2026). Longhorn briefly attaches the volume for the job; a workload
+# pod that needs it meanwhile takes priority.
+apiVersion: longhorn.io/v1beta2
+kind: Setting
+metadata:
+  name: allow-recurring-job-while-volume-detached
+  namespace: longhorn-system
+value: "true"
