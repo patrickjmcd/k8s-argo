@@ -1,0 +1,52 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: radarr
+  namespace: media
+spec:
+  image: linuxserver/radarr:6.3.0
+  port: 80
+  containerPort: 7878
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 561Mi
+    cpuLimit: 500m
+    memoryLimit: 567Mi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - radarr.x.pmcd.io
+    publicHostnames:
+    - radarr.pmcd.io
+  onePassword:
+    enabled: true
+  env:
+    TZ: America/Chicago
+    RADARR__SERVER__PORT: '7878'
+    RADARR__SERVER__BINDADDRESS: '*'
+    RADARR__LOG__LEVEL: info
+    RADARR__AUTH__METHOD: External
+    RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
+    RADARR__APP__BRANCH: master
+    RADARR__APP__LAUNCHBROWSER: 'False'
+    RADARR__APP__UPDATEMECHANISM: Docker
+    RADARR__APP__INSTANCENAME: Radarr
+    RADARR__POSTGRES__USER: radarr
+    RADARR__POSTGRES__PORT: '5432'
+    RADARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
+    RADARR__POSTGRES__MAINDB: radarr-main
+    RADARR__POSTGRES__LOGDB: radarr-logs
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  - name: downloads
+    claimName: sab-downloads-pvc
+  extraVolumeMounts:
+  - name: media
+    mountPath: /mnt/media
+  - name: downloads
+    mountPath: /mnt/downloads
+  glance:
+    monitor: true

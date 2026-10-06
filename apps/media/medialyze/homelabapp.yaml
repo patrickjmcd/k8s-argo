@@ -1,0 +1,29 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: medialyze
+  namespace: media
+spec:
+  image: ghcr.io/frederikemmer/medialyze:0.18.1
+  port: 8080
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 512Mi
+  route:
+    hostnames:
+    - medialyze.x.pmcd.io
+  env:
+    TZ: America/Chicago
+    SCAN_RUNTIME_WORKER_COUNT: '4'
+  persistence:
+    claimName: longhorn-medialyze-data
+    mountPath: /config
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  extraVolumeMounts:
+  - name: media
+    mountPath: /media
+    readOnly: true

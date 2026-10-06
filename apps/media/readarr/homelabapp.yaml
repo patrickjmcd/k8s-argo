@@ -1,0 +1,52 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: readarr
+  namespace: media
+spec:
+  image: ghcr.io/pennydreadful/bookshelf:softcover-v0.4.20.107
+  port: 80
+  containerPort: 8787
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 335Mi
+    cpuLimit: 500m
+    memoryLimit: 339Mi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - readarr.x.pmcd.io
+  onePassword:
+    enabled: true
+  env:
+    TZ: America/Chicago
+    READARR__SERVER__PORT: '8787'
+    READARR__SERVER__BINDADDRESS: '*'
+    READARR__LOG__LEVEL: info
+    READARR__AUTH__METHOD: External
+    READARR__AUTH__REQUIRED: DisabledForLocalAddresses
+    READARR__APP__BRANCH: master
+    READARR__APP__LAUNCHBROWSER: 'False'
+    READARR__APP__UPDATEMECHANISM: Docker
+    READARR__APP__INSTANCENAME: readarr
+    READARR__POSTGRES__USER: readarr
+    READARR__POSTGRES__PORT: '5432'
+    READARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
+    READARR__POSTGRES__MAINDB: readarr-main
+    READARR__POSTGRES__LOGDB: readarr-logs
+    READARR__POSTGRES__CACHEDB: readarr-cache
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  - name: downloads
+    claimName: sab-downloads-pvc
+  extraVolumeMounts:
+  - name: media
+    mountPath: /mnt/media
+  - name: downloads
+    mountPath: /mnt/downloads
+  glance:
+    monitor: true
+    title: Readarr

@@ -11,16 +11,11 @@ spec:
     preserveResourcesOnDeletion: true
   generators:
     - list:
-        elements:
-          - name: radarr
-          - name: sonarr
-          - name: prowlarr
-          - name: readarr
-          - name: agregarr
-          - name: hdhr2xmltv
-          - name: medialyze
-          - name: concertarr
-          - name: ytdl-triage
+        # Empty: every app has moved to media-apps-kustomize (HomelabApp).
+        # Delete this ApplicationSet in a separate commit once it owns no
+        # Applications -- deleting it while it does lets garbage collection
+        # remove them with cascade, bypassing preserveResourcesOnDeletion.
+        elements: []
   template:
     metadata:
       name: '{{name}}'
@@ -74,6 +69,15 @@ spec:
           # HomelabApp (kro) instance, not the chart -- see apps/media/tautulli.
           - name: tautulli
           - name: seerr
+          - name: radarr
+          - name: sonarr
+          - name: prowlarr
+          - name: readarr
+          - name: agregarr
+          - name: hdhr2xmltv
+          - name: medialyze
+          - name: concertarr
+          - name: ytdl-triage
   template:
     metadata:
       name: '{{name}}'

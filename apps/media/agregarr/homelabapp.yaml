@@ -1,0 +1,35 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: agregarr
+  namespace: media
+spec:
+  image: agregarr/agregarr:v2.4.2
+  port: 80
+  containerPort: 7171
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 260Mi
+    cpuLimit: 500m
+    memoryLimit: 263Mi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - agregarr.x.pmcd.io
+    publicHostnames:
+    - agregarr.pmcd.io
+  env:
+    TZ: America/Chicago
+  persistence:
+    claimName: longhorn-agregarr-data
+    mountPath: /app/config
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  extraVolumeMounts:
+  - name: media
+    mountPath: /media
+  glance:
+    monitor: true

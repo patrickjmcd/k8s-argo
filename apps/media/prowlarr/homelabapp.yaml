@@ -1,0 +1,48 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: prowlarr
+  namespace: media
+spec:
+  image: linuxserver/prowlarr:2.5.2
+  port: 80
+  containerPort: 9696
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 237Mi
+    cpuLimit: 1000m
+    memoryLimit: 512Mi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - prowlarr.x.pmcd.io
+    publicHostnames:
+    - prowlarr.pmcd.io
+  onePassword:
+    enabled: true
+  env:
+    TZ: America/Chicago
+    PROWLARR__SERVER__PORT: '9696'
+    PROWLARR__SERVER__BINDADDRESS: '*'
+    PROWLARR__LOG__LEVEL: info
+    PROWLARR__AUTH__METHOD: Forms
+    PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
+    PROWLARR__APP__BRANCH: master
+    PROWLARR__APP__LAUNCHBROWSER: 'False'
+    PROWLARR__APP__UPDATEMECHANISM: Docker
+    PROWLARR__APP__INSTANCENAME: Prowlarr
+    PROWLARR__POSTGRES__USER: prowlarr
+    PROWLARR__POSTGRES__PORT: '5432'
+    PROWLARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
+    PROWLARR__POSTGRES__MAINDB: prowlarr-main
+    PROWLARR__POSTGRES__LOGDB: prowlarr-logs
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  extraVolumeMounts:
+  - name: media
+    mountPath: /media
+  glance:
+    monitor: true

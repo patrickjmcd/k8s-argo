@@ -1,0 +1,52 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: sonarr
+  namespace: media
+spec:
+  image: linuxserver/sonarr:4.0.19
+  port: 80
+  containerPort: 8989
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 422Mi
+    cpuLimit: 500m
+    memoryLimit: 427Mi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - sonarr.x.pmcd.io
+    publicHostnames:
+    - sonarr.pmcd.io
+  onePassword:
+    enabled: true
+  env:
+    TZ: America/Chicago
+    SONARR__SERVER__PORT: '8989'
+    SONARR__SERVER__BINDADDRESS: '*'
+    SONARR__LOG__LEVEL: Info
+    SONARR__AUTH__METHOD: External
+    SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
+    SONARR__APP__BRANCH: main
+    SONARR__APP__LAUNCHBROWSER: 'False'
+    SONARR__APP__UPDATEMECHANISM: Docker
+    SONARR__APP__INSTANCENAME: Sonarr
+    SONARR__POSTGRES__USER: sonarr
+    SONARR__POSTGRES__PORT: '5432'
+    SONARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
+    SONARR__POSTGRES__MAINDB: sonarr-main
+    SONARR__POSTGRES__LOGDB: sonarr-logs
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  - name: downloads
+    claimName: sab-downloads-pvc
+  extraVolumeMounts:
+  - name: media
+    mountPath: /mnt/media
+  - name: downloads
+    mountPath: /mnt/downloads
+  glance:
+    monitor: true
