@@ -165,6 +165,11 @@ spec:
 
   resources:
     - id: deployment
+      # Instance (and Argo health, via the Lua check) is Ready only once the
+      # pod is actually available -- without this a pod stuck in
+      # CreateContainerConfigError still showed Ready/Healthy.
+      readyWhen:
+        - ${deployment.status.?availableReplicas.orValue(0) >= 1}
       template:
         apiVersion: apps/v1
         kind: Deployment
@@ -340,7 +345,12 @@ spec:
             app.kubernetes.io/managed-by: kro
         spec:
           type: ClusterIP
-          selector: ${deployment.spec.selector.matchLabels}
+          # Static (not ${deployment...}): a readyWhen on deployment would
+          # otherwise hold this Service, and the routes after it, until the pod
+          # is ready.
+          selector:
+            app.kubernetes.io/name: ${schema.metadata.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
           ports:
             - name: http
               port: ${schema.spec.port}
@@ -373,7 +383,7 @@ spec:
         spec: '${{
           "type": "LoadBalancer",
           ?"loadBalancerIP": schema.spec.loadBalancer.ip != "" ? optional.of(schema.spec.loadBalancer.ip) : optional.none(),
-          "selector": deployment.spec.selector.matchLabels,
+          "selector": {"app.kubernetes.io/name": schema.metadata.name, "app.kubernetes.io/instance": schema.metadata.name},
           "ports": [{"name": "http", "port": schema.spec.port, "targetPort": "http", "protocol": "TCP"}]
         }}'
 
@@ -524,7 +534,9 @@ spec:
             app.kubernetes.io/managed-by: kro
         spec:
           selector:
-            matchLabels: ${deployment.spec.selector.matchLabels}
+            matchLabels:
+              app.kubernetes.io/name: ${schema.metadata.name}
+              app.kubernetes.io/instance: ${schema.metadata.name}
           endpoints: '${[{
             "port": "http",
             "path": schema.spec.serviceMonitor.path,
