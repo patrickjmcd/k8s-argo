@@ -68,10 +68,19 @@ spec:
       extraVolumes: "[]ExtraVolume"
       extraVolumeMounts: "[]VolumeMount"
       nodeSelector: "map[string]string"
+      # Soft preference (node affinity, weight 50) for these hostnames.
+      preferredNodes: "[]string"
       tolerations: "[]Toleration"
       # Pod on the node's network namespace (dnsPolicy follows).
       hostNetwork: boolean | default=false
       podAnnotations: "map[string]string"
+      # Extra <name>-lan Service of type LoadBalancer on the same port, for
+      # non-HTTP clients on the LAN (same pattern as hivemq-lan / nats-lan).
+      # The main Service stays ClusterIP.
+      loadBalancer:
+        enabled: boolean | default=false
+        # Pin a MetalLB pool address (192.168.8.200-210); empty = MetalLB picks.
+        ip: string | default=""
       # Sets dnsConfig.options ndots when non-empty.
       dnsNdots: string | default=""
       securityContext:
@@ -212,6 +221,12 @@ spec:
               ?"dnsPolicy": schema.spec.hostNetwork ? optional.of("ClusterFirstWithHostNet") : optional.none(),
               ?"dnsConfig": schema.spec.dnsNdots != ""
                 ? optional.of({"options": [{"name": "ndots", "value": schema.spec.dnsNdots}]}) : optional.none(),
+              ?"affinity": has(schema.spec.preferredNodes) && size(schema.spec.preferredNodes) > 0
+                ? optional.of({"nodeAffinity": {"preferredDuringSchedulingIgnoredDuringExecution": [{
+                    "weight": 50,
+                    "preference": {"matchExpressions": [{
+                      "key": "kubernetes.io/hostname", "operator": "In", "values": schema.spec.preferredNodes}]}}]}})
+                : optional.none(),
               ?"nodeSelector": has(schema.spec.nodeSelector) && size(schema.spec.nodeSelector) > 0
                 ? optional.of(schema.spec.nodeSelector) : optional.none(),
               ?"tolerations": has(schema.spec.tolerations) && size(schema.spec.tolerations) > 0
@@ -331,6 +346,36 @@ spec:
               port: ${schema.spec.port}
               targetPort: http
               protocol: TCP
+
+    - id: lbservice
+      includeWhen:
+        - ${schema.spec.loadBalancer.enabled}
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.metadata.name}-lan
+          namespace: ${schema.metadata.namespace}
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
+          labels:
+            app.kubernetes.io/name: ${schema.metadata.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/managed-by: kro
+          annotations:
+            # MetalLB owns LoadBalancer IPs here; see apps/nats/loadbalancer-service.yaml.
+            kube-vip.io/ignore: "true"
+        spec: '${{
+          "type": "LoadBalancer",
+          ?"loadBalancerIP": schema.spec.loadBalancer.ip != "" ? optional.of(schema.spec.loadBalancer.ip) : optional.none(),
+          "selector": deployment.spec.selector.matchLabels,
+          "ports": [{"name": "http", "port": schema.spec.port, "targetPort": "http", "protocol": "TCP"}]
+        }}'
 
     - id: httproute
       includeWhen:
