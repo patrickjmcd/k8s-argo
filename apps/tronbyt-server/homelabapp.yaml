@@ -1,0 +1,45 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: tronbyt-server
+  namespace: default
+spec:
+  image: ghcr.io/tronbyt/server:2.4.0
+  port: 8888
+  containerPort: 8000
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 100Mi
+    cpuLimit: 500m
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    readiness:
+      timeoutSeconds: 10
+    startup:
+      enabled: false
+  route:
+    hostnames:
+    - tronbyt.x.pmcd.io
+    publicHostnames:
+    - tronbyt.pmcd.io
+  env:
+    SERVER_HOSTNAME_OR_IP: tronbyt-server
+    SERVER_PORT: '8000'
+    SERVER_PROTOCOL: http
+    SYSTEM_APPS_REPO: https://github.com/tronbyt/apps.git
+    PRODUCTION: '1'
+    LOG_LEVEL: WARNING
+  persistence:
+    claimName: longhorn-tronbyt-server-data
+    mountPath: ''
+  extraVolumeMounts:
+  - name: data
+    mountPath: /app/users
+    subPath: users
+  - name: data
+    mountPath: /app/data
+    subPath: data
+  glance:
+    monitor: true
+    title: Tronbyt
