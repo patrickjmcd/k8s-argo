@@ -92,10 +92,21 @@ Rules:
   `argocd.argoproj.io/sync-options: Delete=false`. kro never owns the PVC:
   it deletes `includeWhen` resources when the condition turns false, which
   would lose data if persistence were toggled off.
-- Apps needing extraVolumes, sidecars, hostNetwork, LoadBalancer services,
-  command/args, middlewares or per-probe types stay on the chart for now.
-  When converting a chart app, merge its values over the chart defaults first
-  (Helm does); anything outside the RGD schema blocks the move.
+- HomelabApp covers extraVolumes/extraVolumeMounts (PVC, ConfigMap, Secret,
+  hostPath, emptyDir), per-probe type/path overrides, command/args,
+  nodeSelector/tolerations/hostNetwork, podAnnotations, dnsNdots, a basic
+  securityContext, route middlewares and ServiceMonitor basic auth. Extra
+  manifests (the chart's extraObjects) go in the app's kustomization as plain
+  files. Still chart-only: a LoadBalancer *main* Service (speech-to-phrase,
+  voice-assistant), sidecars and initContainers.
+- HomelabApp Applications set
+  `argocd.argoproj.io/compare-options: ServerSideDiff=true`: CRD defaults
+  filled into list items (extraVolumes, tolerations) otherwise read as drift.
+- `${VAR}` inside instance values (configs, commands) passes through kro
+  literally; only `${` written in the RGD itself is evaluated.
+- When converting a chart app, merge its values over the chart defaults first
+  (Helm does), and use the Helm **release name** as the HomelabApp name (it
+  can differ from the Application name, e.g. homelable-backend -> backend).
 - Children carry ownerReferences to their HomelabApp, so Argo CD shows them in
   the app's tree; a Lua health check in `core/argocd.yaml` maps kro's Ready
   condition to Argo health.
@@ -105,7 +116,7 @@ Rules:
   RGD (different name/kind/group) before touching the real one. Comments at
   the top of the RGD explain why.
 
-### Helm app using homelab-app chart (for apps HomelabApp can't express yet)
+### Helm app using homelab-app chart (only for what HomelabApp can't express)
 
 ```yaml
 # apps/myapp.yaml
