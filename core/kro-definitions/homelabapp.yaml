@@ -126,6 +126,9 @@ spec:
         # Defaults to vaults/Kubernetes/items/<name>. Every field of the item
         # becomes an env var via the <name>-1pw Secret.
         itemPath: string | default=""
+        # false = only create the Secret (e.g. mounted as a file via
+        # extraVolumes), don't load it as env vars.
+        envFrom: boolean | default=true
       configMap:
         enabled: boolean | default=false
         mountPath: string | default="/config"
@@ -243,7 +246,7 @@ spec:
                   ? optional.of(schema.spec.env.map(k, k).sort().map(k, {"name": k, "value": schema.spec.env[k]}))
                   : optional.none(),
                 "envFrom":
-                  (schema.spec.onePassword.enabled ? [{"secretRef": {"name": schema.metadata.name + "-1pw", "optional": false}}] : [])
+                  (schema.spec.onePassword.enabled && schema.spec.onePassword.envFrom ? [{"secretRef": {"name": schema.metadata.name + "-1pw", "optional": false}}] : [])
                   + (has(schema.spec.envFromSecrets) ? schema.spec.envFromSecrets.map(n, {"secretRef": {"name": n, "optional": false}}) : []),
                 "resources": {
                   "requests": {"cpu": schema.spec.resources.cpuRequest, "memory": schema.spec.resources.memoryRequest},

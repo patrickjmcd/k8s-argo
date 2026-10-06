@@ -82,6 +82,9 @@ spec:
         - resources-finalizer.argocd.argoproj.io
       annotations:
         argocd.argoproj.io/manifest-generate-paths: .
+        # Compare through the API server so CRD defaults (e.g. HomelabApp
+        # extraVolumes list items) don't show as permanent drift.
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
     spec:
       project: apps
       source:

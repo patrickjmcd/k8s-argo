@@ -19,13 +19,14 @@ spec:
     enabled: false
   onePassword:
     enabled: true
+    envFrom: false # mounted as a file (pve.yml), not env vars -- matches the chart
   args:
-  - --config.file=/etc/prometheus-pve-exporter/pve.yml
+    - --config.file=/etc/prometheus-pve-exporter/pve.yml
   extraVolumes:
-  - name: config
-    secret: pve-exporter-1pw
+    - name: config
+      secret: pve-exporter-1pw
   extraVolumeMounts:
-  - name: config
-    mountPath: /etc/prometheus-pve-exporter/pve.yml
-    subPath: pve.yml
-    readOnly: true
+    - name: config
+      mountPath: /etc/prometheus-pve-exporter/pve.yml
+      subPath: pve.yml
+      readOnly: true
