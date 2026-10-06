@@ -108,6 +108,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/name: ${schema.metadata.name}
             app.kubernetes.io/instance: ${schema.metadata.name}
@@ -215,6 +225,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/name: ${schema.metadata.name}
             app.kubernetes.io/instance: ${schema.metadata.name}
@@ -237,6 +257,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/managed-by: kro
         spec:
@@ -265,6 +295,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}-public
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/managed-by: kro
         spec:
@@ -293,6 +333,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}-1pw
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/managed-by: kro
         spec:
@@ -307,6 +357,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}-config
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/managed-by: kro
         data: ${schema.spec.configMap.data}
@@ -320,6 +380,16 @@ spec:
         metadata:
           name: ${schema.metadata.name}
           namespace: ${schema.metadata.namespace}
+          # kro 0.9 tracks children with ApplySet labels, not ownerReferences;
+          # Argo CD draws its resource tree from ownerReferences, so without
+          # this an app's Deployment/pods/routes don't show up under it.
+          ownerReferences:
+            - apiVersion: homelab.pmcd.io/v1alpha1
+              kind: HomelabApp
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: false
+              controller: false
           labels:
             app.kubernetes.io/name: ${schema.metadata.name}
             app.kubernetes.io/instance: ${schema.metadata.name}

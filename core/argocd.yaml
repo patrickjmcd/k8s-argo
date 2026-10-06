@@ -72,6 +72,28 @@ spec:
                 jqPathExpressions:
                   - '.spec.template.spec.tolerations[]? | select(.key == "node.kubernetes.io/not-ready" or .key == "node.kubernetes.io/unreachable" or .key == "node-role.kubernetes.io/master" or .key == "node-role.kubernetes.io/control-plane")'
                   - '.spec.template.metadata.annotations."kubectl.kubernetes.io/restartedAt"?'
+              # HomelabApp (kro): surface kro's own status instead of the default
+              # "Healthy" for an unknown kind -- e.g. a wedged instance (state
+              # ERROR, Ready=False) shows as Degraded with kro's message.
+              resource.customizations.health.homelab.pmcd.io_HomelabApp: |
+                hs = {status = "Progressing", message = "Waiting for kro"}
+                if obj.status == nil then return hs end
+                if obj.status.conditions ~= nil then
+                  for _, c in ipairs(obj.status.conditions) do
+                    if c.type == "Ready" then
+                      if c.status == "True" then
+                        hs.status = "Healthy"
+                        hs.message = "kro: all resources ready"
+                        return hs
+                      end
+                      if c.message ~= nil then hs.message = c.message end
+                    end
+                  end
+                end
+                if obj.status.state == "ERROR" or obj.status.state == "FAILED" then
+                  hs.status = "Degraded"
+                end
+                return hs
               # HTTPRoute backendRefs get group:"" and weight:1 defaulted by the API server.
               resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
                 jqPathExpressions:
