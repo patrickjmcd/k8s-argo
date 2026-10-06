@@ -97,8 +97,10 @@ Rules:
   nodeSelector/tolerations/hostNetwork, podAnnotations, dnsNdots, a basic
   securityContext, route middlewares and ServiceMonitor basic auth. Extra
   manifests (the chart's extraObjects) go in the app's kustomization as plain
-  files. Still chart-only: a LoadBalancer *main* Service (speech-to-phrase,
-  voice-assistant), sidecars and initContainers.
+  files. `loadBalancer.enabled` adds a `<name>-lan` LoadBalancer Service
+  (optionally pinned `loadBalancer.ip`) next to the ClusterIP one, and
+  `preferredNodes` sets a soft node preference. Not covered: sidecars and
+  initContainers (use plain Kustomize).
 - HomelabApp Applications set
   `argocd.argoproj.io/compare-options: ServerSideDiff=true`: CRD defaults
   filled into list items (extraVolumes, tolerations) otherwise read as drift.
