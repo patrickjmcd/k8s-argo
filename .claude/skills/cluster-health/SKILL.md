@@ -43,7 +43,7 @@ kube-n3160 and kube-macmini have only ~7.6G of RAM and also run etcd.
 - Pods not Running/Completed: `kubectl get pods -A --no-headers | awk '$4!="Running" && $4!="Completed"'`.
 - Recent restarts: `topk(15, increase(kube_pod_container_status_restarts_total[24h]) > 0)`. Lifetime restart counts are misleading here, so ignore them.
 - `kubectl get pvc -A` not Bound. `kubectl get certificates -A` not Ready.
-- ArgoCD: `kubectl get applications -n argocd --no-headers | awk '$2!="Synced" || $3!="Healthy"'`. For each one, list its non-Synced resources with `.status.resources[] | select(.status!="Synced")`.
+- ArgoCD: `kubectl get applications -n argocd --no-headers | awk '$2!="Synced" || $3!="Healthy"'`. For each one, list its non-Synced resources with `.status.resources[] | select(.status!="Synced")`. Some apps (e.g. `ia-ignition`) have no `syncPolicy.automated`, so committed changes sit OutOfSync until someone syncs by hand. Check `.spec.syncPolicy.automated` before assuming drift is just noise.
 
 ## 4. Longhorn
 
