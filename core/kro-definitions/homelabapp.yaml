@@ -32,6 +32,27 @@ spec:
     apiVersion: v1alpha1
     kind: HomelabApp
     group: homelab.pmcd.io
+    types:
+      # One source per volume: claimName | configMap | secret | hostPath | emptyDir.
+      ExtraVolume:
+        name: string | required=true
+        claimName: string | default=""
+        configMap: string | default=""
+        secret: string | default=""
+        hostPath: string | default=""
+        emptyDir: boolean | default=false
+        sizeLimit: string | default="" description="emptyDir sizeLimit"
+      VolumeMount:
+        name: string | required=true
+        mountPath: string | required=true
+        subPath: string | default=""
+        readOnly: boolean | default=false
+      Toleration:
+        key: string | default=""
+        operator: string | default="Equal"
+        value: string | default=""
+        effect: string | default=""
+        tolerationSeconds: integer | default=0 description="0 = unset"
     spec:
       image: string | required=true description="Full image reference including tag, e.g. ghcr.io/org/app:v1.2.3"
       port: integer | default=80 description="Service port"
@@ -40,6 +61,25 @@ spec:
       # Extra Secrets to load as env vars, beyond the 1Password one.
       envFromSecrets: "[]string"
       imagePullSecrets: "[]string"
+      command: "[]string"
+      args: "[]string"
+      # Volumes beyond persistence/configMap; mounts may also reference the
+      # built-in "data" (persistence) and "config" (configMap) volumes.
+      extraVolumes: "[]ExtraVolume"
+      extraVolumeMounts: "[]VolumeMount"
+      nodeSelector: "map[string]string"
+      tolerations: "[]Toleration"
+      # Pod on the node's network namespace (dnsPolicy follows).
+      hostNetwork: boolean | default=false
+      podAnnotations: "map[string]string"
+      # Sets dnsConfig.options ndots when non-empty.
+      dnsNdots: string | default=""
+      securityContext:
+        # 0 / false = unset.
+        runAsUser: integer | default=0
+        runAsGroup: integer | default=0
+        runAsNonRoot: boolean | default=false
+        fsGroup: integer | default=0 description="pod-level"
       resources:
         cpuRequest: string | default="25m"
         memoryRequest: string | default="128Mi"
@@ -51,15 +91,21 @@ spec:
         type: string | default="tcpSocket" description="tcpSocket or httpGet"
         path: string | default="/" description="Path for httpGet"
         startup:
+          type: string | default="" description="Override probes.type"
+          path: string | default="" description="Override probes.path"
           enabled: boolean | default=true
           failureThreshold: integer | default=30
           periodSeconds: integer | default=5
         readiness:
+          type: string | default="" description="Override probes.type"
+          path: string | default="" description="Override probes.path"
           initialDelaySeconds: integer | default=10
           periodSeconds: integer | default=10
           timeoutSeconds: integer | default=1
           failureThreshold: integer | default=3
         liveness:
+          type: string | default="" description="Override probes.type"
+          path: string | default="" description="Override probes.path"
           enabled: boolean | default=false
           initialDelaySeconds: integer | default=60
           periodSeconds: integer | default=10
@@ -73,6 +119,8 @@ spec:
         # Served through Cloudflare Tunnel via public-gateway; external-dns
         # creates the DNS records. Same as the chart's httproute.publicHostnames.
         publicHostnames: "[]string"
+        # Traefik Middleware names (same namespace), internal route only.
+        middlewares: "[]string"
       onePassword:
         enabled: boolean | default=false
         # Defaults to vaults/Kubernetes/items/<name>. Every field of the item
@@ -84,13 +132,16 @@ spec:
         subPath: string | default=""
         data: "map[string]string"
       persistence:
-        # Existing PVC to mount; empty = no persistent volume.
+        # Existing PVC to mount as volume "data"; empty = none. mountPath ""
+        # = don't auto-mount (mount it via extraVolumeMounts, e.g. subPaths).
         claimName: string | default=""
         mountPath: string | default="/data"
       serviceMonitor:
         enabled: boolean | default=false
         path: string | default="/metrics"
         interval: string | default="30s"
+        # Secret with username/password keys for basic auth on the scrape.
+        basicAuthSecret: string | default=""
       # Read by scripts/generate_glance_monitors.py, not by kro.
       glance:
         monitor: boolean | default=false
@@ -138,26 +189,59 @@ spec:
             matchLabels:
               app.kubernetes.io/name: ${schema.metadata.name}
               app.kubernetes.io/instance: ${schema.metadata.name}
-          template:
-            metadata:
-              labels:
-                app.kubernetes.io/name: ${schema.metadata.name}
-                app.kubernetes.io/instance: ${schema.metadata.name}
-            spec:
-              # Same reason as the homelab-app chart: legacy Docker-links env
-              # vars can shadow an app's own same-named env var.
-              enableServiceLinks: false
-              imagePullSecrets: '${has(schema.spec.imagePullSecrets) ? schema.spec.imagePullSecrets.map(n, {"name": n}) : []}'
-              # Container name matches the chart's (the release name).
-              containers: '${[{
+          # The whole pod template is one CEL expression so every optional
+          # field can use ?"key" entries (omitted entirely when unset). The
+          # container is named after the app, matching the chart's.
+          template: '${{
+            "metadata": {
+              "labels": {
+                "app.kubernetes.io/name": schema.metadata.name,
+                "app.kubernetes.io/instance": schema.metadata.name
+              },
+              ?"annotations": has(schema.spec.podAnnotations) && size(schema.spec.podAnnotations) > 0
+                ? optional.of(schema.spec.podAnnotations) : optional.none()
+            },
+            "spec": {
+              "enableServiceLinks": false,
+              ?"imagePullSecrets": has(schema.spec.imagePullSecrets) && size(schema.spec.imagePullSecrets) > 0
+                ? optional.of(schema.spec.imagePullSecrets.map(n, {"name": n})) : optional.none(),
+              ?"hostNetwork": schema.spec.hostNetwork ? optional.of(true) : optional.none(),
+              ?"dnsPolicy": schema.spec.hostNetwork ? optional.of("ClusterFirstWithHostNet") : optional.none(),
+              ?"dnsConfig": schema.spec.dnsNdots != ""
+                ? optional.of({"options": [{"name": "ndots", "value": schema.spec.dnsNdots}]}) : optional.none(),
+              ?"nodeSelector": has(schema.spec.nodeSelector) && size(schema.spec.nodeSelector) > 0
+                ? optional.of(schema.spec.nodeSelector) : optional.none(),
+              ?"tolerations": has(schema.spec.tolerations) && size(schema.spec.tolerations) > 0
+                ? optional.of(schema.spec.tolerations.map(t, {
+                    "operator": t.operator,
+                    ?"key": t.key != "" ? optional.of(t.key) : optional.none(),
+                    ?"value": t.value != "" ? optional.of(t.value) : optional.none(),
+                    ?"effect": t.effect != "" ? optional.of(t.effect) : optional.none(),
+                    ?"tolerationSeconds": t.tolerationSeconds != 0 ? optional.of(t.tolerationSeconds) : optional.none()}))
+                : optional.none(),
+              ?"securityContext": schema.spec.securityContext.fsGroup != 0
+                ? optional.of({"fsGroup": schema.spec.securityContext.fsGroup}) : optional.none(),
+              "containers": [{
                 "name": schema.metadata.name,
                 "image": schema.spec.image,
+                ?"command": has(schema.spec.command) && size(schema.spec.command) > 0
+                  ? optional.of(schema.spec.command) : optional.none(),
+                ?"args": has(schema.spec.args) && size(schema.spec.args) > 0
+                  ? optional.of(schema.spec.args) : optional.none(),
+                ?"securityContext": schema.spec.securityContext.runAsUser != 0 || schema.spec.securityContext.runAsGroup != 0 || schema.spec.securityContext.runAsNonRoot
+                  ? optional.of({
+                      ?"runAsUser": schema.spec.securityContext.runAsUser != 0 ? optional.of(schema.spec.securityContext.runAsUser) : optional.none(),
+                      ?"runAsGroup": schema.spec.securityContext.runAsGroup != 0 ? optional.of(schema.spec.securityContext.runAsGroup) : optional.none(),
+                      ?"runAsNonRoot": schema.spec.securityContext.runAsNonRoot ? optional.of(true) : optional.none()})
+                  : optional.none(),
                 "ports": [{
                   "name": "http",
                   "containerPort": schema.spec.containerPort != 0 ? schema.spec.containerPort : schema.spec.port,
                   "protocol": "TCP"
                 }],
-                "env": has(schema.spec.env) ? schema.spec.env.map(k, k).sort().map(k, {"name": k, "value": schema.spec.env[k]}) : [],
+                ?"env": has(schema.spec.env) && size(schema.spec.env) > 0
+                  ? optional.of(schema.spec.env.map(k, k).sort().map(k, {"name": k, "value": schema.spec.env[k]}))
+                  : optional.none(),
                 "envFrom":
                   (schema.spec.onePassword.enabled ? [{"secretRef": {"name": schema.metadata.name + "-1pw", "optional": false}}] : [])
                   + (has(schema.spec.envFromSecrets) ? schema.spec.envFromSecrets.map(n, {"secretRef": {"name": n, "optional": false}}) : []),
@@ -169,54 +253,51 @@ spec:
                   }
                 },
                 ?"startupProbe": schema.spec.probes.startup.enabled
-                  ? optional.of(schema.spec.probes.type == "httpGet"
-                    ? {"httpGet": {"path": schema.spec.probes.path, "port": "http"},
-                       "failureThreshold": schema.spec.probes.startup.failureThreshold,
-                       "periodSeconds": schema.spec.probes.startup.periodSeconds}
-                    : {"tcpSocket": {"port": "http"},
-                       "failureThreshold": schema.spec.probes.startup.failureThreshold,
-                       "periodSeconds": schema.spec.probes.startup.periodSeconds})
+                  ? optional.of((schema.spec.probes.startup.type != "" ? schema.spec.probes.startup.type : schema.spec.probes.type) == "httpGet"
+                      ? {"httpGet": {"path": (schema.spec.probes.startup.path != "" ? schema.spec.probes.startup.path : schema.spec.probes.path), "port": "http"}, "failureThreshold": schema.spec.probes.startup.failureThreshold, "periodSeconds": schema.spec.probes.startup.periodSeconds}
+                      : {"tcpSocket": {"port": "http"}, "failureThreshold": schema.spec.probes.startup.failureThreshold, "periodSeconds": schema.spec.probes.startup.periodSeconds})
                   : optional.none(),
-                "readinessProbe": schema.spec.probes.type == "httpGet"
-                  ? {"httpGet": {"path": schema.spec.probes.path, "port": "http"},
-                     "initialDelaySeconds": schema.spec.probes.readiness.initialDelaySeconds,
-                     "periodSeconds": schema.spec.probes.readiness.periodSeconds,
-                     "timeoutSeconds": schema.spec.probes.readiness.timeoutSeconds,
-                     "failureThreshold": schema.spec.probes.readiness.failureThreshold}
-                  : {"tcpSocket": {"port": "http"},
-                     "initialDelaySeconds": schema.spec.probes.readiness.initialDelaySeconds,
-                     "periodSeconds": schema.spec.probes.readiness.periodSeconds,
-                     "timeoutSeconds": schema.spec.probes.readiness.timeoutSeconds,
-                     "failureThreshold": schema.spec.probes.readiness.failureThreshold},
+                "readinessProbe": ((schema.spec.probes.readiness.type != "" ? schema.spec.probes.readiness.type : schema.spec.probes.type) == "httpGet"
+                      ? {"httpGet": {"path": (schema.spec.probes.readiness.path != "" ? schema.spec.probes.readiness.path : schema.spec.probes.path), "port": "http"}, "initialDelaySeconds": schema.spec.probes.readiness.initialDelaySeconds, "periodSeconds": schema.spec.probes.readiness.periodSeconds, "timeoutSeconds": schema.spec.probes.readiness.timeoutSeconds, "failureThreshold": schema.spec.probes.readiness.failureThreshold}
+                      : {"tcpSocket": {"port": "http"}, "initialDelaySeconds": schema.spec.probes.readiness.initialDelaySeconds, "periodSeconds": schema.spec.probes.readiness.periodSeconds, "timeoutSeconds": schema.spec.probes.readiness.timeoutSeconds, "failureThreshold": schema.spec.probes.readiness.failureThreshold}),
                 ?"livenessProbe": schema.spec.probes.liveness.enabled
-                  ? optional.of(schema.spec.probes.type == "httpGet"
-                    ? {"httpGet": {"path": schema.spec.probes.path, "port": "http"},
-                       "initialDelaySeconds": schema.spec.probes.liveness.initialDelaySeconds,
-                       "periodSeconds": schema.spec.probes.liveness.periodSeconds,
-                       "timeoutSeconds": schema.spec.probes.liveness.timeoutSeconds,
-                       "failureThreshold": schema.spec.probes.liveness.failureThreshold}
-                    : {"tcpSocket": {"port": "http"},
-                       "initialDelaySeconds": schema.spec.probes.liveness.initialDelaySeconds,
-                       "periodSeconds": schema.spec.probes.liveness.periodSeconds,
-                       "timeoutSeconds": schema.spec.probes.liveness.timeoutSeconds,
-                       "failureThreshold": schema.spec.probes.liveness.failureThreshold})
+                  ? optional.of((schema.spec.probes.liveness.type != "" ? schema.spec.probes.liveness.type : schema.spec.probes.type) == "httpGet"
+                      ? {"httpGet": {"path": (schema.spec.probes.liveness.path != "" ? schema.spec.probes.liveness.path : schema.spec.probes.path), "port": "http"}, "initialDelaySeconds": schema.spec.probes.liveness.initialDelaySeconds, "periodSeconds": schema.spec.probes.liveness.periodSeconds, "timeoutSeconds": schema.spec.probes.liveness.timeoutSeconds, "failureThreshold": schema.spec.probes.liveness.failureThreshold}
+                      : {"tcpSocket": {"port": "http"}, "initialDelaySeconds": schema.spec.probes.liveness.initialDelaySeconds, "periodSeconds": schema.spec.probes.liveness.periodSeconds, "timeoutSeconds": schema.spec.probes.liveness.timeoutSeconds, "failureThreshold": schema.spec.probes.liveness.failureThreshold})
                   : optional.none(),
                 "volumeMounts":
                   (schema.spec.configMap.enabled
                     ? [{"name": "config", "mountPath": schema.spec.configMap.mountPath, "readOnly": true,
                         ?"subPath": schema.spec.configMap.subPath != "" ? optional.of(schema.spec.configMap.subPath) : optional.none()}]
                     : [])
-                  + (schema.spec.persistence.claimName != ""
+                  + (schema.spec.persistence.claimName != "" && schema.spec.persistence.mountPath != ""
                     ? [{"name": "data", "mountPath": schema.spec.persistence.mountPath, "readOnly": false}]
                     : [])
-              }]}'
-              volumes: '${
+                  + (has(schema.spec.extraVolumeMounts)
+                    ? schema.spec.extraVolumeMounts.map(m, {"name": m.name, "mountPath": m.mountPath, "readOnly": m.readOnly,
+                        ?"subPath": m.subPath != "" ? optional.of(m.subPath) : optional.none()})
+                    : [])
+              }],
+              "volumes":
                 (schema.spec.configMap.enabled
                   ? [{"name": "config", "configMap": {"name": schema.metadata.name + "-config"}}]
                   : [])
                 + (schema.spec.persistence.claimName != ""
                   ? [{"name": "data", "persistentVolumeClaim": {"claimName": schema.spec.persistence.claimName}}]
-                  : [])}'
+                  : [])
+                + (has(schema.spec.extraVolumes)
+                  ? schema.spec.extraVolumes.map(v, {
+                      "name": v.name,
+                      ?"persistentVolumeClaim": v.claimName != "" ? optional.of({"claimName": v.claimName}) : optional.none(),
+                      ?"configMap": v.configMap != "" ? optional.of({"name": v.configMap}) : optional.none(),
+                      ?"secret": v.secret != "" ? optional.of({"secretName": v.secret}) : optional.none(),
+                      ?"hostPath": v.hostPath != "" ? optional.of({"path": v.hostPath}) : optional.none(),
+                      ?"emptyDir": v.emptyDir
+                        ? optional.of({?"sizeLimit": v.sizeLimit != "" ? optional.of(v.sizeLimit) : optional.none()})
+                        : optional.none()})
+                  : [])
+            }
+          }}'
 
     - id: service
       template:
@@ -276,15 +357,14 @@ spec:
               name: ${schema.spec.route.gatewayName}
               namespace: ${schema.spec.route.gatewayNamespace}
           hostnames: ${schema.spec.route.hostnames}
-          rules:
-            - matches:
-                - path:
-                    type: PathPrefix
-                    value: /
-              backendRefs:
-                - name: ${service.metadata.name}
-                  kind: Service
-                  port: ${schema.spec.port}
+          rules: '${[{
+            "matches": [{"path": {"type": "PathPrefix", "value": "/"}}],
+            ?"filters": has(schema.spec.route.middlewares) && size(schema.spec.route.middlewares) > 0
+              ? optional.of(schema.spec.route.middlewares.map(m, {"type": "ExtensionRef",
+                  "extensionRef": {"group": "traefik.io", "kind": "Middleware", "name": m}}))
+              : optional.none(),
+            "backendRefs": dyn([{"name": service.metadata.name, "kind": "Service", "port": schema.spec.port}])
+          }]}'
 
     - id: publicroute
       includeWhen:
@@ -397,7 +477,13 @@ spec:
         spec:
           selector:
             matchLabels: ${deployment.spec.selector.matchLabels}
-          endpoints:
-            - port: http
-              path: ${schema.spec.serviceMonitor.path}
-              interval: ${schema.spec.serviceMonitor.interval}
+          endpoints: '${[{
+            "port": "http",
+            "path": schema.spec.serviceMonitor.path,
+            "interval": schema.spec.serviceMonitor.interval,
+            ?"basicAuth": schema.spec.serviceMonitor.basicAuthSecret != ""
+              ? optional.of({
+                  "username": {"name": schema.spec.serviceMonitor.basicAuthSecret, "key": "username"},
+                  "password": {"name": schema.spec.serviceMonitor.basicAuthSecret, "key": "password"}})
+              : optional.none()
+          }]}'
