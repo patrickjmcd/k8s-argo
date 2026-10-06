@@ -1,0 +1,35 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: outline
+  namespace: default
+spec:
+  image: outlinewiki/outline:1.10.1
+  port: 80
+  containerPort: 3000
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 400Mi
+    cpuLimit: 1000m
+    memoryLimit: 800Mi
+  probes:
+    liveness:
+      enabled: true
+      initialDelaySeconds: 180
+  route:
+    hostnames:
+    - outline.x.pmcd.io
+    publicHostnames:
+    - outline.pmcd.dev
+  onePassword:
+    enabled: true
+  env:
+    TZ: America/Chicago
+    FILE_STORAGE: local
+    FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
+    DATABASE_URL: postgres://outline@shared-postgres-rw.postgres.svc.cluster.local:5432/outline
+  persistence:
+    claimName: smb-outline-claim
+    mountPath: /var/lib/outline/data
+  glance:
+    monitor: true

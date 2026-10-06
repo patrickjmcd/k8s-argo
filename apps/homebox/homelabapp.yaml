@@ -1,0 +1,42 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: homebox
+  namespace: default
+spec:
+  image: ghcr.io/patrickjmcd/homebox:main
+  port: 80
+  containerPort: 7745
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 400Mi
+    cpuLimit: 1000m
+    memoryLimit: 800Mi
+  probes:
+    liveness:
+      enabled: true
+      initialDelaySeconds: 180
+  route:
+    hostnames:
+    - homebox.x.pmcd.io
+  onePassword:
+    enabled: true
+  env:
+    TZ: America/Chicago
+    HBOX_DATABASE_DRIVER: postgres
+    HBOX_DATABASE_HOST: shared-postgres-rw.postgres.svc.cluster.local
+    HBOX_DATABASE_PORT: '5432'
+    HBOX_DATABASE_USERNAME: homebox
+    HBOX_DATABASE_PASSWORD: ''
+    HBOX_DATABASE_DATABASE: homebox
+    HBOX_DATABASE_SSL_MODE: disable
+    HBOX_LABEL_MAKER_PADDING: '5'
+    HBOX_LABEL_MAKER_MARGIN: '5'
+    HBOX_LABEL_MAKER_WIDTH: '320'
+    HBOX_LABEL_MAKER_HEIGHT: '240'
+    HBOX_LABEL_MAKER_DYNAMIC_LENGTH: 'false'
+    HBOX_LABEL_MAKER_FONT_SIZE: '24'
+  persistence:
+    claimName: smb-homebox-claim
+  glance:
+    monitor: true

@@ -1,0 +1,42 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: n8n
+  namespace: default
+spec:
+  image: docker.n8n.io/n8nio/n8n:2.39.4
+  port: 80
+  containerPort: 5678
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 600Mi
+    cpuLimit: 1000m
+    memoryLimit: 1536Mi
+  probes:
+    liveness:
+      enabled: true
+      initialDelaySeconds: 180
+  route:
+    hostnames:
+    - n8n.x.pmcd.io
+    publicHostnames:
+    - n8n.pmcd.dev
+  onePassword:
+    enabled: true
+  env:
+    GENERIC_TIMEZONE: America/Chicago
+    N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true'
+    WEBHOOK_URL: https://n8n.pmcd.dev
+    N8N_PROXY_HOPS: '1'
+    N8N_PORT: '5678'
+    DB_TYPE: postgresdb
+    DB_POSTGRESDB_DATABASE: n8n
+    DB_POSTGRESDB_USER: n8n
+    DB_POSTGRESDB_PORT: '5432'
+    DB_POSTGRESDB_SCHEMA: public
+    DB_POSTGRESDB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+  persistence:
+    claimName: smb-n8n-claim
+  glance:
+    monitor: true
+    title: N8N

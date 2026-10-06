@@ -1,0 +1,43 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: sparkyfitness-server
+  namespace: sparkyfitness
+spec:
+  image: codewithcj/sparkyfitness_server:v1.7.3
+  port: 3010
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 256Mi
+    cpuLimit: 500m
+    memoryLimit: 512Mi
+  probes:
+    readiness:
+      timeoutSeconds: 3
+    liveness:
+      enabled: true
+      periodSeconds: 15
+      timeoutSeconds: 5
+    startup:
+      failureThreshold: 60
+  route:
+    enabled: false
+  onePassword:
+    enabled: true
+    itemPath: vaults/Kubernetes/items/sparkyfitness
+  env:
+    NODE_ENV: production
+    TZ: America/Chicago
+    SPARKY_FITNESS_LOG_LEVEL: INFO
+    SPARKY_FITNESS_DISABLE_SIGNUP: 'true'
+    SPARKY_FITNESS_ADMIN_EMAIL: patrickjmcd@gmail.com
+    SPARKY_FITNESS_FRONTEND_URL: https://sparkyfitness.x.pmcd.io
+    SPARKY_FITNESS_DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+    SPARKY_FITNESS_DB_PORT: '5432'
+    SPARKY_FITNESS_DB_NAME: sparkyfitness
+    SPARKY_FITNESS_DB_USER: sparkyfitness
+    SPARKY_FITNESS_APP_DB_USER: sparkyfitness_app
+    SPARKY_FITNESS_CUSTOM_UPLOADS_DIRECTORY: /data/uploads
+    SPARKY_FITNESS_CUSTOM_BACKUP_DIRECTORY: /data/backup
+  persistence:
+    claimName: longhorn-sparkyfitness-server-data
