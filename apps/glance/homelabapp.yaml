@@ -120,8 +120,6 @@ spec:
                     title: Media Services
                     sites:
                       # BEGIN GLANCE-GENERATED:Media Services
-                      - title: Agregarr
-                        url: https://agregarr.x.pmcd.io
                       - title: Bazarr
                         url: https://bazarr.x.pmcd.io
                       - title: Dispatcharr
@@ -132,18 +130,10 @@ spec:
                         url: https://lidarr.x.pmcd.io
                       - title: Notifiarr
                         url: https://notifiarr.x.pmcd.io
-                      - title: Prowlarr
-                        url: https://prowlarr.x.pmcd.io
-                      - title: Radarr
-                        url: https://radarr.x.pmcd.io
-                      - title: Readarr
-                        url: https://readarr.x.pmcd.io
                       - title: SABnzbd
                         url: https://sabnzbd.x.pmcd.io
                       - title: Seerr
                         url: https://requests.x.pmcd.io
-                      - title: Sonarr
-                        url: https://sonarr.x.pmcd.io
                       - title: Tautulli
                         url: https://tautulli.x.pmcd.io
                       - title: Youtarr
