@@ -117,6 +117,12 @@ Rules:
   sort map keys before turning them into lists, and validate as a throwaway
   RGD (different name/kind/group) before touching the real one. Comments at
   the top of the RGD explain why.
+- After an RGD **schema** change (new defaulted fields), some HomelabApp apps
+  go permanently OutOfSync in Argo with no real diff: Argo caches server-side
+  diff results in Redis keyed by the live resourceVersion, so objects that
+  haven't changed keep a prediction made under the old schema (restarting
+  the controller doesn't help). Bump every instance's resourceVersion:
+  `kubectl annotate homelabapp -A --all homelab.pmcd.io/rgd-touch=$(date +%s) --overwrite`
 
 ### Helm app using homelab-app chart (only for what HomelabApp can't express)
 
