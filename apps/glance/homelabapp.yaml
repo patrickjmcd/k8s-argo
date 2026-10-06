@@ -89,6 +89,8 @@ spec:
                         url: https://homebox.x.pmcd.io
                       - title: Immich
                         url: https://immich.x.pmcd.io
+                      - title: Kaneo
+                        url: https://kaneo.x.pmcd.io
                       - title: Logs
                         url: https://logs.x.pmcd.io
                       - title: Longhorn

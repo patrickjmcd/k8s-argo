@@ -55,6 +55,7 @@ spec:
       - host all dispatcharr all trust
       - host all romm all trust
       - host all sparkyfitness all trust
+      - host all kaneo all trust
       - host all backup all trust
 
   managed:
@@ -120,6 +121,11 @@ spec:
         inherit: true
         connectionLimit: -1
       - name: romm
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+      - name: kaneo
         ensure: present
         login: true
         inherit: true

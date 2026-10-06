@@ -1,0 +1,41 @@
+# Kaneo (kaneo.app) -- project management. Bundled image: nginx serves the web
+# app on 5173 and proxies /api to the API (1337) in the same container.
+# Database: kaneo on the shared CNPG cluster (core/postgres), trust auth.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: kaneo
+  namespace: kaneo
+spec:
+  image: ghcr.io/usekaneo/kaneo:2.34.0
+  port: 80
+  containerPort: 5173
+  env:
+    TZ: America/Chicago
+    KANEO_CLIENT_URL: https://kaneo.x.pmcd.io
+    DATABASE_URL: postgresql://kaneo@shared-postgres-rw.postgres.svc.cluster.local:5432/kaneo?sslmode=disable
+    DISABLE_GUEST_ACCESS: "true"
+  # AUTH_SECRET and NOTIFICATION_SECRET_ENCRYPTION_KEY, from
+  # vaults/Kubernetes/items/kaneo. Both must stay stable: changing
+  # AUTH_SECRET signs everyone out, and the notification key decrypts stored
+  # webhook/notification secrets.
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 768Mi
+  probes:
+    type: httpGet
+    path: /api/health
+    startup:
+      # first boot runs database migrations
+      failureThreshold: 60
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - kaneo.x.pmcd.io
+  glance:
+    monitor: true

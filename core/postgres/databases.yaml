@@ -228,3 +228,14 @@ spec:
   owner: sparkyfitness
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: kaneo
+  namespace: postgres
+spec:
+  name: kaneo
+  owner: kaneo
+  cluster:
+    name: shared-postgres
