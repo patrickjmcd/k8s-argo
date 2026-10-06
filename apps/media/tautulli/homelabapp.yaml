@@ -1,0 +1,30 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: tautulli
+  namespace: media
+spec:
+  image: ghcr.io/tautulli/tautulli:v2.18.2
+  port: 80
+  containerPort: 8181
+  env:
+    TZ: America/Chicago
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 138Mi
+    cpuLimit: 500m
+    # Was 139Mi (1Mi over the request) under the chart -- one spike from an
+    # OOMKill. See CLAUDE.md "Resource requests and limits".
+    memoryLimit: 256Mi
+  probes:
+    type: tcpSocket
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - tautulli.x.pmcd.io
+  persistence:
+    claimName: longhorn-tautulli-data
+    mountPath: /config
+  glance:
+    monitor: true

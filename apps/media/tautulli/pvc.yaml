@@ -1,0 +1,22 @@
+# Lives outside the HomelabApp on purpose: kro would delete a PVC it owned if
+# persistence were ever toggled off. Created by the homelab-app chart
+# originally; adopted here as-is.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-tautulli-data
+  namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    # makes Longhorn sync the label above from this PVC to its volume
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    # Never delete the data volume if the app is removed from Argo.
+    argocd.argoproj.io/sync-options: Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 500Mi

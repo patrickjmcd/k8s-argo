@@ -17,7 +17,6 @@ spec:
           - name: prowlarr
           - name: readarr
           - name: agregarr
-          - name: tautulli
           - name: hdhr2xmltv
           - name: seerr
           - name: medialyze
@@ -73,6 +72,8 @@ spec:
           - name: youtarr
           - name: dispatcharr
           - name: ersatztv
+          # HomelabApp (kro) instance, not the chart -- see apps/media/tautulli.
+          - name: tautulli
   template:
     metadata:
       name: '{{name}}'
