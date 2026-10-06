@@ -23,11 +23,11 @@ spec:
     - path: core/argo-assets
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
+    # No directory.recurse: false here -- it's the default, the API drops it
+    # from the stored Application, and declaring it kept this app OutOfSync.
     - path: argo/projects
       repoURL: https://github.com/patrickjmcd/k8s-argo.git
       targetRevision: main
-      directory:
-        recurse: false
     - chart: argo-cd
       repoURL: https://argoproj.github.io/argo-helm
       targetRevision: 10.9.6
