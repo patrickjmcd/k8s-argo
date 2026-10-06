@@ -1,0 +1,41 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: backend
+  namespace: homelable
+spec:
+  image: ghcr.io/pouzor/homelable-backend:3.4.2
+  port: 8000
+  resources:
+    cpuRequest: 100m
+    memoryRequest: 250Mi
+    cpuLimit: 2000m
+    memoryLimit: 2Gi
+  probes:
+    type: httpGet
+    path: /api/v1/health
+    readiness:
+      initialDelaySeconds: 5
+      timeoutSeconds: 3
+    liveness:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      timeoutSeconds: 5
+  route:
+    enabled: false
+  env:
+    SQLITE_PATH: /app/data/homelab.db
+    CORS_ORIGINS: '["https://homelable.x.pmcd.io"]'
+    AUTH_MODE: local
+    AUTH_USERNAME: admin
+    SCANNER_RANGES: '["192.168.1.0/24","192.168.3.0/24","192.168.4.0/24","192.168.5.0/24","192.168.8.0/24","192.168.10.0/24"]'
+    STATUS_CHECKER_INTERVAL: '60'
+  envFromSecrets:
+  - homelable-backend-1pw
+  persistence:
+    claimName: longhorn-backend-data
+    mountPath: /app/data
+  nodeSelector:
+    kubernetes.io/hostname: pi5-kube0
+  hostNetwork: true

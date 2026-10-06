@@ -1,0 +1,8 @@
+# Keeps the chart-era secret name: homelable-mcp also loads it (envFromSecrets).
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: homelable-backend-1pw
+  namespace: homelable
+spec:
+  itemPath: vaults/Kubernetes/items/homelable-backend

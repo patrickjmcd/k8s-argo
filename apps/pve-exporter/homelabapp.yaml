@@ -1,0 +1,31 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: pve-exporter
+  namespace: prometheus
+spec:
+  image: prompve/prometheus-pve-exporter:3.10.0
+  port: 9221
+  resources:
+    cpuRequest: 63m
+    memoryRequest: 100Mi
+    cpuLimit: 500m
+    memoryLimit: 100Mi
+  probes:
+    type: httpGet
+    startup:
+      failureThreshold: 12
+  route:
+    enabled: false
+  onePassword:
+    enabled: true
+  args:
+  - --config.file=/etc/prometheus-pve-exporter/pve.yml
+  extraVolumes:
+  - name: config
+    secret: pve-exporter-1pw
+  extraVolumeMounts:
+  - name: config
+    mountPath: /etc/prometheus-pve-exporter/pve.yml
+    subPath: pve.yml
+    readOnly: true

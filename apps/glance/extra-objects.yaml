@@ -1,0 +1,23 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: glance-pihole-1pw
+  namespace: default
+spec:
+  itemPath: vaults/Kubernetes/items/pihole
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: glance-radarr-1pw
+  namespace: default
+spec:
+  itemPath: vaults/Kubernetes/items/radarr
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: glance-sonarr-1pw
+  namespace: default
+spec:
+  itemPath: vaults/Kubernetes/items/sonarr

@@ -6,27 +6,21 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/uptime-kuma
+    argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
     namespace: default
     name: in-cluster
   project: apps
   syncPolicy:
-    automated: { }
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - ServerSideApply=true
-  sources:
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      ref: values
-    - path: charts/homelab-app
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      helm:
-        releaseName: uptime-kuma
-        valueFiles:
-          - $values/apps/uptime-kuma/values.yaml
-    - path: apps/uptime-kuma
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
+      - SkipDryRunOnMissingResource=true
+  source:
+    # HomelabApp (core/kro-definitions) instead of the homelab-app chart.
+    path: apps/uptime-kuma
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main

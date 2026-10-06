@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Regenerates the glance 'Services' / 'Media Services' monitor widgets in
-apps/glance/values.yaml from HTTPRoutes across the repo.
+apps/glance/homelabapp.yaml (glance.yml) from HTTPRoutes across the repo.
 
 An app opts in by setting, on its HTTPRoute (raw manifest):
   metadata:
@@ -26,7 +26,7 @@ schema, unused by kro itself); the hostname is spec.route.hostnames[0]:
       title: "Tautulli"  # optional
       group: "Services"  # optional
 
-Generated sites are spliced between marker comments in apps/glance/values.yaml:
+Generated sites are spliced between marker comments in apps/glance/homelabapp.yaml:
   # BEGIN GLANCE-GENERATED:<group>
   ...
   # END GLANCE-GENERATED:<group>
@@ -40,7 +40,8 @@ import sys
 import yaml
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
-GLANCE_VALUES = REPO_ROOT / "apps/glance/values.yaml"
+# glance runs as a HomelabApp; its config is spec.configMap.data["glance.yml"]
+GLANCE_VALUES = REPO_ROOT / "apps/glance/homelabapp.yaml"
 ANNOTATION_PREFIX = "glance.pmcd.io/"
 
 

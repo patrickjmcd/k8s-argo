@@ -6,7 +6,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/go2rtc
+    argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
     namespace: default
@@ -16,14 +16,11 @@ spec:
     automated:
       prune: true
       selfHeal: true
-  sources:
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      ref: values
-    - path: charts/homelab-app
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      helm:
-        releaseName: go2rtc
-        valueFiles:
-          - $values/apps/go2rtc/values.yaml
+    syncOptions:
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
+  source:
+    # HomelabApp (core/kro-definitions) instead of the homelab-app chart.
+    path: apps/go2rtc
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main

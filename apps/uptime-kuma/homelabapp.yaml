@@ -1,0 +1,35 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: uptime-kuma
+  namespace: default
+spec:
+  image: louislam/uptime-kuma:2.5.4
+  port: 3001
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 288Mi
+    cpuLimit: 500m
+    memoryLimit: 384Mi
+  probes:
+    type: httpGet
+    readiness:
+      periodSeconds: 30
+      timeoutSeconds: 10
+    startup:
+      enabled: false
+  route:
+    hostnames:
+    - status.x.pmcd.io
+    - uptime-kuma.x.pmcd.io
+    publicHostnames:
+    - uptime-kuma.pmcd.io
+  persistence:
+    claimName: longhorn-uptime-kuma-data
+    mountPath: /app/data
+  serviceMonitor:
+    enabled: true
+    basicAuthSecret: uptime-kuma-1pw
+  glance:
+    monitor: true
+    title: Uptime Kuma

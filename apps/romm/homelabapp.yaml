@@ -1,0 +1,59 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: romm
+  namespace: romm
+spec:
+  image: rommapp/romm:5.2.0
+  port: 8080
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 512Mi
+    cpuLimit: 500m
+    memoryLimit: 2Gi
+  probes:
+    readiness:
+      initialDelaySeconds: 15
+      timeoutSeconds: 5
+    liveness:
+      enabled: true
+    startup:
+      failureThreshold: 60
+  route:
+    hostnames:
+    - romm.x.pmcd.io
+  onePassword:
+    enabled: true
+  env:
+    ROMM_DB_DRIVER: postgresql
+    DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+    DB_PORT: '5432'
+    DB_NAME: romm
+    DB_USER: romm
+    DB_PASSWD: trust-auth-unused
+    SCAN_WORKERS: '4'
+    WEB_SERVER_CONCURRENCY: '2'
+    HASHEOUS_API_ENABLED: 'true'
+  persistence:
+    claimName: longhorn-romm-data
+    mountPath: ''
+  extraVolumes:
+  - name: library
+    claimName: smb-romm-library-claim
+  extraVolumeMounts:
+  - name: data
+    mountPath: /romm/resources
+    subPath: resources
+  - name: data
+    mountPath: /redis-data
+    subPath: redis-data
+  - name: data
+    mountPath: /romm/assets
+    subPath: assets
+  - name: data
+    mountPath: /romm/config
+    subPath: config
+  - name: library
+    mountPath: /romm/library
+  glance:
+    monitor: true

@@ -1,85 +1,56 @@
-image:
-  repository: alexxit/go2rtc
-  tag: "1.9.14"
-
-service:
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: go2rtc
+  namespace: default
+spec:
+  image: alexxit/go2rtc:1.9.14
   port: 1984
-
-resources:
-  requests:
-    cpu: 20m
-    memory: 64Mi
-  limits:
-    memory: 256Mi
-
-probes:
-  readiness:
-    type: tcpSocket
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-  liveness:
-    enabled: true
-    type: tcpSocket
-    initialDelaySeconds: 15
-    failureThreshold: 3
-    periodSeconds: 10
-    timeoutSeconds: 1
-  startup:
-    enabled: true
-    type: tcpSocket
-    failureThreshold: 30
-    periodSeconds: 2
-
-httproute:
-  enabled: true
-  hostnames:
+  resources:
+    cpuRequest: 20m
+    memoryRequest: 64Mi
+    cpuLimit: 500m
+    memoryLimit: 256Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 5
+    liveness:
+      enabled: true
+      initialDelaySeconds: 15
+      timeoutSeconds: 1
+      failureThreshold: 3
+    startup:
+      periodSeconds: 2
+  route:
+    hostnames:
     - go2rtc.x.pmcd.io
-
-# Gateway API/HTTPRoute is HTTP-only (L7), so go2rtc's plain RTSP restream
-# (port 8554) needs its own LoadBalancer Service to be reachable from the
-# LAN at all -- this is what Home Assistant (running outside the cluster)
-# points its camera config at, instead of pulling RTSPS from Protect itself.
-extraObjects:
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      name: go2rtc-rtsp
-    spec:
-      type: LoadBalancer
-      selector:
-        app.kubernetes.io/name: go2rtc
-        app.kubernetes.io/instance: go2rtc
-      ports:
-        - name: rtsp
-          port: 8554
-          targetPort: 8554
-          protocol: TCP
-
-onePassword:
-  enabled: true
-  itemPath: "vaults/Kubernetes/items/go2rtc"
-
-envFrom:
-  - secretRef:
-      name: go2rtc-1pw
-
-# go2rtc has no built-in env-var expansion in its config file (that's a
-# Glance-specific feature elsewhere in this repo, not a general one) -- so
-# the streams file is generated at container start from real shell
-# variable expansion, then merged with the static config via go2rtc's
-# multiple -config flag support.
-#
-# Streams are pulled via go2rtc's bundled ffmpeg rather than its native RTSP
-# client: go2rtc's own SRTP decryption silently fails on UniFi Protect's
-# "enableSrtp" RTSPS streams (handshake succeeds, then it drops the producer
-# ~0.5s later with nothing logged, even at trace level) -- confirmed ffmpeg
-# handles the exact same stream fine. video/audio=copy avoids transcoding
-# since the source codecs (H264/opus) are already browser-compatible.
-command:
-  - "sh"
-  - "-c"
+  onePassword:
+    enabled: true
+  configMap:
+    enabled: true
+    mountPath: /config/go2rtc.yaml
+    subPath: go2rtc.yaml
+    data:
+      go2rtc.yaml: |
+        log:
+          level: debug
+          format: text
+        api:
+          listen: ":1984"
+          # static_dir REPLACES go2rtc's built-in asset serving entirely (it
+          # doesn't fall back to embedded assets for other paths) -- confirmed
+          # by this breaking /video-stream.js with a 404 the first time. So
+          # `command` below also copies video-stream.js/video-rtc.js into this
+          # same directory alongside our custom player.html, rather than just
+          # writing player.html alone.
+          static_dir: "/tmp/static"
+        rtsp:
+          listen: ":8554"
+        webrtc:
+          listen: ":8555"
+  command:
+  - sh
+  - -c
   - |
     cat > /tmp/streams.yaml <<EOF
     streams:
@@ -278,32 +249,3 @@ command:
     base64 -d /tmp/static/player.html.b64 > /tmp/static/player.html
     rm /tmp/static/player.html.b64
     exec /usr/local/bin/go2rtc -config /config/go2rtc.yaml -config /tmp/streams.yaml
-
-# Both Home Assistant and the Ignition dashboard pull live video from here
-# rather than each maintaining its own RTSPS/token plumbing back to UniFi
-# Protect. Source URLs are Protect's internal secure RTSPS streams (port
-# 7441, same ones Home Assistant's own UniFi Protect integration uses),
-# stored in the go2rtc 1Password item -- see `command` above for how they
-# actually get into the running config.
-configMap:
-  enabled: true
-  mountPath: /config/go2rtc.yaml
-  subPath: go2rtc.yaml
-  data:
-    go2rtc.yaml: |
-      log:
-        level: debug
-        format: text
-      api:
-        listen: ":1984"
-        # static_dir REPLACES go2rtc's built-in asset serving entirely (it
-        # doesn't fall back to embedded assets for other paths) -- confirmed
-        # by this breaking /video-stream.js with a 404 the first time. So
-        # `command` below also copies video-stream.js/video-rtc.js into this
-        # same directory alongside our custom player.html, rather than just
-        # writing player.html alone.
-        static_dir: "/tmp/static"
-      rtsp:
-        listen: ":8554"
-      webrtc:
-        listen: ":8555"

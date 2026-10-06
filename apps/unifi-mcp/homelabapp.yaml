@@ -1,0 +1,27 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: unifi-mcp
+  namespace: default
+spec:
+  image: ghcr.io/sirkirby/unifi-network-mcp:0.32.10
+  port: 3000
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 128Mi
+    cpuLimit: 200m
+    memoryLimit: 256Mi
+  route:
+    hostnames:
+    - unifi-mcp.x.pmcd.io
+    middlewares:
+    - unifi-mcp-basicauth
+  onePassword:
+    enabled: true
+  env:
+    UNIFI_MCP_HTTP_ENABLED: 'true'
+    UNIFI_MCP_HOST: 0.0.0.0
+    UNIFI_MCP_PORT: '3000'
+    UNIFI_NETWORK_VERIFY_SSL: 'false'
+    UNIFI_MCP_ALLOWED_HOSTS: unifi-mcp.x.pmcd.io
+    UNIFI_MCP_ENABLE_DNS_REBINDING_PROTECTION: 'false'

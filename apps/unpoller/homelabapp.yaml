@@ -1,0 +1,32 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: unpoller
+  namespace: default
+spec:
+  image: ghcr.io/unpoller/unpoller:v5.2.8
+  port: 9130
+  resources:
+    cpuRequest: 49m
+    memoryRequest: 100Mi
+    cpuLimit: 500m
+    memoryLimit: 128Mi
+  probes:
+    type: httpGet
+    liveness:
+      enabled: true
+      timeoutSeconds: 1
+      failureThreshold: 3
+    startup:
+      enabled: false
+  route:
+    enabled: false
+  serviceMonitor:
+    enabled: true
+  extraVolumes:
+  - name: config-volume
+    configMap: unpoller-config
+  extraVolumeMounts:
+  - name: config-volume
+    mountPath: /etc/unpoller/up.conf
+    subPath: up.conf

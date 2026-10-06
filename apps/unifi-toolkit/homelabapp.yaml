@@ -1,0 +1,35 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: unifi-toolkit
+  namespace: default
+spec:
+  image: ghcr.io/crosstalk-solutions/unifi-toolkit:1.9.11
+  port: 8000
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 100Mi
+    cpuLimit: 100m
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    path: /health
+    liveness:
+      enabled: true
+      timeoutSeconds: 1
+      failureThreshold: 3
+    startup:
+      enabled: false
+  route:
+    hostnames:
+    - unifi-toolkit.x.pmcd.io
+  onePassword:
+    enabled: true
+  persistence:
+    claimName: longhorn-unifi-toolkit-data
+    mountPath: /app/data
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
