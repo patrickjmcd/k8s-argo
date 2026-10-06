@@ -1,0 +1,21 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: nut-exporter
+  namespace: default
+spec:
+  image: ghcr.io/druggeri/nut_exporter:3.3.0
+  port: 9199
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 32Mi
+    cpuLimit: 500m
+    memoryLimit: 64Mi
+  route:
+    enabled: false
+  env:
+    NUT_EXPORTER_SERVER: 192.168.1.12
+    NUT_EXPORTER_SERVERPORT: '3493'
+  serviceMonitor:
+    enabled: true
+    path: /ups_metrics

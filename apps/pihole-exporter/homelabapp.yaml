@@ -1,0 +1,35 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: pihole-exporter
+  namespace: pihole
+spec:
+  image: ekofr/pihole-exporter:v1.2.0
+  port: 9617
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 32Mi
+    cpuLimit: 500m
+    memoryLimit: 64Mi
+  probes:
+    type: httpGet
+    path: /metrics
+    readiness:
+      timeoutSeconds: 5
+    liveness:
+      enabled: true
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+    startup:
+      failureThreshold: 12
+  route:
+    enabled: false
+  onePassword:
+    enabled: true
+  env:
+    PIHOLE_HOSTNAME: pihole-web
+    PIHOLE_PORT: '80'
+    PORT: '9617'
+  serviceMonitor:
+    enabled: true

@@ -1,0 +1,24 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: homelable-mcp
+  namespace: homelable
+spec:
+  image: ghcr.io/pouzor/homelable-mcp:3.4.2
+  port: 8001
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 64Mi
+    cpuLimit: 500m
+    memoryLimit: 256Mi
+  probes:
+    liveness:
+      enabled: true
+      initialDelaySeconds: 30
+  route:
+    hostnames:
+    - homelable-mcp.x.pmcd.io
+  env:
+    BACKEND_URL: http://backend:8000
+  envFromSecrets:
+  - homelable-backend-1pw

@@ -6,7 +6,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/homebox-companion
+    argocd.argoproj.io/manifest-generate-paths: .
 spec:
   destination:
     name: in-cluster
@@ -19,14 +19,8 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-  sources:
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      ref: values
-    - path: charts/homelab-app
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      helm:
-        releaseName: homebox-companion
-        valueFiles:
-          - $values/apps/homebox-companion/values.yaml
+  source:
+    # HomelabApp (core/kro-definitions) instead of the homelab-app chart.
+    path: apps/homebox-companion
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main

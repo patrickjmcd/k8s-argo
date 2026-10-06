@@ -1,0 +1,26 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: homelable
+  namespace: homelable
+spec:
+  image: ghcr.io/pouzor/homelable-frontend:3.4.2
+  port: 80
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 32Mi
+    cpuLimit: 500m
+    memoryLimit: 128Mi
+  probes:
+    type: httpGet
+    readiness:
+      initialDelaySeconds: 5
+      timeoutSeconds: 3
+    liveness:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      timeoutSeconds: 5
+  route:
+    hostnames:
+    - homelable.x.pmcd.io
