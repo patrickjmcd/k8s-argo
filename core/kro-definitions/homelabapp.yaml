@@ -1,9 +1,25 @@
-# HomelabApp: an experiment in replacing the homelab-app Helm chart with a kro
-# ResourceGraphDefinition. kro turns this into a HomelabApp CRD plus a
-# controller that keeps each instance's Deployment, Service and HTTPRoute in
-# sync. Covers stateless apps: optional public route (Cloudflare Tunnel),
-# 1Password secret and ConfigMap. Not yet: persistence, ServiceMonitor.
-# See apps/iss-in-space-kro for an instance.
+# HomelabApp: kro ResourceGraphDefinition replacing the homelab-app Helm chart
+# for single-container apps. kro turns this into a HomelabApp CRD plus a
+# controller that keeps each instance's Deployment, Service, HTTPRoutes,
+# OnePasswordItem, ConfigMap and ServiceMonitor in sync.
+# Instances: apps/iss-in-space-kro, apps/reedme, apps/media/tautulli.
+#
+# Writing optional fields (tested on kro 0.9.4, Oct 2026):
+# - The container is built as one CEL expression so optional keys can use the
+#   optional map-entry syntax `?"key": cond ? optional.of(v) : optional.none()`,
+#   which omits the key. A field-level `optional.none()` instead renders null:
+#   fine at create time, but toggling it off later leaves e.g. a livenessProbe
+#   with no handler, which the API server rejects, wedging the instance.
+# - Lists use `cond ? [...] : []`; an empty list removes the field cleanly.
+# - Map literals are checked against the target struct: an all-string map
+#   (map(string,string)) fails against structs with bool fields, so mounts
+#   carry an explicit "readOnly".
+#
+# Persistence mounts an existing PVC (persistence.claimName) rather than
+# creating one: kro deletes includeWhen resources when the condition turns
+# false, so a kro-owned PVC would lose its data if persistence were ever
+# toggled off. Define the PVC next to the instance (with backup labels and
+# argocd.argoproj.io/sync-options: Delete=false).
 apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
@@ -18,12 +34,34 @@ spec:
       port: integer | default=80 description="Service port"
       containerPort: integer | default=0 description="Container port; 0 means same as port"
       env: "map[string]string"
+      # Extra Secrets to load as env vars, beyond the 1Password one.
+      envFromSecrets: "[]string"
       imagePullSecrets: "[]string"
       resources:
         cpuRequest: string | default="25m"
         memoryRequest: string | default="128Mi"
+        # Empty string = no CPU limit (see CLAUDE.md on CPU limits).
         cpuLimit: string | default="500m"
         memoryLimit: string | default="512Mi"
+      # One handler for all probes, on the "http" container port.
+      probes:
+        type: string | default="tcpSocket" description="tcpSocket or httpGet"
+        path: string | default="/" description="Path for httpGet"
+        startup:
+          enabled: boolean | default=true
+          failureThreshold: integer | default=30
+          periodSeconds: integer | default=5
+        readiness:
+          initialDelaySeconds: integer | default=10
+          periodSeconds: integer | default=10
+          timeoutSeconds: integer | default=1
+          failureThreshold: integer | default=3
+        liveness:
+          enabled: boolean | default=false
+          initialDelaySeconds: integer | default=60
+          periodSeconds: integer | default=10
+          timeoutSeconds: integer | default=10
+          failureThreshold: integer | default=5
       route:
         enabled: boolean | default=true
         hostnames: "[]string"
@@ -42,6 +80,19 @@ spec:
         mountPath: string | default="/config"
         subPath: string | default=""
         data: "map[string]string"
+      persistence:
+        # Existing PVC to mount; empty = no persistent volume.
+        claimName: string | default=""
+        mountPath: string | default="/data"
+      serviceMonitor:
+        enabled: boolean | default=false
+        path: string | default="/metrics"
+        interval: string | default="30s"
+      # Read by scripts/generate_glance_monitors.py, not by kro.
+      glance:
+        monitor: boolean | default=false
+        title: string | default=""
+        group: string | default=""
     status:
       availableReplicas: ${deployment.status.availableReplicas}
       serviceIP: ${service.spec.clusterIP}
@@ -68,6 +119,8 @@ spec:
           revisionHistoryLimit: 3
           strategy:
             type: Recreate
+          # Same selector labels as the homelab-app chart, so a chart app can
+          # move to HomelabApp without a selector change (selectors are immutable).
           selector:
             matchLabels:
               app.kubernetes.io/name: ${schema.metadata.name}
@@ -82,52 +135,75 @@ spec:
               # vars can shadow an app's own same-named env var.
               enableServiceLinks: false
               imagePullSecrets: '${has(schema.spec.imagePullSecrets) ? schema.spec.imagePullSecrets.map(n, {"name": n}) : []}'
-              containers:
-                - name: app
-                  image: ${schema.spec.image}
-                  ports:
-                    - name: http
-                      containerPort: '${schema.spec.containerPort != 0 ? schema.spec.containerPort : schema.spec.port}'
-                      protocol: TCP
-                  env: '${has(schema.spec.env) ? schema.spec.env.map(k, {"name": k, "value": schema.spec.env[k]}) : []}'
-                  # Always declared (kro can't type-check a conditional list of
-                  # nested objects); optional unless 1Password is enabled.
-                  envFrom:
-                    - secretRef:
-                        name: ${schema.metadata.name}-1pw
-                        optional: ${!(has(schema.spec.onePassword) && schema.spec.onePassword.enabled)}
-                  # Static for the same reason; when configMap is disabled the
-                  # (empty, optional) volume goes to an unused path so it can't
-                  # shadow anything the image ships at /config.
-                  volumeMounts:
-                    - name: config
-                      mountPath: '${has(schema.spec.configMap) && schema.spec.configMap.enabled ? schema.spec.configMap.mountPath : "/var/run/homelabapp/unused-config"}'
-                      subPath: '${has(schema.spec.configMap) && schema.spec.configMap.enabled ? schema.spec.configMap.subPath : ""}'
-                      readOnly: true
-                  resources:
-                    requests:
-                      cpu: ${schema.spec.resources.cpuRequest}
-                      memory: ${schema.spec.resources.memoryRequest}
-                    limits:
-                      cpu: ${schema.spec.resources.cpuLimit}
-                      memory: ${schema.spec.resources.memoryLimit}
-                  startupProbe:
-                    tcpSocket:
-                      port: http
-                    failureThreshold: 30
-                    periodSeconds: 5
-                  readinessProbe:
-                    tcpSocket:
-                      port: http
-                    initialDelaySeconds: 10
-                    periodSeconds: 10
-              # Always declared for the same reason as envFrom; only mounted
-              # (volumeMounts above) when configMap.enabled.
-              volumes:
-                - name: config
-                  configMap:
-                    name: ${schema.metadata.name}-config
-                    optional: true
+              # Container name matches the chart's (the release name).
+              containers: '${[{
+                "name": schema.metadata.name,
+                "image": schema.spec.image,
+                "ports": [{
+                  "name": "http",
+                  "containerPort": schema.spec.containerPort != 0 ? schema.spec.containerPort : schema.spec.port,
+                  "protocol": "TCP"
+                }],
+                "env": has(schema.spec.env) ? schema.spec.env.map(k, {"name": k, "value": schema.spec.env[k]}) : [],
+                "envFrom":
+                  (schema.spec.onePassword.enabled ? [{"secretRef": {"name": schema.metadata.name + "-1pw", "optional": false}}] : [])
+                  + (has(schema.spec.envFromSecrets) ? schema.spec.envFromSecrets.map(n, {"secretRef": {"name": n, "optional": false}}) : []),
+                "resources": {
+                  "requests": {"cpu": schema.spec.resources.cpuRequest, "memory": schema.spec.resources.memoryRequest},
+                  "limits": {
+                    ?"cpu": schema.spec.resources.cpuLimit != "" ? optional.of(schema.spec.resources.cpuLimit) : optional.none(),
+                    "memory": schema.spec.resources.memoryLimit
+                  }
+                },
+                ?"startupProbe": schema.spec.probes.startup.enabled
+                  ? optional.of(schema.spec.probes.type == "httpGet"
+                    ? {"httpGet": {"path": schema.spec.probes.path, "port": "http"},
+                       "failureThreshold": schema.spec.probes.startup.failureThreshold,
+                       "periodSeconds": schema.spec.probes.startup.periodSeconds}
+                    : {"tcpSocket": {"port": "http"},
+                       "failureThreshold": schema.spec.probes.startup.failureThreshold,
+                       "periodSeconds": schema.spec.probes.startup.periodSeconds})
+                  : optional.none(),
+                "readinessProbe": schema.spec.probes.type == "httpGet"
+                  ? {"httpGet": {"path": schema.spec.probes.path, "port": "http"},
+                     "initialDelaySeconds": schema.spec.probes.readiness.initialDelaySeconds,
+                     "periodSeconds": schema.spec.probes.readiness.periodSeconds,
+                     "timeoutSeconds": schema.spec.probes.readiness.timeoutSeconds,
+                     "failureThreshold": schema.spec.probes.readiness.failureThreshold}
+                  : {"tcpSocket": {"port": "http"},
+                     "initialDelaySeconds": schema.spec.probes.readiness.initialDelaySeconds,
+                     "periodSeconds": schema.spec.probes.readiness.periodSeconds,
+                     "timeoutSeconds": schema.spec.probes.readiness.timeoutSeconds,
+                     "failureThreshold": schema.spec.probes.readiness.failureThreshold},
+                ?"livenessProbe": schema.spec.probes.liveness.enabled
+                  ? optional.of(schema.spec.probes.type == "httpGet"
+                    ? {"httpGet": {"path": schema.spec.probes.path, "port": "http"},
+                       "initialDelaySeconds": schema.spec.probes.liveness.initialDelaySeconds,
+                       "periodSeconds": schema.spec.probes.liveness.periodSeconds,
+                       "timeoutSeconds": schema.spec.probes.liveness.timeoutSeconds,
+                       "failureThreshold": schema.spec.probes.liveness.failureThreshold}
+                    : {"tcpSocket": {"port": "http"},
+                       "initialDelaySeconds": schema.spec.probes.liveness.initialDelaySeconds,
+                       "periodSeconds": schema.spec.probes.liveness.periodSeconds,
+                       "timeoutSeconds": schema.spec.probes.liveness.timeoutSeconds,
+                       "failureThreshold": schema.spec.probes.liveness.failureThreshold})
+                  : optional.none(),
+                "volumeMounts":
+                  (schema.spec.configMap.enabled
+                    ? [{"name": "config", "mountPath": schema.spec.configMap.mountPath, "readOnly": true,
+                        ?"subPath": schema.spec.configMap.subPath != "" ? optional.of(schema.spec.configMap.subPath) : optional.none()}]
+                    : [])
+                  + (schema.spec.persistence.claimName != ""
+                    ? [{"name": "data", "mountPath": schema.spec.persistence.mountPath, "readOnly": false}]
+                    : [])
+              }]}'
+              volumes: '${
+                (schema.spec.configMap.enabled
+                  ? [{"name": "config", "configMap": {"name": schema.metadata.name + "-config"}}]
+                  : [])
+                + (schema.spec.persistence.claimName != ""
+                  ? [{"name": "data", "persistentVolumeClaim": {"claimName": schema.spec.persistence.claimName}}]
+                  : [])}'
 
     - id: service
       template:
@@ -231,3 +307,24 @@ spec:
           labels:
             app.kubernetes.io/managed-by: kro
         data: ${schema.spec.configMap.data}
+
+    - id: servicemonitor
+      includeWhen:
+        - ${schema.spec.serviceMonitor.enabled}
+      template:
+        apiVersion: monitoring.coreos.com/v1
+        kind: ServiceMonitor
+        metadata:
+          name: ${schema.metadata.name}
+          namespace: ${schema.metadata.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.metadata.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/managed-by: kro
+        spec:
+          selector:
+            matchLabels: ${deployment.spec.selector.matchLabels}
+          endpoints:
+            - port: http
+              path: ${schema.spec.serviceMonitor.path}
+              interval: ${schema.spec.serviceMonitor.interval}
