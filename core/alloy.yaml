@@ -104,8 +104,19 @@ spec:
                 readOnly: true
           configMap:
             content: |
+              // Only this node's pods. Without the selector every Alloy pod
+              // (one per node) tailed every container in the cluster, so
+              // the apiserver held ~10x as many pods/log streams (~3.9k,
+              // Oct 2026) and Loki got each line once per node. That grew
+              // apiserver heap ~800Mi/day until kube-n3160 and
+              // kube-macmini were swapping, flapping TargetDown /
+              // KubeAPIInstanceUnreachable alerts.
               discovery.kubernetes "pods" {
                 role = "pod"
+                selectors {
+                  role  = "pod"
+                  field = "spec.nodeName=" + sys.env("K8S_NODE_NAME")
+                }
               }
 
               discovery.relabel "pods" {
