@@ -1,0 +1,42 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: mealie
+  namespace: default
+spec:
+  image: ghcr.io/mealie-recipes/mealie:v3.25.1
+  port: 9000
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 392Mi
+    cpuLimit: 500m
+    memoryLimit: 640Mi # was 397Mi, 5Mi over the request -- see CLAUDE.md on memory headroom
+  probes:
+    type: httpGet
+    readiness:
+      timeoutSeconds: 10
+    startup:
+      enabled: false
+  route:
+    hostnames:
+      - mealie.x.pmcd.io
+    publicHostnames:
+      - mealie.pmcd.dev
+  onePassword:
+    enabled: true
+  env:
+    ALLOW_SIGNUP: 'false'
+    TZ: America/Chicago
+    DB_ENGINE: postgres
+    BASE_URL: https://mealie.pmcd.dev
+    POSTGRES_USER: mealie
+    POSTGRES_DB: mealie
+    POSTGRES_SERVER: shared-postgres-rw.postgres.svc.cluster.local
+    OIDC_AUTH_ENABLED: 'True'
+    OIDC_SIGNUP_ENABLED: 'False'
+    OIDC_CONFIGURATION_URL: https://auth.pmcd.dev/.well-known/openid-configuration
+  persistence:
+    claimName: longhorn-mealie-data
+    mountPath: /app/data
+  glance:
+    monitor: true

@@ -18,6 +18,7 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
   source:
     # HomelabApp (core/kro-definitions) instead of the homelab-app chart.
     path: apps/nut-exporter

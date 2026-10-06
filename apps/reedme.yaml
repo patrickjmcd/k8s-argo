@@ -18,6 +18,7 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
   # HomelabApp (core/kro-definitions) instead of the homelab-app chart.
   source:
     path: apps/reedme

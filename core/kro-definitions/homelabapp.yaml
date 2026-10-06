@@ -2,7 +2,7 @@
 # for single-container apps. kro turns this into a HomelabApp CRD plus a
 # controller that keeps each instance's Deployment, Service, HTTPRoutes,
 # OnePasswordItem, ConfigMap and ServiceMonitor in sync.
-# Instances: apps/iss-in-space-kro, apps/reedme, apps/media/tautulli.
+# Instances: any apps/**/homelabapp.yaml (e.g. apps/reedme, apps/media/tautulli).
 #
 # Writing optional fields (tested on kro 0.9.4, Oct 2026):
 # - The container is built as one CEL expression so optional keys can use the
