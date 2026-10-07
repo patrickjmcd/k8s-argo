@@ -46,6 +46,14 @@ spec:
             # built-in server downloads the DB once and scan jobs become thin
             # HTTP clients against it, removing the race entirely.
             builtInTrivyServer: true
+            # Oct 2026: SBOM reports were 214 MiB of JSON (285 objects) -- more
+            # than every other resource type combined. Every kube-apiserver
+            # holds all objects in its watch cache, so they cost each
+            # control-plane node a GiB+ of RAM and pushed the 7.6 GB ones
+            # (kube-n3160, kube-macmini) into swap. They're only a rescan
+            # cache / input for ClusterVulnerabilityReports; per-workload
+            # VulnerabilityReports don't need them.
+            sbomGenerationEnabled: false
           trivy:
             ignoreUnfixed: true
             resources:
