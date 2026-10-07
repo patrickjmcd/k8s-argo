@@ -9,4 +9,5 @@ secrets.env.json
 terraform.tfvars
 /.claude/*
 !/.claude/skills/
-.tmp/
+.tmp/__pycache__/
+*.pyc
