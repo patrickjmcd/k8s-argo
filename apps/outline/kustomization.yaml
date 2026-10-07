@@ -4,3 +4,4 @@ resources:
   - pv.yaml
   - pvc.yaml
   - homelabapp.yaml
+  - extra-objects.yaml

@@ -24,6 +24,8 @@ REGION = "garage"
 TOKEN = os.environ["GARAGE_ADMIN_TOKEN"]
 CAPACITY = 20 * 1000**3  # bytes; keep in step with the PVC in storage.yaml
 
+# One entry per app. key_id/key_secret come from that app's 1Password item,
+# passed in by bootstrap-job.yaml as <APP>_ACCESS_KEY_ID / <APP>_SECRET_ACCESS_KEY.
 BUCKETS = [
     {
         "name": "kaneo",
@@ -31,6 +33,13 @@ BUCKETS = [
         "key_id": os.environ["KANEO_ACCESS_KEY_ID"],
         "key_secret": os.environ["KANEO_SECRET_ACCESS_KEY"],
         "cors_origins": ["https://kaneo.x.pmcd.io"],
+    },
+    {
+        "name": "outline",
+        "key_name": "outline",
+        "key_id": os.environ["OUTLINE_ACCESS_KEY_ID"],
+        "key_secret": os.environ["OUTLINE_SECRET_ACCESS_KEY"],
+        "cors_origins": ["https://outline.x.pmcd.io"],
     },
 ]
 
