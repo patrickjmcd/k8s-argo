@@ -42,11 +42,5 @@ spec:
     AWS_S3_ACL: private
     FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
     DATABASE_URL: postgres://outline@shared-postgres-rw.postgres.svc.cluster.local:5432/outline
-  # Old local-storage attachments, copied into Garage on 2026-10-07. Still
-  # mounted (unused with FILE_STORAGE=s3) as a rollback path; drop it, plus
-  # pv.yaml/pvc.yaml, once S3 storage is confirmed.
-  persistence:
-    claimName: smb-outline-claim
-    mountPath: /var/lib/outline/data
   glance:
     monitor: true
