@@ -388,6 +388,27 @@ Verify with: `sudo sysctl fs.inotify.max_user_instances` → should be `1024`. C
 sudo sh -c 'for f in /proc/[0-9]*/fd; do pid=${f%/fd}; pid=${pid#/proc/}; n=$(ls -la "$f" 2>/dev/null | grep -c inotify); [ "$n" -gt 0 ] && stat -c %u /proc/$pid; done' | sort | uniq -c
 ```
 
+## Control-plane node memory (k3s GOMEMLIMIT)
+
+kube-n3160 and kube-macmini have only ~7.6 GB RAM, and `k3s-server` (apiserver
+watch cache of every object + embedded etcd) settles around 4.5 GiB within a
+day -- enough to push them into swap (Oct 2026). Both run k3s with a Go soft
+memory limit, set **on the host, not in git**:
+
+```bash
+# /etc/default/k3s  (k3s.service reads it; the installer doesn't touch it)
+GOMEMLIMIT=4GiB
+```
+
+Apply with `sudo systemctl restart k3s`, one control-plane node at a time,
+checking `kubectl get --raw='/readyz?verbose' | grep etcd` between them. Verify
+with `sudo cat /proc/$(pidof k3s-server)/environ | tr '\0' '\n' | grep GO`.
+A rebuilt control-plane node needs this re-added. The limit is soft: if live
+heap ever exceeds it Go spends more CPU on GC rather than OOMing, so watch
+apiserver CPU (`process_cpu_seconds_total{job="apiserver"}`) after changes.
+Keep stored data small too -- Trivy SBOM reports (214 MiB) were disabled for
+the same reason.
+
 ## Node Bootstrap Requirements (RPi nodes)
 
 When adding a new Raspberry Pi node (Pi 4 or Pi 5, Debian trixie, kernel 6.12.x), apply this before joining the cluster:
