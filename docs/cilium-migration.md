@@ -374,7 +374,13 @@ ArgoCD should show no diff (adopting the already-running config), same as
 Phase 1 §6. Update `CLAUDE.md`'s "Resource requests and limits" / hardware
 sections if kube-proxy or kube-vip references need correcting.
 
-### 7. Optional follow-up — retire the `kube-vip-svc-ds` DaemonSet
+### 7. Optional follow-up — retire the `kube-vip-svc-ds` DaemonSet ✅ done 2026-10-07
+
+**Done:** `core/kube-vip-assets/kube-vip-svc.yaml` removed. Every LoadBalancer IP was
+already MetalLB-allocated, but `go2rtc-rtsp` lacked `kube-vip.io/ignore`, so kube-vip had
+bound 192.168.8.201 on kube-leader-2 while MetalLB announced it from pi5-kube0 (duplicate
+ARP). The `kube-vip.io/ignore` annotations on Services are now no-ops and can be dropped.
+
 
 Separate from the control-plane VIP (`kube-vip-ds`, keep this — it's what
 `k8sServiceHost` points at), `kube-vip-svc-ds` runs on 8 of the 10 nodes doing
