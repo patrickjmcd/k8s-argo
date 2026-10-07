@@ -4,7 +4,7 @@ metadata:
   name: pve-exporter
   namespace: prometheus
 spec:
-  image: prompve/prometheus-pve-exporter:3.10.0
+  image: prompve/prometheus-pve-exporter:3.10.1
   port: 9221
   resources:
     cpuRequest: 63m
