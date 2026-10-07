@@ -3,13 +3,15 @@ kind: Service
 metadata:
   name: go2rtc-rtsp
   namespace: default
+  annotations:
+    kube-vip.io/ignore: "true"
 spec:
   type: LoadBalancer
   selector:
     app.kubernetes.io/name: go2rtc
     app.kubernetes.io/instance: go2rtc
   ports:
-  - name: rtsp
-    port: 8554
-    targetPort: 8554
-    protocol: TCP
+    - name: rtsp
+      port: 8554
+      targetPort: 8554
+      protocol: TCP
