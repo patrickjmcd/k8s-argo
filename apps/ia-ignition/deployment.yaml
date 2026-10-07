@@ -167,7 +167,7 @@ spec:
         # maintained image exists for this, hence installing git at startup
         # on a pinned alpine base rather than a purpose-built one.
         - name: ignition-tag-sync
-          image: alpine:3.22
+          image: alpine:3.24
           imagePullPolicy: IfNotPresent
           command:
             - sh
