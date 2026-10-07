@@ -4,7 +4,7 @@ metadata:
   name: sonarr
   namespace: media
 spec:
-  image: linuxserver/sonarr:4.0.19
+  image: linuxserver/sonarr:4.0.20
   port: 80
   containerPort: 8989
   resources:
