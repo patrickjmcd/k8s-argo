@@ -15,8 +15,19 @@ spec:
     KANEO_CLIENT_URL: https://kaneo.x.pmcd.io
     DATABASE_URL: postgresql://kaneo@shared-postgres-rw.postgres.svc.cluster.local:5432/kaneo?sslmode=disable
     DISABLE_GUEST_ACCESS: "true"
-  # AUTH_SECRET and NOTIFICATION_SECRET_ENCRYPTION_KEY, from
-  # vaults/Kubernetes/items/kaneo. Both must stay stable: changing
+    # Sign-in via PocketID (OIDC client "Kaneo"); CUSTOM_OAUTH_CLIENT_ID and
+    # CUSTOM_OAUTH_CLIENT_SECRET come from the 1Password item. New accounts can
+    # only be created through PocketID -- who gets in is controlled there.
+    CUSTOM_OAUTH_DISCOVERY_URL: https://auth.pmcd.dev/.well-known/openid-configuration
+    CUSTOM_OAUTH_AUTHORIZATION_URL: https://auth.pmcd.dev/authorize
+    CUSTOM_OAUTH_TOKEN_URL: https://auth.pmcd.dev/api/oidc/token
+    CUSTOM_OAUTH_USER_INFO_URL: https://auth.pmcd.dev/api/oidc/userinfo
+    CUSTOM_OAUTH_LOGOUT_URL: https://auth.pmcd.dev/api/oidc/end-session
+    CUSTOM_OAUTH_SCOPES: openid,profile,email
+    CUSTOM_AUTH_PKCE: "true"
+    DISABLE_PASSWORD_REGISTRATION: "true"
+  # AUTH_SECRET, NOTIFICATION_SECRET_ENCRYPTION_KEY, CUSTOM_OAUTH_CLIENT_ID and
+  # CUSTOM_OAUTH_CLIENT_SECRET, from vaults/Kubernetes/items/kaneo. Both must stay stable: changing
   # AUTH_SECRET signs everyone out, and the notification key decrypts stored
   # webhook/notification secrets.
   onePassword:
