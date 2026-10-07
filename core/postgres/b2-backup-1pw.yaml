@@ -1,0 +1,9 @@
+# Same Backblaze B2 key Longhorn uses (core/longhorn-assets/1password.secret.yaml);
+# CNPG backups go under their own cnpg/ prefix in the mcd-backup bucket.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: b2-backup
+  namespace: postgres
+spec:
+  itemPath: "vaults/Kubernetes/items/longhorn-b2-backup"

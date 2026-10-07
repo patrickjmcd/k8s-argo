@@ -1,0 +1,35 @@
+# Off-site backups for shared-postgres: continuous WAL archiving plus daily
+# base backups (scheduledbackup.yaml) to Backblaze B2 via the Barman Cloud
+# plugin -- point-in-time recovery for every app database, including
+# PocketID. The nightly pg_dump to the UNAS (backup-cronjob.yaml) stays as a
+# second, on-site copy.
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: b2
+  namespace: postgres
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    destinationPath: s3://mcd-backup/cnpg/
+    endpointURL: https://s3.us-east-005.backblazeb2.com
+    s3Credentials:
+      accessKeyId:
+        name: b2-backup
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: b2-backup
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: gzip
+      maxParallel: 2
+    data:
+      compression: gzip
+  instanceSidecarConfiguration:
+    env:
+      # boto3 >= 1.36 sends x-amz-checksum headers by default, which B2's S3
+      # API rejects; only compute/validate checksums when an operation needs it.
+      - name: AWS_REQUEST_CHECKSUM_CALCULATION
+        value: when_required
+      - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+        value: when_required

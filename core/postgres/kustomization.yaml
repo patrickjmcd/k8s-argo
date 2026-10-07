@@ -6,6 +6,9 @@ resources:
   - databases.yaml
   - adsb-postgres-1pw.yaml
   - backup-cronjob.yaml
+  - b2-backup-1pw.yaml
+  - objectstore-b2.yaml
+  - scheduledbackup.yaml
   - grants-job.yaml
   - outline-ownership-fix.yaml
   - n8n-ownership-fix.yaml

@@ -1,0 +1,16 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: shared-postgres-daily
+  namespace: postgres
+spec:
+  # six-field cron (seconds first): 03:30 daily, after the 02:00 pg_dump
+  schedule: "0 30 3 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: shared-postgres
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  # take one right away so there's a base backup to replay WAL onto
+  immediate: true

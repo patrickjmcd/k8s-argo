@@ -58,6 +58,13 @@ spec:
       - host all kaneo all trust
       - host all backup all trust
 
+  # Archive WAL and take base backups to B2 (objectstore-b2.yaml).
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: b2
+
   managed:
     roles:
       - name: mealie
