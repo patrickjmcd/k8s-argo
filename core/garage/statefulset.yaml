@@ -33,8 +33,11 @@ spec:
             - {name: s3, containerPort: 3900}
             - {name: rpc, containerPort: 3901}
             - {name: admin, containerPort: 3903}
+          # TCP, not the admin /health endpoint: /health stays unhealthy until
+          # the node has a layout, which the PostSync bootstrap Job assigns --
+          # and Argo only runs PostSync hooks once everything is healthy.
           readinessProbe:
-            httpGet: {path: /health, port: admin}
+            tcpSocket: {port: s3}
             periodSeconds: 10
           livenessProbe:
             tcpSocket: {port: s3}
