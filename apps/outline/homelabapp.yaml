@@ -17,17 +17,34 @@ spec:
       enabled: true
       initialDelaySeconds: 180
   route:
+    # LAN/Tailscale only (Oct 2026): attachments live in Garage, whose S3
+    # endpoint browsers must reach directly, and that's internal-only.
     hostnames:
     - outline.x.pmcd.io
-    publicHostnames:
-    - outline.pmcd.dev
   onePassword:
     enabled: true
+  # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY for the Garage bucket
+  envFromSecrets:
+    - garage-outline
   env:
     TZ: America/Chicago
-    FILE_STORAGE: local
+    # Overrides URL in the outline 1Password item (was https://outline.pmcd.dev);
+    # PocketID's Outline client has the matching callback.
+    URL: https://outline.x.pmcd.io
+    # Attachments in Garage (core/garage, bucket "outline"). Browsers upload
+    # with presigned POSTs and download via signed URLs, so the endpoint is the
+    # public s3.x.pmcd.io; CORS is set by Garage's bootstrap Job.
+    FILE_STORAGE: s3
+    AWS_REGION: garage
+    AWS_S3_UPLOAD_BUCKET_URL: https://s3.x.pmcd.io
+    AWS_S3_UPLOAD_BUCKET_NAME: outline
+    AWS_S3_FORCE_PATH_STYLE: 'true'
+    AWS_S3_ACL: private
     FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
     DATABASE_URL: postgres://outline@shared-postgres-rw.postgres.svc.cluster.local:5432/outline
+  # Old local-storage attachments, copied into Garage on 2026-10-07. Still
+  # mounted (unused with FILE_STORAGE=s3) as a rollback path; drop it, plus
+  # pv.yaml/pvc.yaml, once S3 storage is confirmed.
   persistence:
     claimName: smb-outline-claim
     mountPath: /var/lib/outline/data
