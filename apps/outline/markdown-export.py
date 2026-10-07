@@ -17,7 +17,9 @@ import urllib.error
 import urllib.request
 import zipfile
 
-API = "http://outline.default.svc.cluster.local/api"
+# Outline's configured URL, via Traefik: the in-cluster Service answers API
+# POSTs with 405 (Outline serves its API only on URL's host / HTTPS).
+API = "https://outline.x.pmcd.io/api"
 TOKEN = os.environ["OUTLINE_API_TOKEN"]
 DEST = "/backup/outline-markdown"
 KEEP = int(os.environ.get("KEEP", "14"))
