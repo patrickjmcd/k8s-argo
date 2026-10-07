@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: garage
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    name: in-cluster
+    namespace: garage
+  # S3-compatible object storage (MinIO replacement). Buckets/keys are
+  # bootstrapped by core/garage/bootstrap-job.yaml.
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    path: core/garage
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main

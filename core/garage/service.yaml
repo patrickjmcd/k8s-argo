@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage
+  namespace: garage
+  labels:
+    app.kubernetes.io/name: garage
+spec:
+  selector:
+    app.kubernetes.io/name: garage
+  ports:
+    - {name: s3, port: 3900, targetPort: s3}
+    - {name: admin, port: 3903, targetPort: admin}
+---
+# S3 API for clients outside the cluster and for browsers (Kaneo uploads use
+# presigned URLs, so the browser talks to this endpoint directly). LAN /
+# Tailscale only via *.x.pmcd.io. The admin API stays in-cluster.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: garage-s3
+  namespace: garage
+spec:
+  parentRefs:
+    - {name: traefik-gateway, namespace: default}
+  hostnames:
+    - s3.x.pmcd.io
+  rules:
+    - backendRefs:
+        - {name: garage, port: 3900}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: garage
+  namespace: garage
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: garage
+  endpoints:
+    - port: admin
+      path: /metrics
+      authorization:
+        credentials:
+          name: garage-1pw
+          key: METRICS_TOKEN

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: garage-config
+  namespace: garage
+data:
+  garage.toml: |
+    # Single node: Longhorn (3 replicas + B2 backups) provides the durability,
+    # so Garage keeps one copy. Grow by adding nodes and raising
+    # replication_factor via a layout change.
+    replication_factor = 1
+    metadata_dir = "/var/lib/garage/meta"
+    data_dir = "/var/lib/garage/data"
+    db_engine = "lmdb"
+    metadata_auto_snapshot_interval = "6h"
+    compression_level = 1
+
+    rpc_bind_addr = "[::]:3901"
+    rpc_public_addr = "127.0.0.1:3901"
+    rpc_secret_file = "/secrets/RPC_SECRET"
+
+    [s3_api]
+    s3_region = "garage"
+    api_bind_addr = "[::]:3900"
+    # Path-style (s3.x.pmcd.io/<bucket>) works for any Host; this also enables
+    # virtual-host style <bucket>.s3.x.pmcd.io should a client need it.
+    root_domain = ".s3.x.pmcd.io"
+
+    [admin]
+    api_bind_addr = "[::]:3903"
+    admin_token_file = "/secrets/ADMIN_TOKEN"
+    metrics_token_file = "/secrets/METRICS_TOKEN"

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: garage
+  namespace: garage
+  labels:
+    app.kubernetes.io/name: garage
+spec:
+  serviceName: garage
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: garage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: garage
+    spec:
+      # Light on memory, but keep it off the tight Pi 5s / control plane.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [macbook-debian]
+      containers:
+        - name: garage
+          image: dxflrs/garage:v2.4.1
+          ports:
+            - {name: s3, containerPort: 3900}
+            - {name: rpc, containerPort: 3901}
+            - {name: admin, containerPort: 3903}
+          readinessProbe:
+            httpGet: {path: /health, port: admin}
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: {port: s3}
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: config, mountPath: /etc/garage.toml, subPath: garage.toml, readOnly: true}
+            - {name: secrets, mountPath: /secrets, readOnly: true}
+            - {name: data, mountPath: /var/lib/garage}
+      volumes:
+        - name: config
+          configMap: {name: garage-config}
+        - name: secrets
+          secret: {secretName: garage-1pw, defaultMode: 0400}
+        - name: data
+          persistentVolumeClaim: {claimName: longhorn-garage-data}

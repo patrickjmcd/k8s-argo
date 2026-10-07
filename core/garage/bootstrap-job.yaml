@@ -1,0 +1,35 @@
+# Runs bootstrap.py after every sync (it's idempotent): single-node layout,
+# buckets, imported keys, grants and CORS. Add buckets/keys in bootstrap.py.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: garage-bootstrap
+  namespace: garage
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: python:3.13-alpine
+          command: ["python3", "/scripts/bootstrap.py"]
+          env:
+            - name: GARAGE_ADMIN_TOKEN
+              valueFrom: {secretKeyRef: {name: garage-1pw, key: ADMIN_TOKEN}}
+            - name: KANEO_ACCESS_KEY_ID
+              valueFrom: {secretKeyRef: {name: garage-kaneo, key: S3_ACCESS_KEY_ID}}
+            - name: KANEO_SECRET_ACCESS_KEY
+              valueFrom: {secretKeyRef: {name: garage-kaneo, key: S3_SECRET_ACCESS_KEY}}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          volumeMounts:
+            - {name: scripts, mountPath: /scripts, readOnly: true}
+      volumes:
+        - name: scripts
+          configMap: {name: garage-bootstrap}
