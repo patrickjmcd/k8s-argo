@@ -54,13 +54,15 @@
       "matchUpdateTypes": ["patch", "digest"],
       "addLabels": ["renovate/patch"],
       "automerge": true,
-      "automergeType": "branch"
+      "automergeType": "branch",
+      "ignoreTests": true
     },
     {
       "matchUpdateTypes": ["minor"],
       "addLabels": ["renovate/minor"],
       "automerge": true,
-      "automergeType": "branch"
+      "automergeType": "branch",
+      "ignoreTests": true
     },
     {
       "matchUpdateTypes": ["major"],
