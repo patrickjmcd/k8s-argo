@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - homelabapp.yaml
   - extra-objects.yaml
+  - markdown-export.yaml
+configMapGenerator:
+  - name: outline-markdown-export
+    namespace: default
+    files:
+      - markdown-export.py
+generatorOptions:
+  disableNameSuffixHash: true

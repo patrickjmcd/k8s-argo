@@ -1,0 +1,79 @@
+# Nightly Markdown export of the Outline workspace to the UNAS
+# (//192.168.1.253/PGBackup/outline-markdown/), keeping 14 days.
+# See markdown-export.py.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: outline-markdown-export
+  namespace: default
+spec:
+  schedule: "15 4 * * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: export
+              image: python:3.13-alpine
+              command: ["python3", "/scripts/markdown-export.py"]
+              env:
+                - name: OUTLINE_API_TOKEN
+                  valueFrom: {secretKeyRef: {name: outline-export, key: OUTLINE_API_TOKEN}}
+                - name: KEEP
+                  value: "14"
+              resources:
+                requests: {cpu: 10m, memory: 64Mi}
+                limits: {memory: 256Mi}
+              volumeMounts:
+                - {name: scripts, mountPath: /scripts, readOnly: true}
+                - {name: backup, mountPath: /backup}
+          volumes:
+            - name: scripts
+              configMap: {name: outline-markdown-export}
+            - name: backup
+              persistentVolumeClaim: {claimName: smb-outline-markdown-export-claim}
+---
+# The UNAS backup share (same share as the Postgres dumps). Prune=false so
+# removing this from git can never delete the PV/PVC; the share itself is
+# never touched either way (Retain).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-outline-markdown-export
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  storageClassName: ""
+  capacity: {storage: 5Gi}
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions: [dir_mode=0777, file_mode=0777, vers=3.0]
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: smb-outline-markdown-export-volume-id
+    volumeAttributes:
+      source: "//192.168.1.253/PGBackup"
+    nodeStageSecretRef:
+      name: smb-creds-1pw
+      namespace: csi-smb-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-outline-markdown-export-claim
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  volumeName: smb-outline-markdown-export
+  resources:
+    requests: {storage: 5Gi}

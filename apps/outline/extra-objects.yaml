@@ -7,3 +7,13 @@ metadata:
   namespace: default
 spec:
   itemPath: "vaults/Kubernetes/items/garage-outline"
+---
+# Outline API key (field OUTLINE_API_TOKEN) for the nightly Markdown export.
+# Create it in Outline (Settings -> API) as a workspace admin.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: outline-export
+  namespace: default
+spec:
+  itemPath: "vaults/Kubernetes/items/outline-export"
