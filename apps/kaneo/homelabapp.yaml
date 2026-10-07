@@ -30,12 +30,22 @@ spec:
     # account still exists (linked to the PocketID identity); to get the login
     # form back, e.g. if PocketID is down, set this to "false".
     CUSTOM_OAUTH_AUTO_LOGIN: "true"
+    # Uploads (task images, attachments) on Garage (core/garage). Browsers PUT
+    # via presigned URLs, so the endpoint must be the public one; CORS for
+    # kaneo.x.pmcd.io is set by Garage's bootstrap Job.
+    S3_ENDPOINT: https://s3.x.pmcd.io
+    S3_BUCKET: kaneo
+    S3_REGION: garage
+    S3_FORCE_PATH_STYLE: "true"
   # AUTH_SECRET, NOTIFICATION_SECRET_ENCRYPTION_KEY, CUSTOM_OAUTH_CLIENT_ID and
   # CUSTOM_OAUTH_CLIENT_SECRET, from vaults/Kubernetes/items/kaneo. Both must stay stable: changing
   # AUTH_SECRET signs everyone out, and the notification key decrypts stored
   # webhook/notification secrets.
   onePassword:
     enabled: true
+  # S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY for the Garage bucket
+  envFromSecrets:
+    - garage-kaneo
   resources:
     cpuRequest: 50m
     memoryRequest: 256Mi

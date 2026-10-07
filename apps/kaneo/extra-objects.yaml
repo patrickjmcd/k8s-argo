@@ -1,0 +1,9 @@
+# S3 key for Kaneo's bucket on Garage (core/garage), shared with the garage
+# namespace, where the bootstrap Job imports it.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: garage-kaneo
+  namespace: kaneo
+spec:
+  itemPath: "vaults/Kubernetes/items/garage-kaneo"
