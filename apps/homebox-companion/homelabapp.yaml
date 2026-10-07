@@ -4,7 +4,7 @@ metadata:
   name: homebox-companion
   namespace: default
 spec:
-  image: ghcr.io/duelion/homebox-companion:3.0.2
+  image: ghcr.io/duelion/homebox-companion:3.1.1
   port: 80
   containerPort: 8000
   resources:
