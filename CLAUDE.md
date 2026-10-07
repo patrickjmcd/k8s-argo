@@ -89,7 +89,10 @@ spec:
 Rules:
 - **Persistence mounts a PVC you define yourself** in `apps/<name>/pvc.yaml`
   (and `pv.yaml` for SMB). Give it backup labels and
-  `argocd.argoproj.io/sync-options: Delete=false`. kro never owns the PVC:
+  `argocd.argoproj.io/sync-options: Delete=false` -- which only keeps the PVC
+  when the *Application* is deleted; removing the manifest from git still
+  prunes it (seen Oct 2026), so for that use `Prune=false` or move the data
+  first. kro never owns the PVC:
   it deletes `includeWhen` resources when the condition turns false, which
   would lose data if persistence were toggled off.
 - HomelabApp covers extraVolumes/extraVolumeMounts (PVC, ConfigMap, Secret,
