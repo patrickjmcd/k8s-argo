@@ -4,7 +4,7 @@ metadata:
   name: backend
   namespace: homelable
 spec:
-  image: ghcr.io/pouzor/homelable-backend:3.4.2
+  image: ghcr.io/pouzor/homelable-backend:3.6.0
   port: 8000
   resources:
     cpuRequest: 100m
