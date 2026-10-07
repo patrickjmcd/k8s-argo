@@ -26,6 +26,10 @@ spec:
     CUSTOM_OAUTH_SCOPES: openid,profile,email
     CUSTOM_AUTH_PKCE: "true"
     DISABLE_PASSWORD_REGISTRATION: "true"
+    # Skip Kaneo's sign-in page and go straight to PocketID. The local password
+    # account still exists (linked to the PocketID identity); to get the login
+    # form back, e.g. if PocketID is down, set this to "false".
+    CUSTOM_OAUTH_AUTO_LOGIN: "true"
   # AUTH_SECRET, NOTIFICATION_SECRET_ENCRYPTION_KEY, CUSTOM_OAUTH_CLIENT_ID and
   # CUSTOM_OAUTH_CLIENT_SECRET, from vaults/Kubernetes/items/kaneo. Both must stay stable: changing
   # AUTH_SECRET signs everyone out, and the notification key decrypts stored
