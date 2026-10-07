@@ -14,7 +14,7 @@ images:
   # different patch releases via imagePullPolicy: IfNotPresent, and scheduling
   # onto a node with an older cached patch than what's already on the PVC
   # causes Ignition to refuse to start ("Version mismatch on existing volume").
-  newTag: "8.3.9"
+  newTag: "8.3.10"
 
 configMapGenerator:
   - name: ia-ignition-config
