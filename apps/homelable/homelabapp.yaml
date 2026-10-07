@@ -4,7 +4,7 @@ metadata:
   name: homelable
   namespace: homelable
 spec:
-  image: ghcr.io/pouzor/homelable-frontend:3.4.2
+  image: ghcr.io/pouzor/homelable-frontend:3.6.0
   port: 80
   resources:
     cpuRequest: 10m
