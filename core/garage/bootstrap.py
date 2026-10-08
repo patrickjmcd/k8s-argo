@@ -39,7 +39,7 @@ BUCKETS = [
         "key_name": "outline",
         "key_id": os.environ["OUTLINE_ACCESS_KEY_ID"],
         "key_secret": os.environ["OUTLINE_SECRET_ACCESS_KEY"],
-        "cors_origins": ["https://outline.x.pmcd.io"],
+        "cors_origins": ["https://outline.pmcd.dev"],
     },
 ]
 

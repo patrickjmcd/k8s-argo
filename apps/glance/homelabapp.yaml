@@ -100,7 +100,7 @@ spec:
                       - title: N8N
                         url: https://n8n.x.pmcd.io
                       - title: Outline
-                        url: https://outline.x.pmcd.io
+                        url: https://outline.pmcd.dev
                       - title: PiHole
                         url: https://pihole.x.pmcd.io
                       - title: Prometheus
@@ -460,7 +460,7 @@ spec:
                           - title: Homebox
                             url: https://homebox.x.pmcd.io
                           - title: Outline
-                            url: https://outline.x.pmcd.io
+                            url: https://outline.pmcd.dev
                           - title: Immich
                             url: https://immich.x.pmcd.io
                           - title: Reedme
