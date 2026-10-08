@@ -4,7 +4,7 @@ metadata:
   name: seerr
   namespace: media
 spec:
-  image: ghcr.io/seerr-team/seerr:v3.4.1
+  image: ghcr.io/seerr-team/seerr:v3.5.0
   port: 80
   containerPort: 5055
   resources:
