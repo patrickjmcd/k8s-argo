@@ -16,8 +16,6 @@ no-autoupdate: true
 # E.g. `cloudflared tunnel route dns example-tunnel tunnel.example.com`.
 ingress:
   # Hosts on the LAN outside the cluster - Traefik has no route for these.
-  - hostname: homebridge.pmcd.io
-    service: http://192.168.1.23:8581
   - hostname: tv.pmcd.io
     service: http://192.168.1.210:8409
 
