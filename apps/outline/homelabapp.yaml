@@ -17,12 +17,13 @@ spec:
       enabled: true
       initialDelaySeconds: 180
   route:
-    # Full app on LAN/Tailscale only: outline.pmcd.dev resolves to Traefik
-    # internally (split-horizon, like pics.pmcd.dev). Attachments live in
-    # Garage, whose S3 endpoint browsers must reach directly, and that's
-    # internal-only. The public side (extra-objects.yaml) carries only the
-    # MCP/OAuth paths the claude.ai connector needs.
-    hostnames:
+    # Public only (Cloudflare Tunnel), so LAN and internet clients get the same
+    # DNS answer; split-horizon kept breaking (AAAA and ECH/HTTPS records leaking
+    # Cloudflare's addresses). Login is PocketID. Attachments still only load
+    # where s3.x.pmcd.io resolves (LAN/Tailscale). outline.x.pmcd.io and
+    # notes.x.pmcd.io redirect here (extra-objects.yaml).
+    enabled: false
+    publicHostnames:
     - outline.pmcd.dev
   onePassword:
     enabled: true
@@ -31,9 +32,9 @@ spec:
     - garage-outline
   env:
     TZ: America/Chicago
-    # Overrides URL in the outline 1Password item. Must be a name the claude.ai
-    # connector can reach too: Outline advertises it as the OAuth issuer and
-    # MCP resource. PocketID's Outline client has the matching callback.
+    # Overrides URL in the outline 1Password item. Outline advertises it as the
+    # OAuth issuer and MCP resource for the claude.ai connector, so it must be
+    # public. PocketID's Outline client has the matching callback.
     URL: https://outline.pmcd.dev
     # Attachments in Garage (core/garage, bucket "outline"). Browsers upload
     # with presigned POSTs and download via signed URLs, so the endpoint is the

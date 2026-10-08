@@ -38,32 +38,3 @@ spec:
           requestRedirect:
             hostname: outline.pmcd.dev
             statusCode: 301
----
-# Public side of outline.pmcd.dev (Cloudflare Tunnel): only what the claude.ai
-# Outline connector calls from Anthropic's servers -- OAuth discovery, client
-# registration, token exchange/revocation and the MCP endpoint itself. The UI,
-# /api and /oauth/authorize stay LAN/Tailscale-only, so approving a new
-# connection still needs a browser on the internal network.
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: outline-public-mcp
-  namespace: default
-spec:
-  parentRefs:
-    - name: public-gateway
-      namespace: default
-  hostnames:
-    - outline.pmcd.dev
-  rules:
-    - matches:
-        - path: {type: PathPrefix, value: /mcp}
-        - path: {type: Exact, value: /oauth/token}
-        - path: {type: Exact, value: /oauth/register}
-        - path: {type: Exact, value: /oauth/revoke}
-        - path: {type: Exact, value: /.well-known/oauth-authorization-server}
-        - path: {type: Exact, value: /.well-known/oauth-protected-resource}
-        - path: {type: Exact, value: /.well-known/oauth-protected-resource/mcp}
-      backendRefs:
-        - name: outline
-          port: 80
