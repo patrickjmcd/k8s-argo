@@ -104,6 +104,9 @@ Rules:
   (optionally pinned `loadBalancer.ip`) next to the ClusterIP one, and
   `preferredNodes` sets a soft node preference. Not covered: sidecars and
   initContainers (use plain Kustomize).
+- kro owns the Deployment's replicas, so `kubectl scale` is undone within
+  a minute. To stop an app (e.g. for a restore), set `replicas: 0` on the
+  HomelabApp (in git, or patched with the Application's auto-sync off).
 - HomelabApp Applications set
   `argocd.argoproj.io/compare-options: ServerSideDiff=true`: CRD defaults
   filled into list items (extraVolumes, tolerations) otherwise read as drift.
