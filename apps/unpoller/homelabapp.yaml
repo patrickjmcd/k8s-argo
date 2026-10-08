@@ -4,7 +4,7 @@ metadata:
   name: unpoller
   namespace: default
 spec:
-  image: ghcr.io/unpoller/unpoller:v5.2.8
+  image: ghcr.io/unpoller/unpoller:v5.5.1
   port: 9130
   resources:
     cpuRequest: 49m
