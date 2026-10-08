@@ -4,7 +4,7 @@ metadata:
   name: unifi-mcp
   namespace: default
 spec:
-  image: ghcr.io/sirkirby/unifi-network-mcp:0.36.2
+  image: ghcr.io/sirkirby/unifi-network-mcp:0.36.4
   port: 3000
   resources:
     cpuRequest: 15m
