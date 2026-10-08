@@ -7,7 +7,7 @@ metadata:
   name: kaneo
   namespace: kaneo
 spec:
-  image: ghcr.io/usekaneo/kaneo:2.34.0
+  image: ghcr.io/usekaneo/kaneo:2.35.0
   port: 80
   containerPort: 5173
   env:
