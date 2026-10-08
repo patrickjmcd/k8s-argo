@@ -97,6 +97,8 @@ spec:
                         url: https://longhorn.x.pmcd.io
                       - title: Mealie
                         url: https://mealie.x.pmcd.io
+                      - title: Monica
+                        url: https://monica.x.pmcd.io
                       - title: N8N
                         url: https://n8n.x.pmcd.io
                       - title: Outline
@@ -109,6 +111,8 @@ spec:
                         url: https://romm.x.pmcd.io
                       - title: SparkyFitness
                         url: https://sparkyfitness.x.pmcd.io
+                      - title: Spoolman
+                        url: https://spoolman.x.pmcd.io
                       - title: Traefik
                         url: https://traefik.x.pmcd.io
                       - title: Tronbyt

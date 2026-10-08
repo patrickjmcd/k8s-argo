@@ -56,6 +56,8 @@ spec:
       - host all romm all trust
       - host all sparkyfitness all trust
       - host all kaneo all trust
+      - host all monica all trust
+      - host all spoolman all trust
       - host all backup all trust
 
   # Archive WAL and take base backups to B2 (objectstore-b2.yaml).
@@ -133,6 +135,16 @@ spec:
         inherit: true
         connectionLimit: -1
       - name: kaneo
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+      - name: monica
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+      - name: spoolman
         ensure: present
         login: true
         inherit: true

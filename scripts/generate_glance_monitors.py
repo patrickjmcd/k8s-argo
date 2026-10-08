@@ -147,12 +147,14 @@ def collect_from_homelabapps():
             if not glance_cfg.get("monitor"):
                 continue
             route = spec.get("route") or {}
+            # Public-only apps (route.enabled: false) are monitored on their
+            # first public hostname instead.
             if route.get("enabled") is False:
-                print(f"ERROR: {rel} sets spec.glance.monitor but spec.route.enabled is false", file=sys.stderr)
-                sys.exit(1)
-            hostnames = route.get("hostnames") or []
+                hostnames = route.get("publicHostnames") or []
+            else:
+                hostnames = route.get("hostnames") or []
             if not hostnames:
-                print(f"ERROR: {rel} sets spec.glance.monitor but has no spec.route.hostnames", file=sys.stderr)
+                print(f"ERROR: {rel} sets spec.glance.monitor but has no route hostname to monitor", file=sys.stderr)
                 sys.exit(1)
             hostname = hostnames[0]
             title = glance_cfg.get("title") or title_from_hostname(hostname)

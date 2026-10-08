@@ -1,0 +1,35 @@
+# Spoolman -- 3D printer filament spool inventory. It has no authentication of
+# its own, so it is LAN-only (no publicHostnames); Home Assistant reaches it
+# through the Service or spoolman.x.pmcd.io.
+# Database: spoolman on the shared CNPG cluster (core/postgres), trust auth.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: spoolman
+  namespace: spoolman
+spec:
+  image: ghcr.io/donkie/spoolman:0.27.0
+  port: 80
+  containerPort: 8000
+  env:
+    TZ: America/Chicago
+    SPOOLMAN_DB_TYPE: postgres
+    SPOOLMAN_DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+    SPOOLMAN_DB_PORT: "5432"
+    SPOOLMAN_DB_NAME: spoolman
+    SPOOLMAN_DB_USERNAME: spoolman
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 128Mi
+    cpuLimit: 500m
+    memoryLimit: 384Mi
+  probes:
+    type: httpGet
+    path: /api/v1/health
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - spoolman.x.pmcd.io
+  glance:
+    monitor: true

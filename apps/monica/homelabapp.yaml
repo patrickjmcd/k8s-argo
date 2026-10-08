@@ -1,0 +1,55 @@
+# Monica (monicahq.com) -- personal CRM: people, birthdays, gift ideas, notes.
+# v5 (still beta upstream): v4 only supports MySQL, and v4 data has no easy
+# path into v5. LAN-only. Login is Monica's own email + password: v5 only
+# offers Keycloak/Kanidm/social providers, none of which fit PocketID.
+# Database: monica on the shared CNPG cluster (core/postgres), trust auth.
+# The image runs migrations on every start (monica:setup).
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: monica
+  namespace: monica
+spec:
+  image: monica:5.0.0-beta.5-apache
+  port: 80
+  env:
+    TZ: America/Chicago
+    APP_ENV: production
+    APP_TIMEZONE: America/Chicago
+    # Traefik terminates TLS; force generated links to the https URL.
+    APP_URL: https://monica.x.pmcd.io
+    APP_FORCE_URL: "true"
+    SESSION_SECURE_COOKIE: "true"
+    DB_CONNECTION: pgsql
+    DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+    DB_PORT: "5432"
+    DB_DATABASE: monica
+    DB_USERNAME: monica
+    DB_PASSWORD: ""
+  # APP_KEY from vaults/Kubernetes/items/monica ("base64:" + 32 random bytes).
+  # Must stay stable: it encrypts stored data and sessions. Without it the
+  # image generates a new key on every start.
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 768Mi
+  probes:
+    type: httpGet
+    path: /
+    startup:
+      # first boot runs all database migrations
+      failureThreshold: 60
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - monica.x.pmcd.io
+  # Photos and documents attached to contacts.
+  persistence:
+    claimName: longhorn-monica-data
+    mountPath: /var/www/html/storage
+  glance:
+    monitor: true
