@@ -16,6 +16,10 @@ data:
     # (discard) makes them fall back to IPv4.
     address=/outline.pmcd.dev/192.168.8.200
     host-record=outline.pmcd.dev,192.168.8.200,100::
+    # Answer everything for this name locally. Forwarded HTTPS (type 65) records
+    # carry Cloudflare's ECH key; browsers then send SNI cloudflare-ech.com to
+    # Traefik and get its self-signed default cert.
+    local=/outline.pmcd.dev/
     # Minecraft (apps/minecraft) has its own MetalLB IP for raw TCP/UDP.
     address=/minecraft.pmcd.dev/192.168.8.202
     # Switch has no "Add Server" button: send the Lifeboat featured server to
