@@ -57,6 +57,9 @@ spec:
       image: string | required=true description="Full image reference including tag, e.g. ghcr.io/org/app:v1.2.3"
       port: integer | default=80 description="Service port"
       containerPort: integer | default=0 description="Container port; 0 means same as port"
+      # 0 stops the app (e.g. during a restore). kro owns the Deployment's
+      # replicas, so `kubectl scale` is undone within a minute; set this instead.
+      replicas: integer | default=1
       env: "map[string]string"
       # Extra Secrets to load as env vars, beyond the 1Password one.
       envFromSecrets: "[]string"
@@ -196,7 +199,7 @@ spec:
             # own. Stakater Reloader (if installed) acts on this annotation.
             reloader.stakater.com/auto: "true"
         spec:
-          replicas: 1
+          replicas: ${schema.spec.replicas}
           revisionHistoryLimit: 3
           strategy:
             type: Recreate
