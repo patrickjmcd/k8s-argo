@@ -19,6 +19,10 @@ spec:
     # Traefik terminates TLS; force generated links to the https URL.
     APP_URL: https://monica.x.pmcd.io
     APP_FORCE_URL: "true"
+    # Trust Traefik's X-Forwarded-Proto. Without it Monica sees plain http
+    # and rejects its own signed links (email verification: "Invalid link").
+    # Only Traefik can reach the pod, so "*" is safe here.
+    APP_TRUSTED_PROXIES: "*"
     SESSION_SECURE_COOKIE: "true"
     DB_CONNECTION: pgsql
     DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
