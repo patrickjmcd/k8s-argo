@@ -4,7 +4,7 @@ metadata:
   name: homelable-mcp
   namespace: homelable
 spec:
-  image: ghcr.io/pouzor/homelable-mcp:3.4.2
+  image: ghcr.io/pouzor/homelable-mcp:3.6.0
   port: 8001
   resources:
     cpuRequest: 10m
