@@ -4,7 +4,7 @@ metadata:
   name: n8n
   namespace: default
 spec:
-  image: docker.n8n.io/n8nio/n8n:2.43.1
+  image: docker.n8n.io/n8nio/n8n:2.43.2
   port: 80
   containerPort: 5678
   resources:
