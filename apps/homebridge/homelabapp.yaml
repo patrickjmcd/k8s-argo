@@ -24,9 +24,10 @@ spec:
     operator: Equal
     value: heavy
     effect: NoSchedule
-  extraVolumes:
-  - name: data
-    hostPath: /mnt/usb/homebridge-data
-  extraVolumeMounts:
-  - name: data
+  # Longhorn rather than a hostPath on media-server's USB drive: that drive
+  # drops off the bus now and then, and an unmounted hostPath would start
+  # Homebridge empty (new bridge identity, every accessory re-paired). The
+  # old copy stays at media-server:/mnt/usb/homebridge-data as a rollback.
+  persistence:
+    claimName: longhorn-homebridge-data
     mountPath: /homebridge
