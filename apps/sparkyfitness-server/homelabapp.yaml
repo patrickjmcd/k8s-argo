@@ -4,7 +4,7 @@ metadata:
   name: sparkyfitness-server
   namespace: sparkyfitness
 spec:
-  image: codewithcj/sparkyfitness_server:v1.7.3
+  image: codewithcj/sparkyfitness_server:v1.8.0
   port: 3010
   resources:
     cpuRequest: 25m
