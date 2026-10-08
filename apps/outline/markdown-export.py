@@ -17,9 +17,12 @@ import urllib.error
 import urllib.request
 import zipfile
 
-# Outline's configured URL, via Traefik: the in-cluster Service answers API
-# POSTs with 405 (Outline serves its API only on URL's host / HTTPS).
+# Outline's configured URL, via the Cloudflare Tunnel: the in-cluster Service
+# answers API POSTs with 405 (Outline serves its API only on URL's host / HTTPS).
 API = "https://outline.pmcd.dev/api"
+# Cloudflare's Browser Integrity Check rejects urllib's default
+# "Python-urllib/x.y" with error 1010.
+USER_AGENT = "outline-markdown-export/1.0"
 TOKEN = os.environ["OUTLINE_API_TOKEN"]
 DEST = "/backup/outline-markdown"
 KEEP = int(os.environ.get("KEEP", "14"))
@@ -30,6 +33,7 @@ def call(op, body):
     req.add_header("Authorization", f"Bearer {TOKEN}")
     req.add_header("Content-Type", "application/json")
     req.add_header("Accept", "application/json")
+    req.add_header("User-Agent", USER_AGENT)
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
             return json.load(r)
@@ -64,6 +68,7 @@ def main():
                                  data=json.dumps({"id": op_id}).encode(), method="POST")
     req.add_header("Authorization", f"Bearer {TOKEN}")
     req.add_header("Content-Type", "application/json")
+    req.add_header("User-Agent", USER_AGENT)
     with urllib.request.urlopen(req, timeout=300) as r, open(tmp, "wb") as f:
         while chunk := r.read(1 << 20):
             f.write(chunk)
