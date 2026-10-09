@@ -4,7 +4,7 @@ metadata:
   name: prowlarr
   namespace: media
 spec:
-  image: linuxserver/prowlarr:2.5.2
+  image: linuxserver/prowlarr:2.6.5
   port: 80
   containerPort: 9696
   resources:
