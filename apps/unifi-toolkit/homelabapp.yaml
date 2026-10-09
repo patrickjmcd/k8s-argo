@@ -4,7 +4,7 @@ metadata:
   name: unifi-toolkit
   namespace: default
 spec:
-  image: ghcr.io/crosstalk-solutions/unifi-toolkit:1.11.3
+  image: ghcr.io/crosstalk-solutions/unifi-toolkit:1.13.0
   port: 8000
   resources:
     cpuRequest: 15m
