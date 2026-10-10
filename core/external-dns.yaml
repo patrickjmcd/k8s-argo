@@ -63,6 +63,7 @@ spec:
           # upsert-only never deletes records. Records that already exist
           # (created by hand for the tunnel) are left alone; external-dns only
           # manages records it created, tracked via TXT ownership records.
+          logLevel: debug  # temporary: diagnosing no new records since Oct 8
           policy: upsert-only
           registry: txt
           txtOwnerId: k3s-home
