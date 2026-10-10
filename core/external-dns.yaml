@@ -28,11 +28,7 @@ spec:
       targetRevision: main
     - chart: external-dns
       repoURL: https://kubernetes-sigs.github.io/external-dns/
-      # Held at 1.22.0 (external-dns v0.22): v0.23 hangs at startup right
-      # after creating its clients and never syncs, so no new records were
-      # created after the Oct 8 2026 upgrade (found when shows.pmcd.dev got
-      # no DNS). RBAC wasn't the cause. Pinned in renovate.json too.
-      targetRevision: 1.22.0
+      targetRevision: 1.23.0
       helm:
         releaseName: external-dns
         valuesObject:
@@ -63,7 +59,6 @@ spec:
           # upsert-only never deletes records. Records that already exist
           # (created by hand for the tunnel) are left alone; external-dns only
           # manages records it created, tracked via TXT ownership records.
-          logLevel: debug  # temporary: diagnosing no new records since Oct 8
           policy: upsert-only
           registry: txt
           txtOwnerId: k3s-home
