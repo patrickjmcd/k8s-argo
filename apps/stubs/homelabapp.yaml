@@ -10,7 +10,7 @@ metadata:
   name: stubs
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/stubs:fb9edac
+  image: ghcr.io/patrickjmcd/stubs:2aeed44
   imagePullSecrets:
   - ghcr-registry-cred
   port: 80
@@ -21,7 +21,8 @@ spec:
     PUBLIC_URL: https://shows.pmcd.dev
     OIDC_ISSUER: https://auth.pmcd.dev
     DATABASE_URL: postgres://stubs@shared-postgres-rw.postgres.svc.cluster.local:5432/stubs?sslmode=disable
-  # OIDC_CLIENT_ID and OIDC_CLIENT_SECRET from vaults/Kubernetes/items/stubs.
+  # OIDC_CLIENT_ID and OIDC_CLIENT_SECRET from vaults/Kubernetes/items/stubs,
+  # plus optional SETLISTFM_API_KEY (setlists and "where did they play").
   onePassword:
     enabled: true
   resources:
