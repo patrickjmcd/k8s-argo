@@ -64,6 +64,15 @@ spec:
           txtOwnerId: k3s-home
           interval: 5m
           triggerLoopOnEvent: true
+          # v0.23 (chart 1.23.0) also watches ListenerSets, but the chart's
+          # ClusterRole doesn't grant them: the informer never syncs and
+          # external-dns silently stops creating records (Oct 2026, seen as
+          # shows.pmcd.dev never getting DNS). Drop once the chart adds it.
+          rbac:
+            additionalPermissions:
+              - apiGroups: [gateway.networking.k8s.io]
+                resources: [listenersets]
+                verbs: [get, watch, list]
           resources:
             requests:
               cpu: 10m
