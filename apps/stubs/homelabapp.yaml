@@ -39,7 +39,11 @@ spec:
     # Public only (Cloudflare Tunnel), like Outline: one hostname, so the
     # OIDC redirect and secure cookies work the same on the LAN and away.
     enabled: false
+    # showmeyourstubs.com is canonical (PUBLIC_URL); the app 308-redirects
+    # the others to it.
     publicHostnames:
+    - showmeyourstubs.com
+    - www.showmeyourstubs.com
     - shows.pmcd.dev
   glance:
     monitor: true

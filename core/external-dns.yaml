@@ -56,6 +56,7 @@ spec:
             - senatorjoshhawley.com
             - joshhawley4senate.com
             - reedme.dev
+            - showmeyourstubs.com
           # upsert-only never deletes records. Records that already exist
           # (created by hand for the tunnel) are left alone; external-dns only
           # manages records it created, tracked via TXT ownership records.
