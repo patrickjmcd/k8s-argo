@@ -20,7 +20,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: export
-              image: python:3.13-alpine
+              image: python:3.14-alpine
               command: ["python3", "/scripts/markdown-export.py"]
               env:
                 - name: OUTLINE_API_TOKEN

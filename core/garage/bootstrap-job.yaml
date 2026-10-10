@@ -16,7 +16,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: bootstrap
-          image: python:3.13-alpine
+          image: python:3.14-alpine
           command: ["python3", "/scripts/bootstrap.py"]
           env:
             - name: GARAGE_ADMIN_TOKEN
