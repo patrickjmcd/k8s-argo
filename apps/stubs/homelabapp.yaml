@@ -1,0 +1,45 @@
+# Stubs (github.com/patrickjmcd/stubs) -- log the concerts you've been to and
+# see which ones friends went to. Our own app: Go API + embedded SvelteKit SPA.
+# Invite-only: sign-in is PocketID (OIDC client "Stubs"); every page and API
+# route needs a session. Database: stubs on shared-postgres, trust auth; the
+# app runs its own migrations on start.
+# Namespace default for ghcr-registry-cred (the image is private).
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: stubs
+  namespace: default
+spec:
+  image: ghcr.io/patrickjmcd/stubs:fb9edac
+  imagePullSecrets:
+  - ghcr-registry-cred
+  port: 80
+  containerPort: 8080
+  env:
+    TZ: America/Chicago
+    LOG_LEVEL: info
+    PUBLIC_URL: https://shows.pmcd.dev
+    OIDC_ISSUER: https://auth.pmcd.dev
+    DATABASE_URL: postgres://stubs@shared-postgres-rw.postgres.svc.cluster.local:5432/stubs?sslmode=disable
+  # OIDC_CLIENT_ID and OIDC_CLIENT_SECRET from vaults/Kubernetes/items/stubs.
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 15m
+    memoryRequest: 32Mi
+    cpuLimit: 500m
+    memoryLimit: 128Mi
+  probes:
+    type: httpGet
+    path: /healthz
+    liveness:
+      enabled: true
+  route:
+    # Public only (Cloudflare Tunnel), like Outline: one hostname, so the
+    # OIDC redirect and secure cookies work the same on the LAN and away.
+    enabled: false
+    publicHostnames:
+    - shows.pmcd.dev
+  glance:
+    monitor: true
+    title: Stubs

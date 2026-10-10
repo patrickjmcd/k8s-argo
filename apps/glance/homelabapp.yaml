@@ -113,6 +113,8 @@ spec:
                         url: https://sparkyfitness.x.pmcd.io
                       - title: Spoolman
                         url: https://spoolman.x.pmcd.io
+                      - title: Stubs
+                        url: https://shows.pmcd.dev
                       - title: Traefik
                         url: https://traefik.x.pmcd.io
                       - title: Tronbyt

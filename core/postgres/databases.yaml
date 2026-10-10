@@ -261,3 +261,14 @@ spec:
   owner: spoolman
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: stubs
+  namespace: postgres
+spec:
+  name: stubs
+  owner: stubs
+  cluster:
+    name: shared-postgres
