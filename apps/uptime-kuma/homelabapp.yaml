@@ -5,6 +5,8 @@ metadata:
   namespace: default
 spec:
   image: louislam/uptime-kuma:2.5.6
+  # TEMP: scaled down to repair a corrupt kuma.db after the Oct 11 node reboots
+  replicas: 0
   port: 3001
   resources:
     cpuRequest: 50m
