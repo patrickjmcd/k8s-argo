@@ -31,12 +31,13 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          if git diff --quiet -- apps/glance/homelabapp.yaml; then
+          FILES="apps/glance/homelabapp.yaml core/blackbox-exporter/probes-generated.yaml"
+          if git diff --quiet -- $FILES; then
             echo "No changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add apps/glance/homelabapp.yaml
-          git commit -m "chore: regenerate glance monitor list from HTTPRoutes [skip ci]"
+          git add $FILES
+          git commit -m "chore: regenerate glance monitor list and blackbox probes [skip ci]"
           git push

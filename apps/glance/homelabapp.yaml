@@ -119,8 +119,6 @@ spec:
                         url: https://traefik.x.pmcd.io
                       - title: Tronbyt
                         url: https://tronbyt.x.pmcd.io
-                      - title: Uptime Kuma
-                        url: https://status.x.pmcd.io
                       # END GLANCE-GENERATED:Services
 
                   - type: monitor
@@ -486,8 +484,6 @@ spec:
                             url: https://prometheus.x.pmcd.io
                           - title: Longhorn
                             url: https://longhorn.x.pmcd.io
-                          - title: Uptime Kuma
-                            url: https://status.x.pmcd.io
                           - title: Traefik
                             url: https://traefik.x.pmcd.io
                           - title: Dozzle

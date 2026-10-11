@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: blackbox
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: blackbox
+      rules:
+        - alert: ProbeFailed
+          expr: probe_success == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.instance }} is down"
+            description: >-
+              Blackbox probe ({{ $labels.job }}) of {{ $labels.instance }} has
+              failed for 5 minutes. Check it with
+              probe_http_status_code / probe_failed_due_to_regex, or curl it.
+        - alert: ProbeTlsCertExpiringSoon
+          expr: probe_ssl_earliest_cert_expiry - time() < 14 * 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "TLS certificate for {{ $labels.instance }} expires in under 14 days"
+            description: >-
+              cert-manager should have renewed it 30 days out; check the
+              Certificate and its CertificateRequest/Order.

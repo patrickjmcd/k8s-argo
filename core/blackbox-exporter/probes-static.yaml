@@ -1,0 +1,48 @@
+# Hand-maintained probes for things with no glance.monitor flag in the repo.
+# (The prometheus ProbeSelector matches release: kube-prometheus-stack.)
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: blackbox-https-static
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: blackbox-https
+  interval: 60s
+  module: http_up
+  prober:
+    url: prometheus-blackbox-exporter.prometheus.svc:9115
+  targets:
+    staticConfig:
+      labels:
+        group: external
+      static:
+        - https://ha.pmcd.dev      # Home Assistant (haos VM on pve)
+        - https://auth.pmcd.dev    # PocketID
+---
+# LAN devices outside the cluster: TCP connect only (ICMP would need
+# NET_RAW on the exporter).
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: blackbox-tcp-lan
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: blackbox-tcp
+  interval: 60s
+  module: tcp_connect
+  prober:
+    url: prometheus-blackbox-exporter.prometheus.svc:9115
+  targets:
+    staticConfig:
+      labels:
+        group: lan
+      static:
+        - 192.168.1.1:443      # UDM Pro
+        - 192.168.1.12:8006    # pve (Proxmox UI)
+        - 192.168.1.210:32400  # Plex (standalone, not in k8s)
+        - 192.168.1.253:445    # UNAS Pro (SMB: media, backups)
+        - 192.168.8.254:53     # secondary Pi-hole (outside the cluster)

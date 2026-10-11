@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blackbox-exporter
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Multi-source: list the probe/rule dir explicitly so a probes-only
+    # commit isn't served from Argo's manifest cache.
+    argocd.argoproj.io/manifest-generate-paths: /core/blackbox-exporter
+spec:
+  destination:
+    namespace: prometheus
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+  sources:
+    # Synthetic checks (replaced uptime-kuma, Oct 2026). Probes and alert
+    # rules live in core/blackbox-exporter; the HTTPS targets are generated
+    # from the same glance.monitor flags as the Glance monitor widgets.
+    - chart: prometheus-blackbox-exporter
+      repoURL: https://prometheus-community.github.io/helm-charts
+      targetRevision: 11.20.0
+      helm:
+        # Contains the chart name, so the Service is just
+        # prometheus-blackbox-exporter (the Probes' prober URL).
+        releaseName: prometheus-blackbox-exporter
+        valuesObject:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          config:
+            modules:
+              # "Is something answering?" -- redirects and auth walls
+              # (PocketID / basic auth) count as up; 404/5xx and TLS errors
+              # don't. TLS is verified, so a bad cert fails the probe.
+              http_up:
+                prober: http
+                timeout: 10s
+                http:
+                  valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+                  follow_redirects: false
+                  preferred_ip_protocol: ip4
+                  ip_protocol_fallback: false
+                  valid_status_codes: [200, 204, 301, 302, 303, 307, 308, 401, 403]
+              tcp_connect:
+                prober: tcp
+                timeout: 5s
+                tcp:
+                  preferred_ip_protocol: ip4
+                  ip_protocol_fallback: false
+    - path: core/blackbox-exporter
+      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      targetRevision: main
