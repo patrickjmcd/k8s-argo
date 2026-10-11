@@ -83,7 +83,7 @@ spec:
   persistence:
     claimName: longhorn-myapp-data      # existing PVC, defined next to it
     mountPath: /data
-  glance: {monitor: true}               # scripts/generate_glance_monitors.py
+  glance: {monitor: true}               # Glance widget + blackbox probe (scripts/generate_glance_monitors.py)
 ```
 
 Rules:
@@ -352,6 +352,17 @@ Rules of thumb:
 - Memory is incompressible and not period-scheduled, so memory limits stay correct.
   Give them real headroom; don't pin them a few Mi above requests, which is one
   spike away from an OOMKill.
+
+## Synthetic monitoring (blackbox exporter)
+
+`core/blackbox-exporter` (replaced uptime-kuma, Oct 2026) probes every app with
+`glance.monitor` set -- `scripts/generate_glance_monitors.py` writes
+`probes-generated.yaml` alongside the Glance widget list (a GitHub workflow
+reruns it on push) -- plus hand-written targets in `probes-static.yaml`
+(Home Assistant, PocketID, LAN devices over TCP). Module `http_up` counts
+redirects and 401/403 as up. Alerts: `ProbeFailed` (5m) and
+`ProbeTlsCertExpiringSoon` (<14d) in `rules.yaml`. It runs in-cluster, so it
+can't report a whole-cluster outage.
 
 ## MetalLB
 
