@@ -2,6 +2,7 @@
 # hand; edit build.py's write_kustomization() for anything else.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
 # Site content and nginx config, mounted into the nginx container by
 # values.yaml. Fixed names so the Helm release can reference them.
 configMapGenerator:
@@ -34,7 +35,6 @@ configMapGenerator:
   - name: joshhawleygop-nginx
     files:
       - nginx/default.conf
+
 generatorOptions:
   disableNameSuffixHash: true
-resources:
-  - homelabapp.yaml
