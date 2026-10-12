@@ -12,7 +12,9 @@ metadata:
   labels:
     app.kubernetes.io/name: minecraft
 spec:
-  replicas: 1
+  # Scaled down Oct 2026 to free ~4 GiB while nobody plays; the world is
+  # kept on longhorn-minecraft-data. Set back to 1 to play.
+  replicas: 0
   strategy:
     type: Recreate
   selector:
