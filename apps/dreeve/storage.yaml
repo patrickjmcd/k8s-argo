@@ -2,6 +2,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: longhorn-dreeve-data
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   # RWO is correct here: app + daemon are two containers in ONE pod, so a
   # single node always holds the mount. They MUST share these volumes - the
