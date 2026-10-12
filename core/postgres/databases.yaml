@@ -243,17 +243,6 @@ spec:
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
-  name: monica
-  namespace: postgres
-spec:
-  name: monica
-  owner: monica
-  cluster:
-    name: shared-postgres
----
-apiVersion: postgresql.cnpg.io/v1
-kind: Database
-metadata:
   name: spoolman
   namespace: postgres
 spec:

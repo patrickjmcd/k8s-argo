@@ -56,7 +56,6 @@ spec:
       - host all romm all trust
       - host all sparkyfitness all trust
       - host all kaneo all trust
-      - host all monica all trust
       - host all spoolman all trust
       - host all stubs all trust
       - host all backup all trust
@@ -140,8 +139,9 @@ spec:
         login: true
         inherit: true
         connectionLimit: -1
+      # Monica removed Oct 2026; drop the role, then delete this entry.
       - name: monica
-        ensure: present
+        ensure: absent
         login: true
         inherit: true
         connectionLimit: -1

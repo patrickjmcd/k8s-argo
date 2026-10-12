@@ -26,7 +26,6 @@ spec:
           - name: readarr
           - name: agregarr
           - name: hdhr2xmltv
-          - name: medialyze
           - name: concertarr
           - name: ytdl-triage
   template:

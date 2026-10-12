@@ -61,7 +61,6 @@ spec:
         - https://logs.x.pmcd.io
         - https://longhorn.x.pmcd.io
         - https://mealie.x.pmcd.io
-        - https://monica.x.pmcd.io
         - https://n8n.x.pmcd.io
         - https://outline.pmcd.dev
         - https://pihole.x.pmcd.io

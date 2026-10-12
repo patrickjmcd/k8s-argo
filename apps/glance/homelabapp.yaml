@@ -97,8 +97,6 @@ spec:
                         url: https://longhorn.x.pmcd.io
                       - title: Mealie
                         url: https://mealie.x.pmcd.io
-                      - title: Monica
-                        url: https://monica.x.pmcd.io
                       - title: N8N
                         url: https://n8n.x.pmcd.io
                       - title: Outline
@@ -503,8 +501,6 @@ spec:
                             url: https://requests.x.pmcd.io
                           - title: Tautulli
                             url: https://tautulli.x.pmcd.io
-                          - title: Medialyze
-                            url: https://medialyze.x.pmcd.io
 
                       - title: Media Management
                         links:
