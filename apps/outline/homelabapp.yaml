@@ -4,7 +4,7 @@ metadata:
   name: outline
   namespace: default
 spec:
-  image: outlinewiki/outline:1.10.1
+  image: outlinewiki/outline:1.11.0
   port: 80
   containerPort: 3000
   resources:
