@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dispatcharr
+  labels:
+    app.kubernetes.io/instance: dispatcharr
+    app.kubernetes.io/name: dispatcharr
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: dispatcharr
+      app.kubernetes.io/name: dispatcharr
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

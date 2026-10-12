@@ -8,6 +8,7 @@ resources:
   - 1password.secret.yaml
   - storage.yaml
   - celery.statefulset.yaml
+  - servicemonitor.yaml
 
 images:
   - name: dispatcharr

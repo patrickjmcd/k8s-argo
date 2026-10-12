@@ -11,6 +11,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: http
+    - name: metrics
+      port: 9192
+      protocol: TCP
+      targetPort: metrics
   selector:
     app.kubernetes.io/instance: dispatcharr
     app.kubernetes.io/name: dispatcharr
