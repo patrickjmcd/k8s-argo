@@ -139,12 +139,6 @@ spec:
         login: true
         inherit: true
         connectionLimit: -1
-      # Monica removed Oct 2026; drop the role, then delete this entry.
-      - name: monica
-        ensure: absent
-        login: true
-        inherit: true
-        connectionLimit: -1
       - name: spoolman
         ensure: present
         login: true
