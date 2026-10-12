@@ -1,0 +1,64 @@
+# Off-site backups for the immich Postgres cluster, same setup as
+# shared-postgres (core/postgres/objectstore-b2.yaml): continuous WAL archiving
+# plus daily base backups to Backblaze B2 via the Barman Cloud plugin. The
+# nightly pg_dump to the UNAS (backup-cronjob.yaml) stays as the on-site copy.
+# Database only -- the photo files themselves live on the immich-library share.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: b2-backup
+  namespace: immich
+spec:
+  # Same Backblaze B2 key Longhorn and shared-postgres use.
+  itemPath: "vaults/Kubernetes/items/longhorn-b2-backup"
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: b2
+  namespace: immich
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    # Lands under cnpg/immich/ (serverName in postgres.yaml), next to
+    # cnpg/shared-postgres/.
+    destinationPath: s3://mcd-backup/cnpg/
+    endpointURL: https://s3.us-east-005.backblazeb2.com
+    s3Credentials:
+      accessKeyId:
+        name: b2-backup
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: b2-backup
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: gzip
+      maxParallel: 2
+    data:
+      compression: gzip
+  instanceSidecarConfiguration:
+    env:
+      # boto3 >= 1.36 sends x-amz-checksum headers by default, which B2's S3
+      # API rejects; only compute/validate checksums when an operation needs it.
+      - name: AWS_REQUEST_CHECKSUM_CALCULATION
+        value: when_required
+      - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+        value: when_required
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: immich-postgres-daily
+  namespace: immich
+spec:
+  # six-field cron (seconds first): 03:45 daily, after the 03:00 pg_dump and
+  # shared-postgres's 03:30 base backup
+  schedule: "0 45 3 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: postgres
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  # take one right away so there's a base backup to replay WAL onto
+  immediate: true

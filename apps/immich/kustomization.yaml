@@ -6,4 +6,5 @@ resources:
   - httproute.yaml
   - 1password.secret.yaml
   - backup-cronjob.yaml
+  - b2-backup.yaml
   - redis.yaml
