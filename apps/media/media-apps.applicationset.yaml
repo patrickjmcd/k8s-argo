@@ -13,7 +13,6 @@ spec:
           - name: notifiarr
           - name: sabnzbd
           - name: kometa
-          - name: youtubedl
           - name: youtarr
           - name: dispatcharr
           - name: ersatztv

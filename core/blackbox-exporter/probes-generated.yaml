@@ -34,7 +34,6 @@ spec:
         - https://sportarr.x.pmcd.io
         - https://tautulli.x.pmcd.io
         - https://youtarr.x.pmcd.io
-        - https://youtubedl.x.pmcd.io
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe

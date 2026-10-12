@@ -156,8 +156,6 @@ spec:
                         url: https://tautulli.x.pmcd.io
                       - title: Youtarr
                         url: https://youtarr.x.pmcd.io
-                      - title: Youtube-DL
-                        url: https://youtubedl.x.pmcd.io
                       # END GLANCE-GENERATED:Media Services
 
               - size: full
@@ -528,8 +526,6 @@ spec:
                             url: https://notifiarr.x.pmcd.io
                           - title: Dispatcharr
                             url: https://dispatcharr.x.pmcd.io
-                          - title: Youtube-DL
-                            url: https://youtubedl.x.pmcd.io
 
               - size: small
                 widgets:

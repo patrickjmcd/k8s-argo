@@ -135,11 +135,10 @@ spec:
               pip install --no-cache-dir watchdog anthropic openai sqlite-vec &&
               python /app/watcher.py
           envFrom:
-            # Reuses the existing youtubedl-1pw item (ANTHROPIC_API_KEY,
-            # OPENAI_API_KEY, DISCORD_WEBHOOK_URL, PLEX_TOKEN) — same
-            # credentials, no need for a second copy.
+            # ANTHROPIC_API_KEY, OPENAI_API_KEY, DISCORD_WEBHOOK_URL, PLEX_TOKEN
+            # (1Password item "youtubedl", see 1password.secret.yaml).
             - secretRef:
-                name: youtubedl-1pw
+                name: youtarr-postprocessor-1pw
           volumeMounts:
             - name: media
               mountPath: /incoming
