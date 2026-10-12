@@ -32,6 +32,13 @@
   "customManagers": [
     {
       "customType": "regex",
+      "managerFilePatterns": ["/^core/kubernetes-mcp-server\\.yaml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s*\\n\\s*version: (?<currentValue>\\S+)"
+      ]
+    },
+    {
+      "customType": "regex",
       "managerFilePatterns": ["/^apps/immich/values\\.yaml$/"],
       "matchStrings": [
         "# renovate: depName=(?<depName>.*?)\\s*\\n\\s*tag: (?<currentValue>.*)"
