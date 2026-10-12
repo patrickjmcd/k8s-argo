@@ -261,3 +261,14 @@ spec:
   owner: stubs
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: sportarr
+  namespace: postgres
+spec:
+  name: sportarr
+  owner: sportarr
+  cluster:
+    name: shared-postgres

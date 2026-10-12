@@ -1,0 +1,52 @@
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: sportarr
+  namespace: media
+spec:
+  image: sportarr/sportarr:4.1.9.1119
+  port: 80
+  containerPort: 1867
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 1Gi
+  probes:
+    type: httpGet
+    path: /ping
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - sportarr.x.pmcd.io
+  env:
+    TZ: America/Chicago
+    # Entrypoint starts as root, chowns /config, then drops to PUID/PGID.
+    PUID: '1000'
+    PGID: '1000'
+    UMASK: '002'
+    # Postgres on shared-postgres (trust auth, like sonarr). Fresh installs
+    # only: Sportarr has no SQLite -> Postgres migration.
+    Sportarr__Database__Provider: postgres
+    Sportarr__Database__Host: shared-postgres-rw.postgres.svc.cluster.local
+    Sportarr__Database__Port: '5432'
+    Sportarr__Database__Name: sportarr
+    Sportarr__Database__Username: sportarr
+  persistence:
+    claimName: longhorn-sportarr-data
+    mountPath: /config
+  # Same mount paths as sonarr/radarr so SABnzbd's completed-download paths
+  # resolve identically. Root folder: /mnt/media/sports.
+  extraVolumes:
+  - name: media
+    claimName: smb-media-claim
+  - name: downloads
+    claimName: sab-downloads-pvc
+  extraVolumeMounts:
+  - name: media
+    mountPath: /mnt/media
+  - name: downloads
+    mountPath: /mnt/downloads
+  glance:
+    monitor: true
