@@ -34,32 +34,30 @@ spec:
           spec:
             affinity:
               nodeAffinity:
+                # The scheduler normalizes preferred-affinity scores against
+                # the best node, so only the ratio between nodes matters. The
+                # old weights (Pi5 80 + not-Pi4 50) scored Pi5 100 / x86 38 /
+                # Pi4 0, which outvoted free resources: by Oct 2026 the Pi5s
+                # carried 61-65% memory requests and crashed under load while
+                # the Pi4s sat at 68% free. (The Sep 2026 Pi4 CPU saturation
+                # was argocd-application-controller, which now prefers
+                # media-server in core/argocd.yaml.)
+                #
+                # Now: every node gets the 80 baseline and Pi5s a 20 bonus, so
+                # Pi5 100 / everything else 80. Pi5 wins ties, but free
+                # memory/CPU (NodeResourcesFit) decides when they're fuller.
                 preferredDuringSchedulingIgnoredDuringExecution:
                   - weight: 80
+                    preference:
+                      matchExpressions:
+                        - key: kubernetes.io/os
+                          operator: In
+                          values:
+                            - linux
+                  - weight: 20
                     preference:
                       matchExpressions:
                         - key: node.kubernetes.io/pi-model
                           operator: In
                           values:
                             - "5"
-                  # Soft-avoid the two Pi4 nodes — pi4-kube0/pi4-kube1 run
-                  # meaningfully weaker CPUs than everything else in the
-                  # cluster (Pi5s, x86 VMs) and both sat at a sustained
-                  # 98-99% CPU on 2026-09-11, crash-looping grafana in the
-                  # process. `NotIn ["4"]` is satisfied by every node that
-                  # either has a different pi-model value OR has no
-                  # pi-model label at all (Kubernetes NotIn semantics: a
-                  # missing key satisfies NotIn) — so this rewards Pi5s
-                  # *and* the unlabeled x86 nodes equally, while only the
-                  # two Pi4s score 0 on this term. Combined with the Pi5
-                  # preference above, effective priority order becomes:
-                  # Pi5 (130) > x86/other (50) > Pi4 (0) — Pi4 still gets
-                  # used if it's genuinely the only node with room, which
-                  # is the point: last resort, not never.
-                  - weight: 50
-                    preference:
-                      matchExpressions:
-                        - key: node.kubernetes.io/pi-model
-                          operator: NotIn
-                          values:
-                            - "4"
