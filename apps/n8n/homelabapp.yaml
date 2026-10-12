@@ -35,6 +35,15 @@ spec:
     DB_POSTGRESDB_PORT: '5432'
     DB_POSTGRESDB_SCHEMA: public
     DB_POSTGRESDB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+  # Soft-prefer media-server (spare memory/CPU) over the Pi 5s; still
+  # schedules elsewhere if it's down.
+  preferredNodes:
+  - media-server
+  tolerations:
+  - key: dedicated
+    operator: Equal
+    value: heavy
+    effect: NoSchedule
   persistence:
     claimName: smb-n8n-claim
   glance:

@@ -18,6 +18,23 @@ spec:
         app.kubernetes.io/instance: dispatcharr-celery
         app.kubernetes.io/name: dispatcharr-celery
     spec:
+      # Prefer media-server, next to the dispatcharr pod (deployment.yaml);
+      # soft, since the worker doesn't need the HDHomeRun's subnet itself.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - heavy
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: heavy
+          effect: NoSchedule
       containers:
         - name: celery
           workingDir: /app
