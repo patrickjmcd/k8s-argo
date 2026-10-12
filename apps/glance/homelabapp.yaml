@@ -111,6 +111,8 @@ spec:
                         url: https://sparkyfitness.x.pmcd.io
                       - title: Spoolman
                         url: https://spoolman.x.pmcd.io
+                      - title: Strava
+                        url: https://strava.x.pmcd.io
                       - title: Stubs
                         url: https://showmeyourstubs.com
                       - title: Traefik

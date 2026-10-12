@@ -3,6 +3,9 @@ kind: HTTPRoute
 metadata:
   name: dreeve-httproute
   namespace: default
+  annotations:
+    glance.pmcd.io/monitor: "true"
+    glance.pmcd.io/monitor-title: "Strava"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
