@@ -48,13 +48,15 @@ spec:
                 effect: "NoExecute"
                 operator: "Exists"
                 tolerationSeconds: 30
+            # Steady state is 250-300Mi on every node. The old 300Mi limit
+            # OOM-killed it on pi5-kube1 minutes before that node hung
+            # (Oct 11 2026). No CPU limit: it's on the CSI critical path.
             resources:
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 320Mi
               limits:
-                cpu: 300m
-                memory: 300Mi
+                memory: 768Mi
           longhornDriver:
             tolerations:
               - key: "dedicated"
