@@ -74,7 +74,9 @@ spec:
 
           resources:
             limits:
-              memory: 1008Mi
+              # Headroom for the Could Not Dispatch plugin's in-container ffmpeg
+              # slate encoder; 1008Mi (17Mi over the request) OOMKilled on first use.
+              memory: 1792Mi
             requests:
               cpu: 15m
               memory: 991Mi
