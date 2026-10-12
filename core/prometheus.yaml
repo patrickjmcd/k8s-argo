@@ -146,6 +146,23 @@ spec:
                       target_label: instance
                     - target_label: __address__
                       replacement: pve-exporter.prometheus.svc:9221
+          # k3s runs apiserver, etcd and kubelet in one process, so the kubelet
+          # endpoint re-exports every apiserver_*/etcd_* series -- ~237k of the
+          # ~709k head series (Oct 2026). The apiserver job already has them.
+          kubelet:
+            serviceMonitor:
+              metricRelabelings:
+                - sourceLabels: [__name__]
+                  regex: (apiserver|etcd)_.*
+                  action: drop
+          # Latency/size histograms no rule uses (the SLO burn-rate rules read
+          # apiserver_request_sli_duration_seconds_bucket, which stays).
+          kubeApiServer:
+            serviceMonitor:
+              metricRelabelings:
+                - sourceLabels: [__name__]
+                  regex: (apiserver_request_duration_seconds|etcd_request_duration_seconds|apiserver_request_body_size_bytes|apiserver_watch_list_duration_seconds|apiserver_response_sizes|apiserver_watch_cache_read_wait_seconds|apiserver_watch_events_sizes)_bucket
+                  action: drop
           prometheusOperator:
             resources:
               requests:
