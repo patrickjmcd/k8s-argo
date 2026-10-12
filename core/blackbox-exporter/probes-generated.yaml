@@ -31,6 +31,7 @@ spec:
         - https://requests.x.pmcd.io
         - https://sabnzbd.x.pmcd.io
         - https://sonarr.x.pmcd.io
+        - https://sportarr.x.pmcd.io
         - https://tautulli.x.pmcd.io
         - https://youtarr.x.pmcd.io
         - https://youtubedl.x.pmcd.io

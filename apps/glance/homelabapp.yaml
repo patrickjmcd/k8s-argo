@@ -150,6 +150,8 @@ spec:
                         url: https://requests.x.pmcd.io
                       - title: Sonarr
                         url: https://sonarr.x.pmcd.io
+                      - title: Sportarr
+                        url: https://sportarr.x.pmcd.io
                       - title: Tautulli
                         url: https://tautulli.x.pmcd.io
                       - title: Youtarr
