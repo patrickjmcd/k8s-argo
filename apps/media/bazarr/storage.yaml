@@ -3,6 +3,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-bazarr-data
   namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   accessModes:
     - ReadWriteOnce

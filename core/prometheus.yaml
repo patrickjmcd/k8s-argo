@@ -388,6 +388,11 @@ spec:
               type: pvc
               enabled: true
               storageClassName: longhorn
+              # UI-made dashboards, users and preferences live here (the
+              # provisioned dashboards come from core/grafana-assets).
+              extraPvcLabels:
+                recurring-job-group.longhorn.io/b2-backup: enabled
+                recurring-job.longhorn.io/source: enabled
               accessModes:
                 - ReadWriteOnce
               size: 5Gi

@@ -3,6 +3,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-youtarr-config
   namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   accessModes:
     - ReadWriteOnce
@@ -16,6 +21,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-youtarr-jobs
   namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   accessModes:
     - ReadWriteOnce
@@ -29,6 +39,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-youtarr-images
   namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   accessModes:
     - ReadWriteOnce
@@ -42,6 +57,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-youtarr-mariadb-data
   namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   accessModes:
     - ReadWriteOnce
