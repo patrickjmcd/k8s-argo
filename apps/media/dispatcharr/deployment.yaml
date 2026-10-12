@@ -86,6 +86,15 @@ spec:
               name: data
 
       restartPolicy: Always
+      # The HDHomeRun (192.168.1.176) only streams to clients on its own
+      # subnet: from VLAN 8 nodes it tunes, locks the tuner and sends 0 bytes.
+      # media-server is on 192.168.1.x, so OTA streams work from here.
+      nodeSelector:
+        node-type: heavy
+      tolerations:
+        - key: dedicated
+          value: heavy
+          effect: NoSchedule
       volumes:
         - name: data
           persistentVolumeClaim:
