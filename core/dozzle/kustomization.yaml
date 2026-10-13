@@ -9,4 +9,4 @@ resources:
 images:
   - name: dozzle
     newName: amir20/dozzle
-    newTag: v11.3.1
+    newTag: v11.3.2
