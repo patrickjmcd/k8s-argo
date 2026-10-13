@@ -99,6 +99,8 @@ spec:
               memory: 335Mi
 
           volumeMounts:
+            - mountPath: /config
+              name: config
             - mountPath: /mnt/media
               name: media
             - mountPath: /mnt/downloads
@@ -106,6 +108,9 @@ spec:
 
       restartPolicy: Always
       volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: longhorn-lidarr-config
         - name: media
           persistentVolumeClaim:
             claimName: smb-media-claim

@@ -37,6 +37,9 @@ spec:
     READARR__POSTGRES__MAINDB: readarr-main
     READARR__POSTGRES__LOGDB: readarr-logs
     READARR__POSTGRES__CACHEDB: readarr-cache
+  persistence:
+    claimName: longhorn-readarr-config
+    mountPath: /config
   extraVolumes:
   - name: media
     claimName: smb-media-claim

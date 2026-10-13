@@ -1,0 +1,16 @@
+# /config: artwork cache (MediaCover), the app's own backups and logs.
+# Everything that matters is in Postgres (shared-postgres, B2-backed), so this
+# is a cache -- no B2 backup labels. Before Oct 2026 /config had no volume at
+# all and was wiped on every restart (missing posters/thumbnails).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-lidarr-config
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 10Gi

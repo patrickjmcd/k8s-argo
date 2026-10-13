@@ -38,6 +38,9 @@ spec:
     RADARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
     RADARR__POSTGRES__MAINDB: radarr-main
     RADARR__POSTGRES__LOGDB: radarr-logs
+  persistence:
+    claimName: longhorn-radarr-config
+    mountPath: /config
   extraVolumes:
   - name: media
     claimName: smb-media-claim

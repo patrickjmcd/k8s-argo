@@ -38,6 +38,9 @@ spec:
     PROWLARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
     PROWLARR__POSTGRES__MAINDB: prowlarr-main
     PROWLARR__POSTGRES__LOGDB: prowlarr-logs
+  persistence:
+    claimName: longhorn-prowlarr-config
+    mountPath: /config
   extraVolumes:
   - name: media
     claimName: smb-media-claim

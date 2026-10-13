@@ -38,6 +38,9 @@ spec:
     SONARR__POSTGRES__HOST: shared-postgres-rw.postgres.svc.cluster.local
     SONARR__POSTGRES__MAINDB: sonarr-main
     SONARR__POSTGRES__LOGDB: sonarr-logs
+  persistence:
+    claimName: longhorn-sonarr-config
+    mountPath: /config
   extraVolumes:
   - name: media
     claimName: smb-media-claim
