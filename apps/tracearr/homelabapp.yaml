@@ -50,6 +50,10 @@ spec:
   route:
     hostnames:
     - tracearr.x.pmcd.io
+  # The image runs as uid 1001 (group nogroup); fsGroup makes the volume
+  # writable for it.
+  securityContext:
+    fsGroup: 1001
   persistence:
     claimName: longhorn-tracearr-data
     mountPath: /data
