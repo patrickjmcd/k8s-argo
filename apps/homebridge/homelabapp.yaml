@@ -6,11 +6,14 @@ metadata:
 spec:
   image: homebridge/homebridge:2026-09-02
   port: 8581
+  # homebridge-unifi-protect runs an ffmpeg per live HomeKit stream; 512Mi
+  # OOM-killed its child bridge as soon as a few cameras were opened, and
+  # 500m throttled the transcodes. The CPU limit is only a runaway guard.
   resources:
-    cpuRequest: 25m
-    memoryRequest: 128Mi
-    cpuLimit: 500m
-    memoryLimit: 512Mi
+    cpuRequest: 200m
+    memoryRequest: 384Mi
+    cpuLimit: "3"
+    memoryLimit: 2Gi
   route:
     hostnames:
     - homebridge.x.pmcd.io
