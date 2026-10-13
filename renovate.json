@@ -59,6 +59,11 @@
   ],
   "packageRules": [
     {
+      "description": "linuxserver/lidarr publishes old 0.8.x builds as tags like 8.1.2135, which sort above the real 3.x releases. Renovate offered one as a 'major' update (Oct 2026); it was Lidarr 0.8, which has no Postgres support and started on an empty SQLite DB.",
+      "matchPackageNames": ["linuxserver/lidarr"],
+      "allowedVersions": "<8"
+    },
+    {
       "description": "Label PRs by update type so the auto-review workflow can route them. Patch, digest, and minor updates auto-merge without a Claude review; automergeType=branch merges them straight to the base branch WITHOUT opening a PR (no PR = no notification email). If branch automerge can't complete, Renovate falls back to opening a labelled PR, which the auto-merge-simple workflow job then merges. Digest is grouped with patch here — matchUpdateTypes previously only listed 'patch', so digest-only bumps (e.g. #830) got no label at all and neither workflow job's label-gated 'if' ever matched, leaving them unrouted. The critical-infra groups below override this back to automerge=false and add the needs-review label so they always open a PR for review.",
       "matchUpdateTypes": ["patch", "digest"],
       "addLabels": ["renovate/patch"],
