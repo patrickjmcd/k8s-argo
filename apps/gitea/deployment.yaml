@@ -86,9 +86,12 @@ spec:
               value: main
             - name: GITEA__actions__ENABLED
               value: "true"
-            # Webhooks to in-cluster/LAN targets (Argo CD refresh hooks).
-            - name: GITEA__webhook__ALLOWED_HOST_LIST
-              value: private,external,loopback
+            # Outbound requests (webhooks to Argo CD, push mirrors to GitHub)
+            # may reach in-cluster/LAN hosts as well as the internet.
+            - name: GITEA__security__ALLOWED_HOST_LIST
+              value: private,loopback
+            - name: GITEA__security__EGRESS_MODE
+              value: lax
             - name: GITEA__metrics__ENABLED
               value: "true"
             - name: ADMIN_PASSWORD
