@@ -140,8 +140,6 @@ spec:
                         url: https://jellyfin.x.pmcd.io
                       - title: Lidarr
                         url: https://lidarr.x.pmcd.io
-                      - title: Notifiarr
-                        url: https://notifiarr.x.pmcd.io
                       - title: Prowlarr
                         url: https://prowlarr.x.pmcd.io
                       - title: Radarr
@@ -528,8 +526,6 @@ spec:
                             url: https://agregarr.x.pmcd.io
                           - title: SABnzbd
                             url: https://sabnzbd.x.pmcd.io
-                          - title: Notifiarr
-                            url: https://notifiarr.x.pmcd.io
                           - title: Dispatcharr
                             url: https://dispatcharr.x.pmcd.io
 
