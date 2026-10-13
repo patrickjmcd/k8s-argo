@@ -26,6 +26,7 @@ spec:
           - name: agregarr
           - name: hdhr2xmltv
           - name: concertarr
+          - name: recyclarr
           - name: ytdl-triage
           - name: sportarr
   template:
