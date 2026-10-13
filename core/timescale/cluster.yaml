@@ -1,0 +1,86 @@
+# TimescaleDB for time-series apps (first: Tracearr). Separate from
+# shared-postgres so its image and preload settings never touch the cluster
+# every other app depends on.
+#
+# Stock CNPG Postgres 18 image; TimescaleDB and its toolkit are mounted as
+# CNPG extension images (Kubernetes ImageVolume, on by default since 1.35).
+#
+# One instance on Longhorn (not local-path like shared-postgres): with no
+# replicas, a replicated volume lets the pod move if its node dies. WAL and
+# daily base backups go to B2 (b2-backup.yaml).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: timescale
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.4-standard-trixie
+
+  storage:
+    storageClass: longhorn
+    size: 10Gi
+
+  # Tracearr's compose file gives TimescaleDB 512MB of shared memory.
+  ephemeralVolumesSizeLimit:
+    shm: 512Mi
+
+  # Soft-prefer media-server, next to Tracearr (apps/tracearr).
+  affinity:
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: heavy
+        effect: NoSchedule
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                  - heavy
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 2Gi
+
+  postgresql:
+    shared_preload_libraries:
+      - timescaledb
+    extensions:
+      - name: timescaledb
+        image:
+          reference: ghcr.io/inomotech-foss/timescaledb-cnpg:2.28.3-pg18
+      # Loads on demand; must not be preloaded.
+      - name: timescaledb_toolkit
+        image:
+          reference: ghcr.io/inomotech-foss/timescaledb-cnpg/toolkit:1.23.0-pg18
+    parameters:
+      # Community license: compression, continuous aggregates, retention.
+      timescaledb.license: timescale
+      timescaledb.telemetry_level: "off"
+      # Tracearr's documented settings.
+      max_locks_per_transaction: "4096"
+      max_connections: "150"
+      timescaledb.max_tuples_decompressed_per_dml_transaction: "100000"
+    pg_hba:
+      - host all tracearr all trust
+
+  managed:
+    roles:
+      - name: tracearr
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: b2
+        serverName: timescale

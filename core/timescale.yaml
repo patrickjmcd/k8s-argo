@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: timescale
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  project: default
+  source:
+    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    targetRevision: main
+    path: core/timescale
+  destination:
+    namespace: timescale
+    name: in-cluster

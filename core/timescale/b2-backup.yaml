@@ -1,0 +1,52 @@
+# Same Backblaze B2 key as Longhorn and the other CNPG clusters; lands under
+# cnpg/timescale/ in the mcd-backup bucket.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: b2-backup
+spec:
+  itemPath: "vaults/Kubernetes/items/longhorn-b2-backup"
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: b2
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    destinationPath: s3://mcd-backup/cnpg/
+    endpointURL: https://s3.us-east-005.backblazeb2.com
+    s3Credentials:
+      accessKeyId:
+        name: b2-backup
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: b2-backup
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: gzip
+      maxParallel: 2
+    data:
+      compression: gzip
+  instanceSidecarConfiguration:
+    env:
+      # B2's S3 API rejects boto3's default x-amz-checksum headers.
+      - name: AWS_REQUEST_CHECKSUM_CALCULATION
+        value: when_required
+      - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+        value: when_required
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: timescale-daily
+spec:
+  # six-field cron (seconds first): 04:00 daily
+  schedule: "0 0 4 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: timescale
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  immediate: true

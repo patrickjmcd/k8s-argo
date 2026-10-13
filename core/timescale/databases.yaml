@@ -1,0 +1,16 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: tracearr
+spec:
+  name: tracearr
+  owner: tracearr
+  cluster:
+    name: timescale
+  extensions:
+    - name: timescaledb
+      ensure: present
+    - name: timescaledb_toolkit
+      ensure: present
+    - name: pg_trgm
+      ensure: present

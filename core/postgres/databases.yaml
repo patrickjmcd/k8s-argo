@@ -272,3 +272,14 @@ spec:
   owner: sportarr
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: gitea
+  namespace: postgres
+spec:
+  name: gitea
+  owner: gitea
+  cluster:
+    name: shared-postgres
