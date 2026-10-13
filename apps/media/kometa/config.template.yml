@@ -129,12 +129,12 @@ settings:
   overlay_artwork_filetype: jpg
   overlay_artwork_quality: 75
 webhooks:                            # Can be individually specified per library as well
-  error:
-  version: notifiarr
+  error: ntfy
+  version: ntfy
   run_start:
   run_end:
-  changes: notifiarr
-  delete: notifiarr
+  changes: ntfy
+  delete: ntfy
 plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.210:32400
   token: ${PLEX_TOKEN}
@@ -149,8 +149,10 @@ tmdb:                                # REQUIRED for the script to run
   language: en
   cache_expiration: 60
   region:
-notifiarr:
-  apikey: ${NOTIFIARR_APIKEY}
+ntfy:                                # webhooks above -> in-cluster ntfy (Notifiarr removed Oct 2026)
+  url: http://ntfy.ntfy.svc.cluster.local
+  token: ${NTFY_TOKEN}
+  topic: media
 mdblist:
   apikey: ${MDBLIST_APIKEY}
   cache_expiration: 60

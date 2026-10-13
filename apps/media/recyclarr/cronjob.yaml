@@ -1,0 +1,53 @@
+# Daily TRaSH Guides sync into Sonarr/Radarr (config: recyclarr.yml).
+# Stateless: Recyclarr re-clones the guides and adopts existing custom
+# formats/profiles by name each run, so /config is just scratch space.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: recyclarr
+spec:
+  schedule: "15 5 * * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          containers:
+            - name: recyclarr
+              image: ghcr.io/recyclarr/recyclarr:8.7.3
+              args: ["sync"]
+              env:
+                - name: TZ
+                  value: America/Chicago
+              envFrom:
+                - secretRef:
+                    name: sonarr-1pw
+                - secretRef:
+                    name: radarr-1pw
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: recyclarr-config
+                  mountPath: /config/recyclarr.yml
+                  subPath: recyclarr.yml
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 512Mi
+          volumes:
+            - name: config
+              emptyDir: {}
+            - name: recyclarr-config
+              configMap:
+                name: recyclarr-config
