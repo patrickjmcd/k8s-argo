@@ -24,7 +24,6 @@ spec:
         - https://dispatcharr.x.pmcd.io
         - https://jellyfin.x.pmcd.io
         - https://lidarr.x.pmcd.io
-        - https://notifiarr.x.pmcd.io
         - https://prowlarr.x.pmcd.io
         - https://radarr.x.pmcd.io
         - https://readarr.x.pmcd.io

@@ -24,6 +24,9 @@ spec:
               envFrom:
                 - secretRef:
                     name: kometa-1pw
+                # NTFY_TOKEN for the ntfy webhooks (1Password item "ntfy")
+                - secretRef:
+                    name: ntfy-publisher-1pw
               volumeMounts:
                 - name: config-template
                   mountPath: /template

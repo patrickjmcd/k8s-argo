@@ -1,6 +1,35 @@
 #!/usr/bin/env bash
+# Enable once per clone:  git config core.hooksPath .githooks
+#
+# Generated files are rebuilt here, at commit time, rather than by CI: the
+# repo's primary is Gitea and GitHub is a push mirror, so the old GitHub
+# Actions that committed back would have been overwritten (Oct 2026).
 set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"
-"${repo_root}/scripts/security-commit-agent.sh"
+cd "${repo_root}"
+staged="$(git diff --cached --name-only --diff-filter=ACMRD)"
 
+# Python with extra packages: uv if present, else the system python3.
+py() {
+  local pkgs="$1"; shift
+  if command -v uv >/dev/null 2>&1; then
+    uv run -q ${pkgs} python3 "$@"
+  else
+    python3 "$@"
+  fi
+}
+
+# Glance monitor widgets + blackbox probes from glance.monitor flags.
+if grep -qE '(^|/)httproute[^/]*\.yaml$|^apps/.+/values\.yaml$|^apps/.+/homelabapp[^/]*\.yaml$|^scripts/generate_glance_monitors\.py$' <<<"${staged}"; then
+  py "--with pyyaml" scripts/generate_glance_monitors.py
+  git add apps/glance/homelabapp.yaml core/blackbox-exporter/probes-generated.yaml
+fi
+
+# joshhawleygop static site (apps/joshhawleygop/site + kustomization.yaml).
+if grep -qE '^apps/joshhawleygop/(content/|src/|build\.py$|requirements\.txt$)' <<<"${staged}"; then
+  py "--with-requirements apps/joshhawleygop/requirements.txt" apps/joshhawleygop/build.py
+  git add -A apps/joshhawleygop/site apps/joshhawleygop/kustomization.yaml
+fi
+
+"${repo_root}/scripts/security-commit-agent.sh"
