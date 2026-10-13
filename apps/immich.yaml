@@ -17,7 +17,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
   sources:
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    - repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
       ref: values
     - chart: immich
@@ -27,6 +27,6 @@ spec:
         releaseName: immich
         valueFiles:
           - $values/apps/immich/values.yaml
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    - repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
       path: apps/immich

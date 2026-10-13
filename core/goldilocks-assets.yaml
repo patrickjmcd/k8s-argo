@@ -20,5 +20,5 @@ spec:
       - CreateNamespace=true
   source:
     path: core/goldilocks-assets
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
     targetRevision: main

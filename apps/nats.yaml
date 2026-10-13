@@ -56,5 +56,5 @@ spec:
               enabled: false
     # 2) Extra resources we own (LAN LoadBalancer so the upstairs Pi can reach it).
     - path: apps/nats
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main

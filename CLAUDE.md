@@ -57,7 +57,7 @@ spec:
       - SkipDryRunOnMissingResource=true   # CRD comes from kro (fresh cluster)
   source:
     path: apps/myapp
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
     targetRevision: main
 ```
 
@@ -159,7 +159,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
   sources:
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    - repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
       ref: values
     - chart: homelab-app
@@ -170,7 +170,7 @@ spec:
         valueFiles:
           - $values/apps/myapp/values.yaml
     - path: apps/myapp
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
 ```
 
@@ -181,7 +181,7 @@ The third source applies the `kustomization.yaml` in `apps/myapp/` for any extra
 ```yaml
 sources:
   - path: apps/myapp
-    repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
     targetRevision: main
 ```
 

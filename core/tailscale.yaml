@@ -30,5 +30,5 @@ spec:
           operatorConfig:
             hostname: k8s-operator
     - path: core/tailscale-assets
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main

@@ -11,6 +11,7 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
     - https://github.com/patrickjmcd/k8s-argo
+    - http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
   destinations:
     - namespace: '*'
       name: in-cluster

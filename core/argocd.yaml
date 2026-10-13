@@ -21,12 +21,12 @@ spec:
       - ServerSideApply=true
   sources:
     - path: core/argo-assets
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
     # No directory.recurse: false here -- it's the default, the API drops it
     # from the stored Application, and declaring it kept this app OutOfSync.
     - path: argo/projects
-      repoURL: https://github.com/patrickjmcd/k8s-argo.git
+      repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
     - chart: argo-cd
       repoURL: https://argoproj.github.io/argo-helm

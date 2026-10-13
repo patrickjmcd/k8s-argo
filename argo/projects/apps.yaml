@@ -11,6 +11,7 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
     - https://github.com/patrickjmcd/k8s-argo
+    - http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
     - https://k8s-at-home.com/charts/
     - https://helm.runix.net
     - https://immich-app.github.io/immich-charts

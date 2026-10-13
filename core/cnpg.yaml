@@ -28,7 +28,7 @@ spec:
       repoURL: https://cloudnative-pg.github.io/charts
       # renovate: datasource=helm depName=plugin-barman-cloud registryUrl=https://cloudnative-pg.github.io/charts
       targetRevision: 0.8.1
-    - repoURL: https://github.com/patrickjmcd/k8s-argo.git
+    - repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
       path: core/cnpg
   destination:
