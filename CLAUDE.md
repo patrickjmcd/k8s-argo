@@ -2,6 +2,22 @@
 
 Homelab Kubernetes cluster managed with k3s and ArgoCD. All changes are GitOps — push to `main` and ArgoCD reconciles automatically.
 
+## Where the repo lives (since Oct 2026)
+
+- **Primary: Gitea in the cluster** (`apps/gitea`), `https://git.x.pmcd.io/patrickjmcd/k8s-argo`
+  (git remote `origin`; push with a Gitea token, HTTPS only).
+- **Argo CD reads** `http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git`
+  (in-cluster, anonymous -- the repo is public) -- not via Traefik, so a broken Traefik can't
+  stop Argo from fixing it. Every `repoURL` uses this URL.
+- **GitHub is a push mirror** (`github` remote): Gitea force-pushes every commit there. Never
+  commit or merge on GitHub -- it gets overwritten.
+- **If Gitea (or the cluster) is down:** the AppProjects in `argo/projects` allow both URLs. Repoint
+  Argo at GitHub with `git grep -l gitea.gitea.svc -- . ':!argo/projects' | xargs sed -i
+  's#http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git#https://github.com/patrickjmcd/k8s-argo.git#g'`,
+  push to `github`, and `kubectl apply -f argo/projects/ -f argo/applications/` (the root apps
+  and projects are applied by hand). Gitea's data restores from B2 (Longhorn volume +
+  shared-postgres `gitea` DB).
+
 ## Directory Structure
 
 ```
