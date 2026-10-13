@@ -1,0 +1,141 @@
+# Gitea -- git hosting for k8s-argo and friends. HTTPS only (no SSH): push
+# with a personal access token. Argo CD reads repos through the in-cluster
+# Service (gitea.gitea.svc:3000), not Traefik, so a broken Traefik can't stop
+# Argo from fixing it. Config is entirely the GITEA__* env below;
+# bootstrap.sh (init container) renders app.ini and seeds admin + PocketID.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea
+  labels:
+    app: gitea
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: gitea
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      initContainers:
+        - name: bootstrap
+          image: gitea/gitea:28.1.0-rootless
+          command: ["/bin/sh", "/bootstrap/bootstrap.sh"]
+          env: &env
+            - name: TZ
+              value: America/Chicago
+            - name: GITEA_APP_INI
+              value: /etc/gitea/app.ini
+            - name: GITEA__database__DB_TYPE
+              value: postgres
+            - name: GITEA__database__HOST
+              value: shared-postgres-rw.postgres.svc.cluster.local:5432
+            - name: GITEA__database__NAME
+              value: gitea
+            - name: GITEA__database__USER
+              value: gitea
+            - name: GITEA__database__SSL_MODE
+              value: disable
+            - name: GITEA__server__DOMAIN
+              value: git.x.pmcd.io
+            - name: GITEA__server__ROOT_URL
+              value: https://git.x.pmcd.io/
+            - name: GITEA__server__HTTP_PORT
+              value: "3000"
+            - name: GITEA__server__DISABLE_SSH
+              value: "true"
+            - name: GITEA__server__START_SSH_SERVER
+              value: "false"
+            - name: GITEA__server__LFS_START_SERVER
+              value: "true"
+            - name: GITEA__security__INSTALL_LOCK
+              value: "true"
+            - name: GITEA__security__SECRET_KEY
+              valueFrom: {secretKeyRef: {name: gitea-1pw, key: SECRET_KEY}}
+            - name: GITEA__security__INTERNAL_TOKEN
+              valueFrom: {secretKeyRef: {name: gitea-1pw, key: INTERNAL_TOKEN}}
+            # Accounts only via PocketID (auto-created on first login, linked
+            # to an existing account with the same email); no sign-up form.
+            - name: GITEA__service__DISABLE_REGISTRATION
+              value: "false"
+            - name: GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION
+              value: "true"
+            - name: GITEA__service__SHOW_REGISTRATION_BUTTON
+              value: "false"
+            - name: GITEA__service__REQUIRE_SIGNIN_VIEW
+              value: "true"
+            - name: GITEA__oauth2_client__ENABLE_AUTO_REGISTRATION
+              value: "true"
+            - name: GITEA__oauth2_client__ACCOUNT_LINKING
+              value: auto
+            - name: GITEA__oauth2_client__USERNAME
+              value: preferred_username
+            - name: GITEA__openid__ENABLE_OPENID_SIGNIN
+              value: "false"
+            - name: GITEA__session__COOKIE_SECURE
+              value: "true"
+            - name: GITEA__repository__DEFAULT_BRANCH
+              value: main
+            - name: GITEA__actions__ENABLED
+              value: "true"
+            # Webhooks to in-cluster/LAN targets (Argo CD refresh hooks).
+            - name: GITEA__webhook__ALLOWED_HOST_LIST
+              value: private,external,loopback
+            - name: GITEA__metrics__ENABLED
+              value: "true"
+            - name: ADMIN_PASSWORD
+              valueFrom: {secretKeyRef: {name: gitea-1pw, key: ADMIN_PASSWORD}}
+            - name: OIDC_CLIENT_ID
+              valueFrom: {secretKeyRef: {name: gitea-1pw, key: OIDC_CLIENT_ID}}
+            - name: OIDC_CLIENT_SECRET
+              valueFrom: {secretKeyRef: {name: gitea-1pw, key: OIDC_CLIENT_SECRET}}
+          volumeMounts: &mounts
+            - {name: data, mountPath: /var/lib/gitea, subPath: data}
+            - {name: data, mountPath: /etc/gitea, subPath: config}
+            - {name: bootstrap, mountPath: /bootstrap}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      containers:
+        - name: gitea
+          image: gitea/gitea:28.1.0-rootless
+          env: *env
+          ports:
+            - name: http
+              containerPort: 3000
+          volumeMounts: *mounts
+          startupProbe:
+            httpGet: {path: /api/healthz, port: http}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /api/healthz, port: http}
+            periodSeconds: 15
+          livenessProbe:
+            httpGet: {path: /api/healthz, port: http}
+            periodSeconds: 30
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-gitea-data
+        - name: bootstrap
+          configMap:
+            name: gitea-bootstrap

@@ -83,6 +83,8 @@ spec:
                       # BEGIN GLANCE-GENERATED:Services
                       - title: ArgoCD
                         url: https://argo.x.pmcd.io
+                      - title: Gitea
+                        url: https://git.x.pmcd.io
                       - title: Grafana
                         url: https://grafana.x.pmcd.io
                       - title: Homebox
@@ -119,6 +121,8 @@ spec:
                         url: https://traefik.x.pmcd.io
                       - title: Tronbyt
                         url: https://tronbyt.x.pmcd.io
+                      - title: ntfy
+                        url: https://ntfy.x.pmcd.io
                       # END GLANCE-GENERATED:Services
 
                   - type: monitor
@@ -154,6 +158,8 @@ spec:
                         url: https://sportarr.x.pmcd.io
                       - title: Tautulli
                         url: https://tautulli.x.pmcd.io
+                      - title: Tracearr
+                        url: https://tracearr.x.pmcd.io
                       - title: Youtarr
                         url: https://youtarr.x.pmcd.io
                       # END GLANCE-GENERATED:Media Services

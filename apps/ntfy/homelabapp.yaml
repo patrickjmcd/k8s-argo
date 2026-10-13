@@ -1,0 +1,54 @@
+# ntfy (ntfy.sh) -- push notifications to phones/desktops over HTTP. Private:
+# anonymous access is denied; users and access tokens are provisioned from
+# the 1Password item (NTFY_AUTH_USERS / NTFY_AUTH_TOKENS, see below), so the
+# auth database never needs hand edits. LAN/Tailscale only.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: ntfy
+  namespace: ntfy
+spec:
+  image: binwiederhier/ntfy:v2.30.0
+  port: 80
+  args:
+    - serve
+  env:
+    TZ: America/Chicago
+    NTFY_BASE_URL: https://ntfy.x.pmcd.io
+    NTFY_BEHIND_PROXY: "true"
+    NTFY_CACHE_FILE: /var/lib/ntfy/cache.db
+    NTFY_CACHE_DURATION: 72h
+    NTFY_AUTH_FILE: /var/lib/ntfy/user.db
+    NTFY_AUTH_DEFAULT_ACCESS: deny-all
+    NTFY_ATTACHMENT_CACHE_DIR: /var/lib/ntfy/attachments
+    NTFY_ENABLE_LOGIN: "true"
+    # iOS can only get instant pushes through Apple's servers: ntfy forwards a
+    # poll request (message ID only, no content) via ntfy.sh, and the app then
+    # fetches the message from this server.
+    NTFY_UPSTREAM_BASE_URL: https://ntfy.sh
+    NTFY_ENABLE_METRICS: "true"
+  # From vaults/Kubernetes/items/ntfy:
+  #   NTFY_AUTH_USERS  "<user>:<bcrypt hash>:admin" (comma-separated; hash via
+  #                    `ntfy user hash`). Users removed here are deleted.
+  #   NTFY_AUTH_TOKENS "<user>:tk_<29 chars>:<label>" for publishers
+  #                    (Alertmanager, n8n, scripts).
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 32Mi
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    path: /v1/health
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - ntfy.x.pmcd.io
+  persistence:
+    claimName: longhorn-ntfy-data
+    mountPath: /var/lib/ntfy
+  glance:
+    monitor: true
+    title: ntfy

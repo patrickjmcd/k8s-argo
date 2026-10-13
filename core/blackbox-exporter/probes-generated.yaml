@@ -33,6 +33,7 @@ spec:
         - https://sonarr.x.pmcd.io
         - https://sportarr.x.pmcd.io
         - https://tautulli.x.pmcd.io
+        - https://tracearr.x.pmcd.io
         - https://youtarr.x.pmcd.io
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -54,6 +55,7 @@ spec:
         group: services
       static:
         - https://argo.x.pmcd.io
+        - https://git.x.pmcd.io
         - https://grafana.x.pmcd.io
         - https://homebox.x.pmcd.io
         - https://immich.x.pmcd.io
@@ -62,6 +64,7 @@ spec:
         - https://longhorn.x.pmcd.io
         - https://mealie.x.pmcd.io
         - https://n8n.x.pmcd.io
+        - https://ntfy.x.pmcd.io
         - https://outline.pmcd.dev
         - https://pihole.x.pmcd.io
         - https://prometheus.x.pmcd.io

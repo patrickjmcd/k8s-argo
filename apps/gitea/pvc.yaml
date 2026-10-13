@@ -1,0 +1,18 @@
+# Repositories, LFS, attachments and app.ini. The database is on
+# shared-postgres (B2 WAL + nightly dump); this volume goes to B2 nightly.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-gitea-data
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi

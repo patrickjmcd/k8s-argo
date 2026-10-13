@@ -1,0 +1,59 @@
+# Tracearr -- watch history, stats and newsletters for Plex and Jellyfin (a
+# Tautulli replacement covering both). Database: tracearr on the TimescaleDB
+# cluster (core/timescale), trust auth. Media servers are added in its UI.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: tracearr
+  namespace: tracearr
+spec:
+  image: ghcr.io/connorgallopo/tracearr:2.8.0
+  port: 80
+  containerPort: 3000
+  env:
+    TZ: America/Chicago
+    NODE_ENV: production
+    HOST: 0.0.0.0
+    DATABASE_URL: postgres://tracearr@timescale-rw.timescale.svc.cluster.local:5432/tracearr
+    REDIS_URL: redis://tracearr-redis:6379
+    TRUST_PROXY: "true"
+    CORS_ORIGIN: https://tracearr.x.pmcd.io
+    BACKUP_DIR: /data/backup
+    IMAGE_CACHE_DIR: /data/image-cache
+    IMAGE_CACHE_MAX_MB: "1024"
+    # Sign-in via PocketID (OIDC client "Tracearr", callback
+    # /api/v1/auth/oauth2/callback/oidc).
+    OIDC_ISSUER_URL: https://auth.pmcd.dev
+    OIDC_PROVIDER_NAME: PocketID
+  # From vaults/Kubernetes/items/tracearr: JWT_SECRET, COOKIE_SECRET (64-char
+  # hex each; changing them signs everyone out) and OIDC_CLIENT_ID /
+  # OIDC_CLIENT_SECRET.
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 384Mi
+    memoryLimit: 1536Mi
+  probes:
+    type: tcpSocket
+    startup:
+      # first boot runs database migrations
+      failureThreshold: 60
+  # Next to its database (also media-server-preferred); soft.
+  preferredNodes:
+  - media-server
+  tolerations:
+  - key: dedicated
+    operator: Equal
+    value: heavy
+    effect: NoSchedule
+  route:
+    hostnames:
+    - tracearr.x.pmcd.io
+  persistence:
+    claimName: longhorn-tracearr-data
+    mountPath: /data
+  glance:
+    monitor: true
+    title: Tracearr
+    group: Media Services
