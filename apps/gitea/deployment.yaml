@@ -70,7 +70,17 @@ spec:
               value: "true"
             - name: GITEA__service__SHOW_REGISTRATION_BUTTON
               value: "false"
+            # Public repos (k8s-argo, already public on GitHub) are readable
+            # anonymously, so Argo CD needs no credentials; everything else is
+            # private by default.
             - name: GITEA__service__REQUIRE_SIGNIN_VIEW
+              value: "false"
+            - name: GITEA__repository__DEFAULT_PRIVATE
+              value: private
+            # `git push` to a new path creates the repo (private).
+            - name: GITEA__repository__ENABLE_PUSH_CREATE_USER
+              value: "true"
+            - name: GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE
               value: "true"
             - name: GITEA__oauth2_client__ENABLE_AUTO_REGISTRATION
               value: "true"
