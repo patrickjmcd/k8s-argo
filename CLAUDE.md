@@ -373,8 +373,8 @@ Rules of thumb:
 
 `core/blackbox-exporter` (replaced uptime-kuma, Oct 2026) probes every app with
 `glance.monitor` set -- `scripts/generate_glance_monitors.py` writes
-`probes-generated.yaml` alongside the Glance widget list (a GitHub workflow
-reruns it on push) -- plus hand-written targets in `probes-static.yaml`
+`probes-generated.yaml` alongside the Glance widget list (the pre-commit hook
+in `.githooks` reruns it; enable per clone with `git config core.hooksPath .githooks`) -- plus hand-written targets in `probes-static.yaml`
 (Home Assistant, PocketID, LAN devices over TCP). Module `http_up` counts
 redirects and 401/403 as up. Alerts: `ProbeFailed` (5m) and
 `ProbeTlsCertExpiringSoon` (<14d) in `rules.yaml`. It runs in-cluster, so it
