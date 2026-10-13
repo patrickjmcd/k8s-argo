@@ -92,7 +92,7 @@ spec:
             limits:
               memory: 768Mi
         - name: postprocessor
-          image: python:3.14-slim
+          image: python:3.15-slim
           resources:
             requests:
               cpu: 11m
