@@ -61,7 +61,10 @@ CONF_REVIEW = float(os.getenv("CONF_REVIEW", "0.70"))
 
 CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/media.sqlite3"))
 
-# Discord notifications (optional)
+# Notifications (optional): ntfy if NTFY_URL is set, else a Discord webhook.
+NTFY_URL = os.getenv("NTFY_URL", "").rstrip("/")
+NTFY_TOPIC = os.getenv("NTFY_TOPIC", "media")
+NTFY_TOKEN = os.getenv("NTFY_TOKEN", "")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 # Plex labeling (optional) — used to build "Music Videos" / "Live Performances" /
@@ -275,27 +278,51 @@ def vec_exists(key: str) -> bool:
     return row is not None
 
 # ============================================================
-# Discord notifications
+# Notifications
 # ============================================================
+# Discord embed colour -> ntfy priority (1-5) and emoji tag.
+_NTFY_STYLE = {
+    0x2ECC71: (2, "white_check_mark"),  # processed: low, no buzz
+    0xF1C40F: (3, "yellow_circle"),     # needs review
+    0xE74C3C: (4, "x"),                 # failed
+}
+
+
 def notify_discord(title: str, description: str, color: int, fields: Optional[dict] = None) -> None:
-    if not DISCORD_WEBHOOK_URL:
+    """Send to ntfy (NTFY_URL set) or, failing that, a Discord webhook."""
+    if NTFY_URL:
+        priority, tag = _NTFY_STYLE.get(color, (3, "tv"))
+        lines = [description.replace("`", "")]
+        lines += [f"{k}: {v}" for k, v in (fields or {}).items()]
+        body = {
+            "topic": NTFY_TOPIC,
+            # The emoji is already in the title; drop it so the tag icon shows.
+            "title": title.split(" ", 1)[-1] if title[:1] > "~" else title,
+            "message": "\n".join(lines),
+            "priority": priority,
+            "tags": [tag, "youtarr"],
+        }
+        headers = {"Content-Type": "application/json", "User-Agent": "youtarr-postprocessor/1.0"}
+        if NTFY_TOKEN:
+            headers["Authorization"] = f"Bearer {NTFY_TOKEN}"
+        target, payload = NTFY_URL, body
+    elif DISCORD_WEBHOOK_URL:
+        embed = {"title": title, "description": description, "color": color}
+        if fields:
+            embed["fields"] = [
+                {"name": k, "value": str(v), "inline": True} for k, v in fields.items()
+            ]
+        headers = {"Content-Type": "application/json", "User-Agent": "youtubedl-postprocessor/1.0"}
+        target, payload = DISCORD_WEBHOOK_URL, {"embeds": [embed]}
+    else:
         return
-    embed = {"title": title, "description": description, "color": color}
-    if fields:
-        embed["fields"] = [
-            {"name": k, "value": str(v), "inline": True} for k, v in fields.items()
-        ]
-    payload = json.dumps({"embeds": [embed]}).encode("utf-8")
     req = urllib.request.Request(
-        DISCORD_WEBHOOK_URL,
-        data=payload,
-        headers={"Content-Type": "application/json", "User-Agent": "youtubedl-postprocessor/1.0"},
-        method="POST",
+        target, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
     )
     try:
         urllib.request.urlopen(req, timeout=10).close()
     except Exception as e:
-        print(f"[WARN] discord notify failed: {e}", flush=True)
+        print(f"[WARN] notify failed: {e}", flush=True)
 
 # ============================================================
 # Plex labeling

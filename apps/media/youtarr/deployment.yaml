@@ -129,6 +129,18 @@ spec:
               value: "6"
             - name: PLEX_PATH_PREFIX
               value: "/mnt/unas/Media/video/youtube/Organized"
+            # Notifications go to ntfy (topic "media"); Discord is only used
+            # if NTFY_URL is unset.
+            - name: NTFY_URL
+              value: http://ntfy.ntfy.svc.cluster.local
+            - name: NTFY_TOPIC
+              value: media
+            - name: NTFY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ntfy-publisher-1pw
+                  key: NTFY_TOKEN
+                  optional: true
           command: [ "sh","-lc" ]
           args:
             - >
