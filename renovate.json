@@ -59,6 +59,11 @@
   ],
   "packageRules": [
     {
+      "description": "youtarr's MariaDB: stay on the 11.8 LTS (supported into 2028). 13.0 is a rolling release with no further bug fixes, and MariaDB can't be downgraded after an upgrade. Move to the next LTS (12.3) deliberately.",
+      "matchPackageNames": ["mariadb"],
+      "allowedVersions": "<11.9"
+    },
+    {
       "description": "linuxserver/lidarr publishes old 0.8.x builds as tags like 8.1.2135, which sort above the real 3.x releases. Renovate offered one as a 'major' update (Oct 2026); it was Lidarr 0.8, which has no Postgres support and started on an empty SQLite DB.",
       "matchPackageNames": ["linuxserver/lidarr"],
       "allowedVersions": "<8"
