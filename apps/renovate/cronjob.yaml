@@ -1,0 +1,74 @@
+# Self-hosted Renovate against Gitea (replaced the GitHub Renovate app when
+# k8s-argo moved to Gitea, Oct 2026). Repo config is renovate.json as before;
+# PRs, automerge and the Dependency Dashboard issue all live in Gitea.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: renovate
+spec:
+  schedule: "17 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 3000
+      template:
+        spec:
+          restartPolicy: Never
+          # Lots of git/npm work; media-server has the spare CPU (soft).
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: node-type
+                        operator: In
+                        values:
+                          - heavy
+          tolerations:
+            - key: dedicated
+              operator: Equal
+              value: heavy
+              effect: NoSchedule
+          containers:
+            - name: renovate
+              image: ghcr.io/renovatebot/renovate:44.155.1
+              env:
+                - name: RENOVATE_PLATFORM
+                  value: gitea
+                # In-cluster API; clones use the repo's clone URL
+                # (https://git.x.pmcd.io/...).
+                - name: RENOVATE_ENDPOINT
+                  value: http://gitea.gitea.svc.cluster.local:3000/api/v1
+                - name: RENOVATE_REPOSITORIES
+                  value: patrickjmcd/k8s-argo
+                - name: RENOVATE_GIT_AUTHOR
+                  value: Renovate Bot <renovate@noreply.git.x.pmcd.io>
+                # renovate.json already exists; never open an onboarding PR.
+                - name: RENOVATE_ONBOARDING
+                  value: "false"
+                - name: RENOVATE_REQUIRE_CONFIG
+                  value: required
+                - name: RENOVATE_BASE_DIR
+                  value: /tmp/renovate
+                - name: LOG_LEVEL
+                  value: info
+              envFrom:
+                - secretRef:
+                    name: renovate-1pw
+              volumeMounts:
+                - name: work
+                  mountPath: /tmp/renovate
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  memory: 2Gi
+          volumes:
+            - name: work
+              emptyDir:
+                sizeLimit: 5Gi
