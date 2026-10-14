@@ -1,0 +1,48 @@
+# Stakater Reloader: rolling-restarts workloads when a Secret or ConfigMap
+# they use changes. HomelabApp (core/kro-definitions) annotates every app's
+# Deployment with reloader.stakater.com/auto, so a 1Password field edited
+# (synced to <app>-1pw) or a changed app ConfigMap reaches the pod without
+# a manual `kubectl rollout restart`. Until Oct 2026 the annotation was set
+# but Reloader wasn't installed.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: reloader
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+spec:
+  destination:
+    namespace: reloader
+    name: in-cluster
+  project: core-components
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    chart: reloader
+    repoURL: https://stakater.github.io/stakater-charts
+    targetRevision: 2.2.18
+    helm:
+      releaseName: reloader
+      valuesObject:
+        reloader:
+          # Restart by bumping a pod-template annotation rather than adding
+          # an env var: kro and Argo own the containers, not that annotation.
+          reloadStrategy: annotations
+          watchGlobally: true
+          logFormat: json
+          readOnlyRootFileSystem: true
+          deployment:
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi

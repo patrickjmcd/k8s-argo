@@ -30,6 +30,7 @@ spec:
     - https://aquasecurity.github.io/helm-charts/
     - https://kubernetes-sigs.github.io/external-dns/
     - oci://registry.k8s.io/kro/charts/kro
+    - https://stakater.github.io/stakater-charts
   destinations:
     - namespace: "*"
       name: in-cluster

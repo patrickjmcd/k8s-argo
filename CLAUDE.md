@@ -126,6 +126,10 @@ Rules:
 - HomelabApp Applications set
   `argocd.argoproj.io/compare-options: ServerSideDiff=true`: CRD defaults
   filled into list items (extraVolumes, tolerations) otherwise read as drift.
+- Every HomelabApp Deployment carries `reloader.stakater.com/auto: "true"`;
+  Reloader (`core/reloader.yaml`, Oct 2026) restarts it when its `<name>-1pw`
+  Secret or ConfigMap changes, so editing a 1Password field reaches the pod
+  once the operator syncs (force it with the `force-sync` annotation below).
 - `${VAR}` inside instance values (configs, commands) passes through kro
   literally; only `${` written in the RGD itself is evaluated.
 - When converting a chart app, merge its values over the chart defaults first
