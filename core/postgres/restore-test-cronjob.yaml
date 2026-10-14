@@ -5,6 +5,7 @@ metadata:
   namespace: postgres
 spec:
   schedule: "0 3 * * *"
+  timeZone: America/Chicago
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 3
   successfulJobsHistoryLimit: 3

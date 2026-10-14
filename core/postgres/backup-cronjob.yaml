@@ -5,6 +5,7 @@ metadata:
   namespace: postgres
 spec:
   schedule: "0 2 * * *"
+  timeZone: America/Chicago
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -37,10 +38,14 @@ spec:
                   TIMESTAMP=$(date +%Y%m%d_%H%M%S)
                   for DB in mealie radarr-main radarr-logs sonarr-main sonarr-logs prowlarr-main prowlarr-logs readarr-main readarr-logs lidarr-main lidarr-logs pocketid outline reedme n8n homebox dispatcharr adsb romm sparkyfitness kaneo spoolman stubs gitea sportarr; do
                     echo "Backing up $DB..."
-                    pg_dump -h shared-postgres-rw -U "$PGUSER" -d "$DB" -Fc -f "/backup/shared/${DB}_${TIMESTAMP}.dump"
+                    # Write under a temp name, rename when complete: the
+                    # restore test globs *.dump and once read a half-written
+                    # dump when both jobs fired together (Oct 2026).
+                    pg_dump -h shared-postgres-rw -U "$PGUSER" -d "$DB" -Fc -f "/backup/shared/${DB}_${TIMESTAMP}.dump.partial"
+                    mv "/backup/shared/${DB}_${TIMESTAMP}.dump.partial" "/backup/shared/${DB}_${TIMESTAMP}.dump"
                   done
                   echo "All backups complete"
-                  find /backup/shared -name "*.dump" -mtime +7 -delete
+                  find /backup/shared \( -name "*.dump" -o -name "*.dump.partial" \) -mtime +7 -delete
                   echo "Old backups pruned"
               resources:
                 requests:
