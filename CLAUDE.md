@@ -446,6 +446,17 @@ apiserver CPU (`process_cpu_seconds_total{job="apiserver"}`) after changes.
 Keep stored data small too -- Trivy SBOM reports (214 MiB) were disabled for
 the same reason.
 
+## Control-plane timezone
+
+All three control-plane nodes run in `America/Chicago` (`timedatectl
+set-timezone`, then restart k3s). A CronJob without `spec.timeZone` follows the
+host timezone of whichever node holds the controller-manager lease, so mixed
+timezones shift schedules on every leader change. On Oct 13 2026 kube-leader-2
+was still UTC: the new leader backfilled "missed" runs, and the Postgres backup
+and restore test fired at the same second. Set `timeZone: America/Chicago` on
+new CronJobs anyway; Longhorn's recurring-job CronJobs can't be pinned, so a
+rebuilt control-plane node must get the timezone too.
+
 ## Node Bootstrap Requirements (RPi nodes)
 
 When adding a new Raspberry Pi node (Pi 4 or Pi 5, Debian trixie, kernel 6.12.x), apply this before joining the cluster:
