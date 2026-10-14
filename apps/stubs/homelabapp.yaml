@@ -12,7 +12,7 @@ metadata:
   name: stubs
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/stubs:08182d7
+  image: ghcr.io/patrickjmcd/stubs:36a34c0
   imagePullSecrets:
   - ghcr-registry-cred
   port: 80
