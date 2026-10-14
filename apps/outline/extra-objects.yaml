@@ -38,3 +38,12 @@ spec:
           requestRedirect:
             hostname: outline.pmcd.dev
             statusCode: 301
+---
+# Mailgun SMTP credential (pmcd.dev) for invites and notification email.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: mailgun
+  namespace: default
+spec:
+  itemPath: "vaults/Kubernetes/items/mailgun"
