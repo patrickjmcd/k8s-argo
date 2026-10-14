@@ -28,8 +28,10 @@ spec:
   onePassword:
     enabled: true
   # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY for the Garage bucket
+  # SMTP_HOST/PORT/USERNAME/PASSWORD from the mailgun item (extra-objects.yaml)
   envFromSecrets:
     - garage-outline
+    - mailgun
   env:
     TZ: America/Chicago
     # Overrides URL in the outline 1Password item. Outline advertises it as the
@@ -46,6 +48,9 @@ spec:
     AWS_S3_FORCE_PATH_STYLE: 'true'
     AWS_S3_ACL: private
     FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
+    # Port 587 is STARTTLS, so SMTP_SECURE stays false (true means implicit TLS).
+    SMTP_SECURE: 'false'
+    SMTP_FROM_EMAIL: Outline <outline@pmcd.dev>
     DATABASE_URL: postgres://outline@shared-postgres-rw.postgres.svc.cluster.local:5432/outline
   glance:
     monitor: true
