@@ -1,7 +1,7 @@
 # Stubs (github.com/patrickjmcd/stubs) -- log the concerts you've been to and
 # see which ones friends went to. Our own app: Go API + embedded SvelteKit SPA.
-# Invite-only: sign-in is PocketID (OIDC client "Stubs"); every page and API
-# route needs a session. Database: stubs on shared-postgres, trust auth; the
+# Sign-in: email + password, or PocketID (OIDC client "Stubs"). Sign-ups
+# stay closed until SIGNUPS=open; every page and API route needs a session. Database: stubs on shared-postgres, trust auth; the
 # app runs its own migrations on start.
 # Namespace default for ghcr-registry-cred (the image is private).
 apiVersion: homelab.pmcd.io/v1alpha1
@@ -10,7 +10,7 @@ metadata:
   name: stubs
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/stubs:c470a56
+  image: ghcr.io/patrickjmcd/stubs:811c30f
   imagePullSecrets:
   - ghcr-registry-cred
   port: 80
@@ -22,7 +22,9 @@ spec:
     OIDC_ISSUER: https://auth.pmcd.dev
     DATABASE_URL: postgres://stubs@shared-postgres-rw.postgres.svc.cluster.local:5432/stubs?sslmode=disable
   # OIDC_CLIENT_ID and OIDC_CLIENT_SECRET from vaults/Kubernetes/items/stubs,
-  # plus optional SETLISTFM_API_KEY (setlists and "where did they play").
+  # plus optional SETLISTFM_API_KEY (setlists and "where did they play")
+  # and SMTP_HOST/SMTP_PORT/SMTP_USERNAME/SMTP_PASSWORD/SMTP_FROM for
+  # "forgot password" emails (resets are off without SMTP_HOST).
   onePassword:
     enabled: true
   resources:
