@@ -50,7 +50,7 @@ spec:
     FILE_STORAGE_UPLOAD_MAX_SIZE: '26214400'
     # Port 587 is STARTTLS, so SMTP_SECURE stays false (true means implicit TLS).
     SMTP_SECURE: 'false'
-    SMTP_FROM_EMAIL: Outline <outline@pmcd.dev>
+    SMTP_FROM_EMAIL: Outline <outline@mail.pmcd.dev>
     DATABASE_URL: postgres://outline@shared-postgres-rw.postgres.svc.cluster.local:5432/outline
   glance:
     monitor: true
