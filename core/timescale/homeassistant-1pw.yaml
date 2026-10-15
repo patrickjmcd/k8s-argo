@@ -1,0 +1,9 @@
+# Backs the homeassistant role's passwordSecret (username + password keys);
+# Home Assistant's db_url uses the same item. Created by
+# scripts/create-homeassistant-timescale-item.sh.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: homeassistant-timescale-1pw
+spec:
+  itemPath: "vaults/Kubernetes/items/homeassistant-timescale"

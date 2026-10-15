@@ -14,3 +14,19 @@ spec:
       ensure: present
     - name: pg_trgm
       ensure: present
+---
+# Home Assistant sensor history (LTSS writes a hypertable of state changes).
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: homeassistant
+spec:
+  name: homeassistant
+  owner: homeassistant
+  cluster:
+    name: timescale
+  extensions:
+    - name: timescaledb
+      ensure: present
+    - name: timescaledb_toolkit
+      ensure: present

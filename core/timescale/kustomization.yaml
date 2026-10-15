@@ -5,3 +5,4 @@ resources:
   - cluster.yaml
   - databases.yaml
   - b2-backup.yaml
+  - homeassistant-1pw.yaml
