@@ -78,6 +78,10 @@ spec:
       # homeassistant connects from the HAOS VM (192.168.1.21) through
       # timescale-lan, so no trust line: it falls through to CNPG's default
       # scram-sha-256 rule with the password from homeassistant-timescale-1pw.
+      # grafana (read-only, for the Home Assistant dashboards) may only reach
+      # the homeassistant database.
+      - host homeassistant grafana all scram-sha-256
+      - host all grafana all reject
 
   managed:
     roles:
@@ -93,6 +97,14 @@ spec:
         connectionLimit: -1
         passwordSecret:
           name: homeassistant-timescale-1pw
+      # SELECT grants come from homeassistant-schema.sql.
+      - name: grafana
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: 10
+        passwordSecret:
+          name: timescale-grafana-1pw
     services:
       additional:
         # LAN address for clients outside the cluster (Home Assistant).

@@ -1,0 +1,323 @@
+{
+  "uid": "ha-explorer",
+  "title": "Home Assistant — Entity Explorer",
+  "description": "Any LTSS entity: numeric history, current state, attributes and changes.",
+  "tags": [
+    "home-assistant"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "timezone": "browser",
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "domain",
+        "label": "Domain",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ha-timescale"
+        },
+        "query": "SELECT DISTINCT e.domain FROM ha_entities e ORDER BY 1",
+        "definition": "SELECT DISTINCT e.domain FROM ha_entities e ORDER BY 1",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "sensor"
+          ],
+          "value": [
+            "sensor"
+          ]
+        },
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "entity",
+        "label": "Entity",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ha-timescale"
+        },
+        "query": "SELECT e.label || ' — ' || e.entity_id AS __text, e.entity_id AS __value\nFROM ha_entities e WHERE e.domain IN (${domain:sqlstring}) ORDER BY e.entity_id",
+        "definition": "SELECT e.label || ' — ' || e.entity_id AS __text, e.entity_id AS __value\nFROM ha_entities e WHERE e.domain IN (${domain:sqlstring}) ORDER BY e.entity_id",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": false,
+        "sort": 0,
+        "current": {
+          "selected": true,
+          "text": [
+            "Outdoor — sensor.outdoor_temperature"
+          ],
+          "value": [
+            "sensor.outdoor_temperature"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "home-assistant"
+      ],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": true,
+      "title": "Home Assistant",
+      "icon": "external link"
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Numeric history",
+      "description": "Numeric states, averaged per interval (hourly rollup for long ranges).",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, s.value AS value\nFROM ha_series(ARRAY[${entity:sqlstring}]::text[], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max",
+            "mean"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true,
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "1m",
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 11
+      }
+    },
+    {
+      "type": "table",
+      "title": "Current state",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT e.label AS \"Entity\", e.entity_id AS \"ID\", e.state AS \"State\", e.unit AS \"Unit\",\n  e.device_class AS \"Class\", e.last_seen AS \"Changed\"\nFROM ha_entities e WHERE e.entity_id IN (${entity:sqlstring}) ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Changed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Latest attributes",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT e.label AS \"Entity\", a.key AS \"Attribute\", a.value AS \"Value\"\nFROM ha_entities e\nCROSS JOIN LATERAL (SELECT l.attributes FROM ltss l WHERE l.entity_id = e.entity_id\n                    ORDER BY l.time DESC LIMIT 1) l\nCROSS JOIN LATERAL jsonb_each_text(l.attributes) a\nWHERE e.entity_id IN (${entity:sqlstring}) ORDER BY 1, 2"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 12,
+        "y": 11,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "State changes",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT l.time AS \"Time\", e.label AS \"Entity\", l.state AS \"State\"\nFROM ltss l JOIN ha_entities e USING (entity_id)\nWHERE l.entity_id IN (${entity:sqlstring}) AND $__timeFilter(l.time)\nORDER BY l.time DESC LIMIT 1000"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 12
+      }
+    }
+  ]
+}

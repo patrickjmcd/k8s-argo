@@ -6,3 +6,10 @@ resources:
   - databases.yaml
   - b2-backup.yaml
   - homeassistant-1pw.yaml
+  - grafana-1pw.yaml
+  - homeassistant-schema-job.yaml
+
+configMapGenerator:
+  - name: homeassistant-schema
+    files:
+      - homeassistant-schema.sql

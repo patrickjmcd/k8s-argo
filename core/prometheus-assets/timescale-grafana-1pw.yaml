@@ -1,0 +1,9 @@
+# DB password for Grafana's Home Assistant (TimescaleDB) datasource, injected
+# as an env var. Same item as core/timescale/grafana-1pw.yaml.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: timescale-grafana-1pw
+  namespace: prometheus
+spec:
+  itemPath: "vaults/Kubernetes/items/timescale-grafana"

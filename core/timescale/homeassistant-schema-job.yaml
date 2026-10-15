@@ -1,0 +1,50 @@
+# Applies homeassistant-schema.sql (LTSS compression, hourly rollup, entity
+# table, Grafana helper functions and grants) after every sync. Runs as the
+# homeassistant role, which owns the database and LTSS' ltss table.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: homeassistant-schema
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: psql
+          image: postgres:18-alpine
+          env:
+            - name: PGHOST
+              value: timescale-rw
+            - name: PGDATABASE
+              value: homeassistant
+            - name: PGSSLMODE
+              value: require
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: homeassistant-timescale-1pw
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: homeassistant-timescale-1pw
+                  key: password
+          command: ["psql", "-X", "-f", "/sql/homeassistant-schema.sql"]
+          volumeMounts:
+            - name: sql
+              mountPath: /sql
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: sql
+          configMap:
+            name: homeassistant-schema

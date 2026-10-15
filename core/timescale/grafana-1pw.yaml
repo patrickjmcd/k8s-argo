@@ -1,0 +1,9 @@
+# Backs the read-only grafana role's passwordSecret; Grafana reads the same
+# item (core/prometheus-assets/timescale-grafana-1pw.yaml). Created by
+# scripts/create-timescale-grafana-item.sh.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: timescale-grafana-1pw
+spec:
+  itemPath: "vaults/Kubernetes/items/timescale-grafana"

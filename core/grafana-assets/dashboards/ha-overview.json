@@ -1,0 +1,967 @@
+{
+  "uid": "ha-overview",
+  "title": "Home Assistant — Overview",
+  "description": "At-a-glance house status from Home Assistant (LTSS on TimescaleDB).",
+  "tags": [
+    "home-assistant"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "timezone": "browser",
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "home-assistant"
+      ],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": true,
+      "title": "Home Assistant",
+      "icon": "external link"
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Outdoor",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, s.value AS value\nFROM ha_series(ARRAY['sensor.outdoor_temperature'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 62
+              },
+              {
+                "color": "orange",
+                "value": 76
+              },
+              {
+                "color": "red",
+                "value": 82
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Indoor (avg)",
+      "description": "Average of the indoor room temperature sensors.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT avg(ha_num(e.state) * CASE WHEN e.unit = '°C' THEN 1.8 ELSE 1 END + CASE WHEN e.unit = '°C' THEN 32 ELSE 0 END) FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'temperature' AND e.entity_id !~ '(device_temperature|printer|mcdata|fordpass|freezer|fridge|refrigerator|lumi_lumi|target|apparent|cloud_aqi|outdoor|^sensor\\.home_|filament|dehumidifier)'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 62
+              },
+              {
+                "color": "orange",
+                "value": 76
+              },
+              {
+                "color": "red",
+                "value": 82
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 2,
+      "gridPos": {
+        "x": 3,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Outdoor humidity",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, s.value AS value\nFROM ha_series(ARRAY['sensor.outdoor_humidity'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "humidity",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "area",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "House power",
+      "description": "Both Emporia Vue mains legs (1-minute average).",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT sum(ha_num(e.state)) FROM ha_entities e WHERE e.entity_id = ANY (ARRAY['sensor.vue_gen_3_left_side_power_minute_average', 'sensor.vue_gen_3_right_side_power_minute_average'])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 3000
+              },
+              {
+                "color": "red",
+                "value": 6000
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 9,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Energy today",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT sum(ha_num(e.state)) FROM ha_entities e WHERE e.entity_id = ANY (ARRAY['sensor.vue_gen_3_left_side_energy_today', 'sensor.vue_gen_3_right_side_energy_today'])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 5,
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Open doors & windows",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT count(*) FILTER (WHERE e.state = 'on') FROM ha_entities e WHERE e.domain = 'binary_sensor' AND e.device_class IN ('door', 'window', 'opening', 'garage_door')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 6,
+      "gridPos": {
+        "x": 15,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Safety alarms",
+      "description": "Smoke, CO, gas, leak and heat sensors currently triggered.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT count(*) FILTER (WHERE e.state = 'on') FROM ha_entities e WHERE e.domain = 'binary_sensor' AND e.device_class IN ('smoke', 'carbon_monoxide', 'gas', 'moisture', 'safety', 'heat') AND e.entity_id !~ 'rain'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Low batteries",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT count(*) FROM ha_entities e WHERE (e.domain = 'sensor' AND e.device_class = 'battery' AND e.unit = '%' AND ha_num(e.state) < 20) OR (e.domain = 'binary_sensor' AND e.device_class = 'battery' AND e.state = 'on')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 8,
+      "gridPos": {
+        "x": 21,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "House power",
+      "description": "Sum of both Emporia Vue mains legs.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", sum(s.value) AS \"House\"\nFROM ha_series(ARRAY['sensor.vue_gen_3_left_side_power_minute_average', 'sensor.vue_gen_3_right_side_power_minute_average'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nGROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "1m",
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Indoor vs outdoor",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, CASE WHEN e.unit = '°C' THEN s.value * 9 / 5 + 32 ELSE s.value END AS value\nFROM ha_series(ARRAY['sensor.outdoor_temperature', 'sensor.home_apparent_temperature'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "B",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", avg(s.value) AS \"Indoor (avg)\"\nFROM ha_series(ARRAY(SELECT e.entity_id FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'temperature' AND e.entity_id !~ '(device_temperature|printer|mcdata|fordpass|freezer|fridge|refrigerator|lumi_lumi|target|apparent|cloud_aqi|outdoor|^sensor\\.home_|filament|dehumidifier)'), $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nGROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "5m",
+      "id": 10,
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Daily energy (last 14 days)",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT d.day AS \"time\", sum(d.delta) AS \"kWh\"\nFROM ha_daily_delta(ARRAY['sensor.vue_gen_3_left_side_energy_today', 'sensor.vue_gen_3_right_side_energy_today'], $__timeFrom(), $__timeTo()) d\nGROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "custom": {
+            "drawStyle": "bars",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "1d",
+      "timeFrom": "14d",
+      "id": 11,
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 8,
+        "h": 9
+      }
+    },
+    {
+      "type": "table",
+      "title": "Open right now",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT e.label AS \"Sensor\", initcap(e.device_class) AS \"Type\", e.last_seen AS \"Since\"\nFROM ha_entities e WHERE ((e.domain = 'binary_sensor' AND e.device_class IN ('door', 'window', 'opening', 'garage_door')) OR (e.domain = 'binary_sensor' AND e.device_class IN ('smoke', 'carbon_monoxide', 'gas', 'moisture', 'safety', 'heat') AND e.entity_id !~ 'rain')) AND e.state = 'on' ORDER BY 3 DESC"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Since"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 12,
+      "gridPos": {
+        "x": 8,
+        "y": 13,
+        "w": 6,
+        "h": 9
+      }
+    },
+    {
+      "type": "table",
+      "title": "Recent activity",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT l.time AS \"Time\", e.label AS \"Sensor\",\n  CASE WHEN e.device_class IN ('door','window','opening','garage_door')\n       THEN CASE l.state WHEN 'on' THEN 'Opened' ELSE 'Closed' END\n       WHEN e.device_class IN ('motion','occupancy','presence')\n       THEN CASE l.state WHEN 'on' THEN 'Motion' ELSE 'Clear' END\n       ELSE CASE l.state WHEN 'on' THEN 'ALARM' ELSE 'Clear' END END AS \"Event\"\nFROM ltss l JOIN ha_entities e USING (entity_id)\nWHERE ((e.domain = 'binary_sensor' AND e.device_class IN ('door', 'window', 'opening', 'garage_door')) OR (e.domain = 'binary_sensor' AND e.device_class IN ('motion', 'occupancy', 'presence') AND e.entity_id <> 'binary_sensor.frigate_activity') OR (e.domain = 'binary_sensor' AND e.device_class IN ('smoke', 'carbon_monoxide', 'gas', 'moisture', 'safety', 'heat') AND e.entity_id !~ 'rain')) AND l.state = 'on'\n  AND l.time > now() - INTERVAL '24 hours'\nORDER BY l.time DESC LIMIT 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Event"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Opened": {
+                        "color": "orange",
+                        "index": 0
+                      },
+                      "Motion": {
+                        "color": "blue",
+                        "index": 1
+                      },
+                      "ALARM": {
+                        "color": "red",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 13,
+      "gridPos": {
+        "x": 14,
+        "y": 13,
+        "w": 10,
+        "h": 9
+      }
+    }
+  ]
+}

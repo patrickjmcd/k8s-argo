@@ -1,0 +1,890 @@
+{
+  "uid": "ha-climate",
+  "title": "Home Assistant — Climate",
+  "description": "Room temperatures and humidity, cold storage and equipment temperatures.",
+  "tags": [
+    "home-assistant"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "timezone": "browser",
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "rooms",
+        "label": "Rooms",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ha-timescale"
+        },
+        "query": "SELECT e.label AS __text, e.entity_id AS __value FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'temperature' AND e.entity_id !~ '(device_temperature|printer|mcdata|fordpass|freezer|fridge|refrigerator|lumi_lumi|target|apparent|cloud_aqi|outdoor|^sensor\\.home_|filament|dehumidifier)' ORDER BY 1",
+        "definition": "SELECT e.label AS __text, e.entity_id AS __value FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'temperature' AND e.entity_id !~ '(device_temperature|printer|mcdata|fordpass|freezer|fridge|refrigerator|lumi_lumi|target|apparent|cloud_aqi|outdoor|^sensor\\.home_|filament|dehumidifier)' ORDER BY 1",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "sort": 0,
+        "hide": 0,
+        "options": [],
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      },
+      {
+        "type": "query",
+        "name": "humidity",
+        "label": "Humidity sensors",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ha-timescale"
+        },
+        "query": "SELECT e.label AS __text, e.entity_id AS __value FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'humidity' AND e.entity_id !~ '(printer|freezer|fridge|lumi_lumi|cloud_aqi|outdoor|^sensor\\.home_|filament|humidifier_humidity)' ORDER BY 1",
+        "definition": "SELECT e.label AS __text, e.entity_id AS __value FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'humidity' AND e.entity_id !~ '(printer|freezer|fridge|lumi_lumi|cloud_aqi|outdoor|^sensor\\.home_|filament|humidifier_humidity)' ORDER BY 1",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "sort": 0,
+        "hide": 0,
+        "options": [],
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "home-assistant"
+      ],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": true,
+      "title": "Home Assistant",
+      "icon": "external link"
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Rooms now",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT now() AS \"time\", e.label AS metric, ha_num(e.state) * CASE WHEN e.unit = '°C' THEN 1.8 ELSE 1 END + CASE WHEN e.unit = '°C' THEN 32 ELSE 0 END AS value\nFROM ha_entities e WHERE e.entity_id IN (${rooms:sqlstring}) AND ha_num(e.state) IS NOT NULL\nORDER BY 2"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 62
+              },
+              {
+                "color": "orange",
+                "value": 76
+              },
+              {
+                "color": "red",
+                "value": 82
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "background",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 5
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Room temperature",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, CASE WHEN e.unit = '°C' THEN s.value * 9 / 5 + 32 ELSE s.value END AS value\nFROM ha_series(ARRAY[${rooms:sqlstring}]::text[], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max",
+            "mean"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true,
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "2m",
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 10
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Outdoor",
+      "description": "Outdoor sensor and the weather integration's feels-like temperature.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, CASE WHEN e.unit = '°C' THEN s.value * 9 / 5 + 32 ELSE s.value END AS value\nFROM ha_series(ARRAY['sensor.outdoor_temperature', 'sensor.home_apparent_temperature'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "5m",
+      "id": 3,
+      "gridPos": {
+        "x": 0,
+        "y": 15,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Range summary",
+      "description": "Per-room min/mean/max over the selected time range (hourly rollup).",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT e.label AS \"Room\",\n  min(h.min) * CASE WHEN e.unit = '°C' THEN 1.8 ELSE 1 END + CASE WHEN e.unit = '°C' THEN 32 ELSE 0 END AS \"Min\",\n  sum(h.avg * h.samples) / sum(h.samples) * CASE WHEN e.unit = '°C' THEN 1.8 ELSE 1 END + CASE WHEN e.unit = '°C' THEN 32 ELSE 0 END AS \"Mean\",\n  max(h.max) * CASE WHEN e.unit = '°C' THEN 1.8 ELSE 1 END + CASE WHEN e.unit = '°C' THEN 32 ELSE 0 END AS \"Max\"\nFROM ltss_hourly h JOIN ha_entities e USING (entity_id)\nWHERE h.entity_id IN (${rooms:sqlstring}) AND $__timeFilter(h.bucket)\nGROUP BY e.label, e.unit ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Min"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "fahrenheit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 62
+                    },
+                    {
+                      "color": "orange",
+                      "value": 76
+                    },
+                    {
+                      "color": "red",
+                      "value": 82
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mean"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "fahrenheit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "fahrenheit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 62
+                    },
+                    {
+                      "color": "orange",
+                      "value": 76
+                    },
+                    {
+                      "color": "red",
+                      "value": 82
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 12,
+        "y": 15,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "title": "Humidity",
+      "collapsed": false,
+      "panels": [],
+      "id": 5,
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Humidity now",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT now() AS \"time\", e.label AS metric, ha_num(e.state) AS value\nFROM ha_entities e WHERE e.entity_id IN (${humidity:sqlstring}) AND ha_num(e.state) IS NOT NULL\nORDER BY 2"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "humidity",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 30
+              },
+              {
+                "color": "orange",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 70
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "graphMode": "none",
+        "colorMode": "background",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "wideLayout": true
+      },
+      "id": 6,
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 4
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Relative humidity",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, s.value AS value\nFROM ha_series(ARRAY[${humidity:sqlstring}]::text[], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "humidity",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max",
+            "mean"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true,
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "2m",
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 16,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Outdoor humidity",
+      "description": "",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, s.value AS value\nFROM ha_series(ARRAY['sensor.outdoor_humidity', 'sensor.home_humidity'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "humidity",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "5m",
+      "id": 8,
+      "gridPos": {
+        "x": 16,
+        "y": 28,
+        "w": 8,
+        "h": 9
+      }
+    },
+    {
+      "type": "row",
+      "title": "Fridges, freezers & equipment",
+      "collapsed": false,
+      "panels": [],
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Fridge & freezer",
+      "description": "Red band: above 40°F, unsafe for a fridge. Freezers should sit near 0°F.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, CASE WHEN e.unit = '°C' THEN s.value * 9 / 5 + 32 ELSE s.value END AS value\nFROM ha_series(ARRAY['sensor.basement_fridge_refrigerator_temperature', 'sensor.basement_freezer_temperature', 'sensor.lumi_lumi_weather_temperature'], $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "2m",
+      "id": 10,
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Equipment",
+      "description": "3D printer, NAS drives and car coolant.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ha-timescale"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ha-timescale"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT s.ts AS \"time\", e.label AS metric, CASE WHEN e.unit = '°C' THEN s.value * 9 / 5 + 32 ELSE s.value END AS value\nFROM ha_series(ARRAY(SELECT e.entity_id FROM ha_entities e WHERE e.domain = 'sensor' AND e.device_class = 'temperature' AND e.entity_id ~ '(printer|mcdata|fordpass)' AND e.entity_id !~ 'target'), $__timeFrom(), $__timeTo(), make_interval(secs => $__interval_ms / 1000.0)) s\nJOIN ha_entities e USING (entity_id)\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "fahrenheit",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": null,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "barAlignment": -1
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max",
+            "mean"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true,
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "2m",
+      "id": 11,
+      "gridPos": {
+        "x": 12,
+        "y": 38,
+        "w": 12,
+        "h": 9
+      }
+    }
+  ]
+}

@@ -370,6 +370,12 @@ spec:
                   name: adsb-postgres-1pw
                   key: password
                   optional: true # don't block Grafana startup if the item isn't made yet
+              # Home Assistant sensor history (LTSS on core/timescale), read-only role.
+              HA_DB_PASSWORD:
+                secretKeyRef:
+                  name: timescale-grafana-1pw
+                  key: password
+                  optional: true
             additionalDataSources:
               - name: ADS-B (Postgres)
                 uid: adsb-postgres
@@ -388,6 +394,22 @@ spec:
                   postgresVersion: 1000
                 secureJsonData:
                   password: $__env{ADSB_DB_PASSWORD}
+              # Home Assistant history written by LTSS; dashboards use the
+              # ha_* helpers from core/timescale/homeassistant-schema.sql.
+              - name: Home Assistant (TimescaleDB)
+                uid: ha-timescale
+                type: postgres
+                access: proxy
+                url: timescale-rw.timescale.svc.cluster.local:5432
+                database: homeassistant
+                user: grafana
+                jsonData:
+                  database: homeassistant
+                  sslmode: require
+                  postgresVersion: 1500
+                  timescaledb: true
+                secureJsonData:
+                  password: $__env{HA_DB_PASSWORD}
               # Live aircraft feed for the Geomap panel on the ADS-B Station
               # dashboard — reads ultrafeeder's aircraft.json in-cluster.
               - name: ADS-B Live (Infinity)
