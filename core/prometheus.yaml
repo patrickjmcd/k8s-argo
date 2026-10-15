@@ -327,12 +327,15 @@ spec:
                 key: node.kubernetes.io/unreachable
                 operator: Exists
                 tolerationSeconds: 30
+            # Idles at 430-490Mi; at a 512Mi limit, opening the Home Assistant
+            # overview (15 Postgres queries via the out-of-process postgres
+            # plugin) GC-thrashed it for ~40s and OOMKilled it (2026-10-15).
             resources:
               requests:
                 cpu: 23m
-                memory: 300Mi
-              limits:
                 memory: 512Mi
+              limits:
+                memory: 1Gi
             # Infinity datasource: lets the ADS-B Station dashboard read
             # ultrafeeder's live aircraft.json into a native Geomap panel.
             # Grafana 13 moved several core datasource plugins (loki,
