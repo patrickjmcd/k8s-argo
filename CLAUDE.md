@@ -5,7 +5,8 @@ Homelab Kubernetes cluster managed with k3s and ArgoCD. All changes are GitOps â
 ## Where the repo lives (since Oct 2026)
 
 - **Primary: Gitea in the cluster** (`apps/gitea`), `https://git.x.pmcd.io/patrickjmcd/k8s-argo`
-  (git remote `origin`; push with a Gitea token, HTTPS only).
+  (git remote `origin`; push with a Gitea token over HTTPS, or over SSH as
+  `git@git-ssh.x.pmcd.io:patrickjmcd/<repo>.git` -- MetalLB `.210`, LAN/tailnet only).
 - **Argo CD reads** `http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git`
   (in-cluster, anonymous -- the repo is public) -- not via Traefik, so a broken Traefik can't
   stop Argo from fixing it. Every `repoURL` uses this URL.

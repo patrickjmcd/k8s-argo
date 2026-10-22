@@ -1,5 +1,7 @@
-# Gitea -- git hosting for k8s-argo and friends. HTTPS only (no SSH): push
-# with a personal access token. Argo CD reads repos through the in-cluster
+# Gitea -- git hosting for k8s-argo and friends. Push over HTTPS with a
+# personal access token, or over SSH (built-in server on :2222, exposed on the
+# LAN as git-ssh.x.pmcd.io:22 by service-ssh.yaml; host keys live on the PVC
+# under data/ssh). Argo CD reads repos through the in-cluster
 # Service (gitea.gitea.svc:3000), not Traefik, so a broken Traefik can't stop
 # Argo from fixing it. Config is entirely the GITEA__* env below;
 # bootstrap.sh (init container) renders app.ini and seeds admin + PocketID.
@@ -51,9 +53,17 @@ spec:
             - name: GITEA__server__HTTP_PORT
               value: "3000"
             - name: GITEA__server__DISABLE_SSH
-              value: "true"
-            - name: GITEA__server__START_SSH_SERVER
               value: "false"
+            - name: GITEA__server__START_SSH_SERVER
+              value: "true"
+            - name: GITEA__server__SSH_LISTEN_PORT
+              value: "2222"
+            # What clone URLs show: the LAN LoadBalancer, not Traefik
+            # (git.x.pmcd.io), which only carries HTTP.
+            - name: GITEA__server__SSH_DOMAIN
+              value: git-ssh.x.pmcd.io
+            - name: GITEA__server__SSH_PORT
+              value: "22"
             - name: GITEA__server__LFS_START_SERVER
               value: "true"
             - name: GITEA__security__INSTALL_LOCK
@@ -127,6 +137,8 @@ spec:
           ports:
             - name: http
               containerPort: 3000
+            - name: ssh
+              containerPort: 2222
           volumeMounts: *mounts
           startupProbe:
             httpGet: {path: /api/healthz, port: http}

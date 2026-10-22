@@ -6,6 +6,7 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
+  - service-ssh.yaml
   - httproute.yaml
 configMapGenerator:
   - name: gitea-bootstrap

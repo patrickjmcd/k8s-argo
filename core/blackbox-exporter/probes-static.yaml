@@ -46,3 +46,4 @@ spec:
         - 192.168.1.210:32400  # Plex (standalone, not in k8s)
         - 192.168.1.253:445    # UNAS Pro (SMB: media, backups)
         - 192.168.8.254:53     # secondary Pi-hole (outside the cluster)
+        - 192.168.8.210:22     # Gitea SSH (MetalLB, apps/gitea/service-ssh.yaml)

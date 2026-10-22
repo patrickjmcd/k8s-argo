@@ -1,0 +1,22 @@
+# Gitea's built-in SSH server on a LAN IP. git.x.pmcd.io points at Traefik
+# (HTTP only), so SSH gets its own name: git-ssh.x.pmcd.io -> .210 (Pi-hole
+# ConfigMap, UniFi and secondary Pi-hole records). Same pattern as
+# apps/nats/loadbalancer-service.yaml.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitea-ssh
+  annotations:
+    # See apps/nats/loadbalancer-service.yaml for why kube-vip is excluded
+    # from MetalLB-managed LoadBalancer IPs on this cluster.
+    kube-vip.io/ignore: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.8.210
+  selector:
+    app: gitea
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: ssh
+      protocol: TCP
