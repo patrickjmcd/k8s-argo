@@ -59,14 +59,12 @@ spec:
                 # credentials Renovate puts in the remote URL. Since libcurl
                 # 8.5.0-2ubuntu10.16 (renovate 44.159+), git treats the push as
                 # redirected and drops URL credentials, so every push 401s
-                # ("could not read Username"; Oct 2026). $(RENOVATE_TOKEN) is
+                # ("could not read Username"; Oct 2026). Renovate gives git
+                # only allowlisted env vars, so plain GIT_CONFIG_* on the pod
+                # never reach it; customEnvVariables do. $(RENOVATE_TOKEN) is
                 # expanded by the kubelet from renovate-1pw.
-                - name: GIT_CONFIG_COUNT
-                  value: "1"
-                - name: GIT_CONFIG_KEY_0
-                  value: http.http://gitea.gitea.svc.cluster.local:3000/.extraHeader
-                - name: GIT_CONFIG_VALUE_0
-                  value: "Authorization: token $(RENOVATE_TOKEN)"
+                - name: RENOVATE_CUSTOM_ENV_VARIABLES
+                  value: '{"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "http.http://gitea.gitea.svc.cluster.local:3000/.extraHeader", "GIT_CONFIG_VALUE_0": "Authorization: token $(RENOVATE_TOKEN)"}'
               envFrom:
                 - secretRef:
                     name: renovate-1pw
