@@ -2,5 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - lake-info.cronjob.yaml
+  - github-backup.cronjob.yaml
   - namespace.yaml
   - 1password.secret.yaml
+configMapGenerator:
+  - name: github-backup
+    namespace: cron
+    files:
+      - github-backup.py
+generatorOptions:
+  disableNameSuffixHash: true

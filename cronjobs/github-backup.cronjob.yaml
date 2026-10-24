@@ -1,0 +1,89 @@
+# Nightly mirror of every repo in the GitHub org $GITHUB_ORG to the UNAS
+# (//192.168.1.253/PGBackup/github/<org>/<repo>.git): new repos are cloned,
+# existing ones fetched (all branches and tags). See github-backup.py.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: github-backup
+  namespace: cron
+spec:
+  schedule: "30 1 * * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 7200
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: python:3.15-alpine
+              command: ["sh", "-c", "apk add --no-cache git >/dev/null && exec python3 /scripts/github-backup.py"]
+              env:
+                - name: GITHUB_ORG
+                  value: channel-dynamics
+                - name: GITHUB_TOKEN
+                  valueFrom: {secretKeyRef: {name: github-backup-1pw, key: GITHUB_TOKEN}}
+                - name: BACKUP_DIR
+                  value: /backup
+              resources:
+                requests: {cpu: 50m, memory: 128Mi}
+                limits: {memory: 1Gi}
+              volumeMounts:
+                - {name: scripts, mountPath: /scripts, readOnly: true}
+                - {name: backup, mountPath: /backup, subPath: github}
+          volumes:
+            - name: scripts
+              configMap: {name: github-backup}
+            - name: backup
+              persistentVolumeClaim: {claimName: smb-github-backup-claim}
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: github-backup-1pw
+  namespace: cron
+spec:
+  itemPath: "vaults/Kubernetes/items/github-backup"
+---
+# The UNAS backup share. Prune=false so removing this from git can never
+# delete the PV/PVC; the share itself is never touched either way (Retain).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-github-backup
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  storageClassName: ""
+  capacity: {storage: 50Gi}
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions: [dir_mode=0777, file_mode=0777, vers=3.0]
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: smb-github-backup-volume-id
+    volumeAttributes:
+      source: "//192.168.1.253/PGBackup"
+    nodeStageSecretRef:
+      name: smb-creds-1pw
+      namespace: csi-smb-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-github-backup-claim
+  namespace: cron
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  volumeName: smb-github-backup
+  resources:
+    requests: {storage: 50Gi}
