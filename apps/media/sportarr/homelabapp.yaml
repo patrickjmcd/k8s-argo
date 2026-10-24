@@ -4,7 +4,7 @@ metadata:
   name: sportarr
   namespace: media
 spec:
-  image: sportarr/sportarr:4.1.9.1119
+  image: sportarr/sportarr:4.1.11.1121
   port: 80
   containerPort: 1867
   resources:
