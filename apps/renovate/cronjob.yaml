@@ -39,8 +39,7 @@ spec:
               env:
                 - name: RENOVATE_PLATFORM
                   value: gitea
-                # In-cluster API; clones use the repo's clone URL
-                # (https://git.x.pmcd.io/...).
+                # In-cluster API; git clones and pushes go to this host too.
                 - name: RENOVATE_ENDPOINT
                   value: http://gitea.gitea.svc.cluster.local:3000/api/v1
                 - name: RENOVATE_REPOSITORIES
@@ -56,6 +55,18 @@ spec:
                   value: /tmp/renovate
                 - name: LOG_LEVEL
                   value: info
+                # Send the token as a header instead of relying on the
+                # credentials Renovate puts in the remote URL. Since libcurl
+                # 8.5.0-2ubuntu10.16 (renovate 44.159+), git treats the push as
+                # redirected and drops URL credentials, so every push 401s
+                # ("could not read Username"; Oct 2026). $(RENOVATE_TOKEN) is
+                # expanded by the kubelet from renovate-1pw.
+                - name: GIT_CONFIG_COUNT
+                  value: "1"
+                - name: GIT_CONFIG_KEY_0
+                  value: http.http://gitea.gitea.svc.cluster.local:3000/.extraHeader
+                - name: GIT_CONFIG_VALUE_0
+                  value: "Authorization: token $(RENOVATE_TOKEN)"
               envFrom:
                 - secretRef:
                     name: renovate-1pw
