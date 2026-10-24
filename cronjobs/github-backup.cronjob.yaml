@@ -1,6 +1,7 @@
 # Nightly mirror of every repo in the GitHub org $GITHUB_ORG to the UNAS
 # (//192.168.1.253/PGBackup/github/<org>/<repo>.git): new repos are cloned,
-# existing ones fetched (all branches and tags). See github-backup.py.
+# existing ones fetched (all branches and tags). With GITEA_TOKEN set it also
+# adds a Gitea pull mirror for each new repo. See github-backup.py.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -23,12 +24,14 @@ spec:
             - name: backup
               image: python:3.15-alpine
               command: ["sh", "-c", "apk add --no-cache git >/dev/null && exec python3 /scripts/github-backup.py"]
-              # GITHUB_ORG and GITHUB_TOKEN come from the 1Password item.
+              # GITHUB_ORG, GITHUB_TOKEN and GITEA_TOKEN come from the 1Password item.
               envFrom:
                 - secretRef: {name: github-backup-1pw}
               env:
                 - name: BACKUP_DIR
                   value: /backup
+                - name: GITEA_URL
+                  value: http://gitea.gitea.svc.cluster.local:3000
               resources:
                 requests: {cpu: 50m, memory: 128Mi}
                 limits: {memory: 1Gi}

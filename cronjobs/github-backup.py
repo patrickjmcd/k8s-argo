@@ -6,17 +6,25 @@ deleted: branches removed upstream and repos deleted or renamed on GitHub stay
 in the backup. Rewritten branches are force-updated (UNAS snapshots cover that).
 
 Restore: git clone $BACKUP_DIR/<org>/<repo>.git
+
+If GITEA_TOKEN is set, it also makes sure every repo has a Gitea pull mirror
+in a Gitea org of the same name (created private if missing). Gitea keeps
+those in sync on its own mirror interval; this only adds new ones. Unlike the
+UNAS copy, Gitea mirrors prune branches deleted upstream.
 """
 import base64
 import json
 import os
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 
 ORG = os.environ["GITHUB_ORG"]
 TOKEN = os.environ["GITHUB_TOKEN"]
 BACKUP_DIR = os.path.join(os.environ.get("BACKUP_DIR", "/backup"), ORG)
+GITEA_URL = os.environ.get("GITEA_URL", "").rstrip("/")
+GITEA_TOKEN = os.getenv("GITEA_TOKEN")
 
 # Only branches and tags; a plain --mirror would also pull every refs/pull/*.
 REFSPECS = ["+refs/heads/*:refs/heads/*", "+refs/tags/*:refs/tags/*"]
@@ -75,6 +83,45 @@ def mirror(repo):
         git("symbolic-ref", "HEAD", f"refs/heads/{repo['default_branch']}", cwd=path)
 
 
+def gitea(method, path, body=None):
+    """Call the Gitea API; returns the HTTP status (404 is not an error)."""
+    req = urllib.request.Request(
+        f"{GITEA_URL}/api/v1{path}", method=method,
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={"Authorization": f"token {GITEA_TOKEN}", "Content-Type": "application/json"},
+    )
+    try:
+        # Migrations clone synchronously, so give big repos time.
+        with urllib.request.urlopen(req, timeout=900) as resp:
+            return resp.status
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return 404
+        raise RuntimeError(f"{method} {path}: {e.code} {e.read().decode(errors='replace')[:300]}")
+
+
+def ensure_gitea_org():
+    if gitea("GET", f"/orgs/{ORG}") == 404:
+        print(f"creating Gitea org {ORG}", flush=True)
+        gitea("POST", "/orgs", {"username": ORG, "visibility": "private"})
+
+
+def gitea_mirror(repo):
+    if gitea("GET", f"/repos/{ORG}/{repo['name']}") != 404:
+        return
+    print(f"creating Gitea mirror {ORG}/{repo['name']}", flush=True)
+    gitea("POST", "/repos/migrate", {
+        "service": "github",
+        "clone_addr": repo["clone_url"],
+        "auth_token": TOKEN,
+        "mirror": True,
+        "repo_owner": ORG,
+        "repo_name": repo["name"],
+        "private": repo["private"],
+        "description": repo.get("description") or "",
+    })
+
+
 def main():
     os.makedirs(BACKUP_DIR, exist_ok=True)
     repos = list_repos()
@@ -83,6 +130,8 @@ def main():
         json.dump(repos, f, indent=2)
 
     failed = []
+    if GITEA_TOKEN:
+        ensure_gitea_org()
     for repo in repos:
         if repo.get("size") == 0:
             print(f"skipping {repo['full_name']} (empty)", flush=True)
@@ -92,6 +141,12 @@ def main():
         except subprocess.CalledProcessError as e:
             print(f"FAILED {repo['full_name']}: {e}", file=sys.stderr, flush=True)
             failed.append(repo["full_name"])
+        if GITEA_TOKEN:
+            try:
+                gitea_mirror(repo)
+            except (RuntimeError, urllib.error.URLError) as e:
+                print(f"FAILED Gitea mirror {repo['full_name']}: {e}", file=sys.stderr, flush=True)
+                failed.append(f"{repo['full_name']} (gitea)")
 
     if failed:
         print(f"{len(failed)} failed: {', '.join(failed)}", file=sys.stderr)
