@@ -28,7 +28,7 @@ spec:
                     values: [macbook-debian]
       containers:
         - name: garage
-          image: dxflrs/garage:v2.4.1
+          image: dxflrs/garage:v2.5.0
           ports:
             - {name: s3, containerPort: 3900}
             - {name: rpc, containerPort: 3901}
