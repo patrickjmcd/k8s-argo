@@ -30,6 +30,7 @@ spec:
           - name: sportarr
           - name: navidrome
           - name: subwave
+          - name: ollama
   template:
     metadata:
       name: '{{name}}'

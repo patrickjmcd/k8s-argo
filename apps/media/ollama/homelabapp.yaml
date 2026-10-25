@@ -1,0 +1,54 @@
+# Ollama, CPU-only, serving text embeddings for SUB/WAVE (apps/media/subwave).
+# In subwave: Settings -> Embedding -> Ollama URL http://ollama.media.svc:11434,
+# model nomic-embed-text. Cluster-internal only: no route, no auth.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: ollama
+  namespace: media
+spec:
+  image: ollama/ollama:0.40.11
+  port: 11434
+  # Start the server, pull the embedding model once it answers (a no-op when
+  # it's already on the PVC), then wait on the server so it stays PID 1's child.
+  command:
+    - /bin/sh
+    - -c
+    - |
+      ollama serve & pid=$!
+      trap 'kill -TERM $pid' TERM INT
+      until ollama list >/dev/null 2>&1; do sleep 1; done
+      ollama pull nomic-embed-text
+      wait $pid
+  env:
+    TZ: America/Chicago
+    OLLAMA_HOST: 0.0.0.0:11434
+    # Keep the model resident; reloading it per batch costs more than its ~300MB.
+    OLLAMA_KEEP_ALIVE: "-1"
+  # Soft-prefer media-server (16 cores, spare memory) over the Pis.
+  preferredNodes:
+    - media-server
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: heavy
+      effect: NoSchedule
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  resources:
+    cpuRequest: 500m
+    memoryRequest: 1Gi
+    # No CPU limit: embedding is bursty and a quota just stretches backfills
+    # (CLAUDE.md "Resource requests and limits").
+    cpuLimit: ""
+    memoryLimit: 3Gi
+  probes:
+    type: httpGet
+    path: /
+    liveness:
+      enabled: true
+  route:
+    enabled: false
+  persistence:
+    claimName: longhorn-ollama-data
+    mountPath: /root/.ollama
