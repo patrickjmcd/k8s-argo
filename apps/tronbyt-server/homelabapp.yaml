@@ -4,7 +4,7 @@ metadata:
   name: tronbyt-server
   namespace: default
 spec:
-  image: ghcr.io/tronbyt/server:2.4.0
+  image: ghcr.io/tronbyt/server:2.5.2
   port: 8888
   containerPort: 8000
   resources:
