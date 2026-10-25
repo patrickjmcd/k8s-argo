@@ -28,6 +28,8 @@ spec:
           - name: recyclarr
           - name: ytdl-triage
           - name: sportarr
+          - name: navidrome
+          - name: subwave
   template:
     metadata:
       name: '{{name}}'

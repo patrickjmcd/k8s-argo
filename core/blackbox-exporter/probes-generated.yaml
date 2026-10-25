@@ -24,6 +24,7 @@ spec:
         - https://dispatcharr.x.pmcd.io
         - https://jellyfin.x.pmcd.io
         - https://lidarr.x.pmcd.io
+        - https://navidrome.x.pmcd.io
         - https://prowlarr.x.pmcd.io
         - https://radarr.x.pmcd.io
         - https://readarr.x.pmcd.io
@@ -31,6 +32,7 @@ spec:
         - https://sabnzbd.x.pmcd.io
         - https://sonarr.x.pmcd.io
         - https://sportarr.x.pmcd.io
+        - https://subwave.x.pmcd.io
         - https://tautulli.x.pmcd.io
         - https://tracearr.x.pmcd.io
         - https://youtarr.x.pmcd.io

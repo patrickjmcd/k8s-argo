@@ -1,0 +1,45 @@
+# Subsonic music server -- the library SUB/WAVE (apps/media/subwave) plays from.
+# Admin user is created in the web UI on first visit.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: navidrome
+  namespace: media
+spec:
+  image: deluan/navidrome:0.64.2
+  port: 80
+  containerPort: 4533
+  env:
+    TZ: America/Chicago
+    ND_MUSICFOLDER: /music
+    ND_DATAFOLDER: /data
+    # SMB has no inotify, so the file watcher never fires; rescan on a timer.
+    ND_SCANNER_SCHEDULE: "@every 1h"
+    ND_SCANNER_WATCHERWAIT: "0"
+    ND_ENABLEINSIGHTSCOLLECTOR: "false"
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 192Mi
+    cpuLimit: "1"
+    memoryLimit: 1Gi
+  probes:
+    type: httpGet
+    path: /ping
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - navidrome.x.pmcd.io
+  persistence:
+    claimName: longhorn-navidrome-data
+    mountPath: /data
+  extraVolumes:
+    - name: media
+      claimName: smb-media-claim
+  extraVolumeMounts:
+    - name: media
+      mountPath: /music
+      subPath: music/library
+      readOnly: true
+  glance:
+    monitor: true

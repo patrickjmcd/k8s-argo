@@ -1,0 +1,58 @@
+# SUB/WAVE AI-DJ radio station (getsubwave.com). Uses the all-in-one image --
+# icecast + liquidsoap, controller, web UI, Piper/Kokoro TTS and the lean
+# analyzer behind one in-container Caddy on :80, which already does the
+# /api, /stream* and /api/listener-auth routing the split stack needs from
+# an external proxy. Navidrome, LLM, TTS and persona are set in the
+# /onboarding wizard and saved under the state dir.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: subwave
+  namespace: media
+spec:
+  image: ghcr.io/perminder-klair/subwave-aio:1.27.0
+  port: 80
+  env:
+    TZ: America/Chicago
+    ADMIN_USER: admin
+    SITE_URL: https://subwave.x.pmcd.io
+    # Play tracks straight off the share instead of streaming them from
+    # Navidrome; any path mismatch just falls back to streaming.
+    MUSIC_LIBRARY_PATH: /music
+  # ADMIN_PASS
+  onePassword:
+    enabled: true
+  # The aio image is amd64-only.
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  resources:
+    cpuRequest: 250m
+    memoryRequest: 1Gi
+    # No CPU limit: liquidsoap encodes the live stream in real time, and
+    # throttling it stalls every listener (CLAUDE.md "Resource requests").
+    cpuLimit: ""
+    memoryLimit: 4Gi
+  probes:
+    type: httpGet
+    path: /api/health
+    startup:
+      # First boot renders Icecast secrets and warms the TTS models.
+      failureThreshold: 60
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - subwave.x.pmcd.io
+  persistence:
+    claimName: longhorn-subwave-data
+    mountPath: /var/sub-wave
+  extraVolumes:
+    - name: media
+      claimName: smb-media-claim
+  extraVolumeMounts:
+    - name: media
+      mountPath: /music
+      subPath: music/library
+      readOnly: true
+  glance:
+    monitor: true
