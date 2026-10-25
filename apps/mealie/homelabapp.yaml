@@ -4,7 +4,7 @@ metadata:
   name: mealie
   namespace: default
 spec:
-  image: ghcr.io/mealie-recipes/mealie:v3.28.0
+  image: ghcr.io/mealie-recipes/mealie:v3.29.0
   port: 9000
   resources:
     cpuRequest: 15m
