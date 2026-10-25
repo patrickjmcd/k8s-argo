@@ -4,7 +4,7 @@ metadata:
   name: go2rtc
   namespace: default
 spec:
-  image: alexxit/go2rtc:1.9.14
+  image: alexxit/go2rtc:1.9.15
   port: 1984
   resources:
     cpuRequest: 20m
