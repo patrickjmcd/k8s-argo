@@ -18,27 +18,27 @@ spec:
     spec:
       initContainers:
         - name: patch-pihole-config
-          image: busybox:1.38
+          image: pihole/pihole:2026.10.0
           command:
             - sh
             - -c
             - |
+              # Set the /var/ftl paths as real config, not via FTLCONF_ env vars:
+              # gravity.sh re-execs itself with sudo, which drops the env, and
+              # FTL ignores a toml value it marked "(env)" when the var is
+              # missing -- so gravity would update /etc/pihole/gravity.db while
+              # FTL reads /var/ftl/gravity.db. Hand-edited toml lines were reset
+              # to defaults on startup, so use FTL's own config CLI.
+              pihole-FTL --config files.database /var/ftl/pihole-FTL.db
+              pihole-FTL --config files.tmp_db /var/ftl/pihole-tmp.db
+              pihole-FTL --config files.gravity /var/ftl/gravity.db
+              chown -R pihole:pihole /etc/pihole/pihole.toml /etc/pihole/config_backups
+              cp -p /etc/pihole/gravity.db /var/ftl/gravity.db 2>/dev/null || true
               TOML=/etc/pihole/pihole.toml
-              [ -f "$TOML" ] || exit 0
               sed -i 's/^\( *resolveIPv4\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *resolveIPv6\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *networkNames\) = .*/\1 = false/' "$TOML"
               sed -i 's/^\( *refreshNames\) = .*/\1 = "NONE"/' "$TOML"
-              # Set the /var/ftl paths in the toml, not via FTLCONF_ env vars:
-              # gravity.sh re-execs itself with sudo, which drops the env, and
-              # FTL ignores a toml value it marked "(env)" when the var is
-              # missing -- so gravity would update /etc/pihole/gravity.db while
-              # FTL reads /var/ftl/gravity.db. Replace the whole line so the
-              # "### CHANGED (env)" marker goes too.
-              sed -i 's|^\( *database\) = "[^"]*pihole-FTL\.db".*|\1 = "/var/ftl/pihole-FTL.db"|' "$TOML"
-              sed -i 's|^\( *tmp_db\) = "[^"]*pihole-tmp\.db".*|\1 = "/var/ftl/pihole-tmp.db"|' "$TOML"
-              sed -i 's|^\( *gravity\) = "[^"]*gravity\.db".*|\1 = "/var/ftl/gravity.db"|' "$TOML"
-              cp -p /etc/pihole/gravity.db /var/ftl/gravity.db 2>/dev/null || true
           volumeMounts:
             - name: pihole-data
               mountPath: /etc/pihole
