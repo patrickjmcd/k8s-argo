@@ -139,6 +139,9 @@ spec:
         # they are lost on the next restart. .backup is a consistent online copy.
         - name: gravity-sync
           image: pihole/pihole:2026.10.0
+          env:
+            - name: TZ
+              value: "America/Chicago"
           command:
             - sh
             - -c
