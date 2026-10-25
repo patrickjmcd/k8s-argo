@@ -133,6 +133,43 @@ spec:
               memory: 256Mi
             limits:
               memory: 600Mi
+        # gravity.db lives on the emptyDir (copied in by the initContainer) so
+        # FTL reads it from local disk. Gravity updates and list/group edits
+        # write there too, so save it back to the PVC whenever it changes or
+        # they are lost on the next restart. .backup is a consistent online copy.
+        - name: gravity-sync
+          image: pihole/pihole:2026.10.0
+          command:
+            - sh
+            - -c
+            - |
+              SRC=/var/ftl/gravity.db
+              DST=/etc/pihole/gravity.db
+              while true; do
+                if [ -f "$SRC" ] && [ "$SRC" -nt "$DST" ]; then
+                  if pihole-FTL sqlite3 "$SRC" ".backup '$DST.sync'"; then
+                    chown pihole:pihole "$DST.sync"
+                    chmod 640 "$DST.sync"
+                    touch -r "$SRC" "$DST.sync"
+                    mv "$DST.sync" "$DST"
+                    echo "$(date) saved $SRC to $DST"
+                  else
+                    rm -f "$DST.sync"
+                  fi
+                fi
+                sleep 300
+              done
+          volumeMounts:
+            - name: pihole-data
+              mountPath: /etc/pihole
+            - name: ftl-db
+              mountPath: /var/ftl
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 128Mi
       volumes:
         - name: pihole-data
           persistentVolumeClaim:
