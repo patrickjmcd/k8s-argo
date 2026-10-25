@@ -9,8 +9,8 @@ metadata:
 spec:
   image: ollama/ollama:0.40.11
   port: 11434
-  # Start the server, pull the embedding model once it answers (a no-op when
-  # it's already on the PVC), then wait on the server so it stays PID 1's child.
+  # Start the server, pull the embedding model once it answers, then wait on
+  # the server so it stays PID 1's child.
   command:
     - /bin/sh
     - -c
@@ -23,8 +23,8 @@ spec:
   env:
     TZ: America/Chicago
     OLLAMA_HOST: 0.0.0.0:11434
-    # Keep the model resident; reloading it per batch costs more than its ~300MB.
-    OLLAMA_KEEP_ALIVE: "-1"
+    # OLLAMA_KEEP_ALIVE left at the 5m default: the model unloads when idle and
+    # reloads in about a second; backfill batches keep it warm.
   # Soft-prefer media-server (16 cores, spare memory) over the Pis.
   preferredNodes:
     - media-server
@@ -37,7 +37,7 @@ spec:
     kubernetes.io/arch: amd64
   resources:
     cpuRequest: 500m
-    memoryRequest: 1Gi
+    memoryRequest: 256Mi
     # No CPU limit: embedding is bursty and a quota just stretches backfills
     # (CLAUDE.md "Resource requests and limits").
     cpuLimit: ""
@@ -49,6 +49,12 @@ spec:
       enabled: true
   route:
     enabled: false
-  persistence:
-    claimName: longhorn-ollama-data
-    mountPath: /root/.ollama
+  # Scratch storage, not a PVC: the only thing here is the 274MB model, which
+  # is re-pulled on every start.
+  extraVolumes:
+    - name: models
+      emptyDir: true
+      sizeLimit: 2Gi
+  extraVolumeMounts:
+    - name: models
+      mountPath: /root/.ollama
