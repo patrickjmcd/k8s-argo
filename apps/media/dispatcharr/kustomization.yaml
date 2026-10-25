@@ -13,4 +13,4 @@ resources:
 images:
   - name: dispatcharr
     newName: ghcr.io/dispatcharr/dispatcharr
-    newTag: 0.32.0
+    newTag: 0.33.0
