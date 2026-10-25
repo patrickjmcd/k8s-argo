@@ -32,10 +32,12 @@ spec:
               sed -i 's|^\( *database\) = "/etc/pihole/pihole-FTL.db"|\1 = "/var/ftl/pihole-FTL.db"|' "$TOML"
               sed -i 's|^\( *tmp_db\) = "/etc/pihole/pihole-tmp.db"|\1 = "/var/ftl/pihole-tmp.db"|' "$TOML"
               sed -i 's|^\( *gravity\) = "/etc/pihole/gravity.db"|\1 = "/var/ftl/gravity.db"|' "$TOML"
-              cp /etc/pihole/gravity.db /var/ftl/gravity.db 2>/dev/null || true
+              cp -p /etc/pihole/gravity.db /var/ftl/gravity.db 2>/dev/null || true
           volumeMounts:
             - name: pihole-data
               mountPath: /etc/pihole
+            - name: ftl-db
+              mountPath: /var/ftl
       containers:
         - name: pihole
           image: pihole/pihole:2026.10.0
