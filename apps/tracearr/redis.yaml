@@ -31,7 +31,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: redis
-          image: redis:8.10.2-alpine
+          image: redis:8.10.3-alpine
           args: ["--save", "", "--appendonly", "no"]
           ports:
             - name: redis
