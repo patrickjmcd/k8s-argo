@@ -4,7 +4,7 @@ metadata:
   name: pihole-exporter
   namespace: pihole
 spec:
-  image: ekofr/pihole-exporter:v1.2.0
+  image: ekofr/pihole-exporter:v1.3.0
   port: 9617
   resources:
     cpuRequest: 10m
