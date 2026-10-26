@@ -24,6 +24,7 @@ spec:
         - https://dispatcharr.x.pmcd.io
         - https://jellyfin.x.pmcd.io
         - https://lidarr.x.pmcd.io
+        - https://music.x.pmcd.io
         - https://navidrome.x.pmcd.io
         - https://prowlarr.x.pmcd.io
         - https://radarr.x.pmcd.io

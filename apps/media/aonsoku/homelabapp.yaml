@@ -1,0 +1,33 @@
+# Aonsoku: shadcn/ui web player for Navidrome (apps/media/navidrome). A static
+# SPA -- the browser talks to Navidrome's Subsonic API directly, so SERVER_URL
+# must be the browser-reachable Navidrome URL, not the in-cluster Service. Each
+# user signs in with their Navidrome account; no auto-login credentials here.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: aonsoku
+  namespace: media
+spec:
+  image: ghcr.io/victoralvesf/aonsoku:0.15.0
+  port: 80
+  containerPort: 8080
+  env:
+    SERVER_URL: https://navidrome.x.pmcd.io
+    HIDE_SERVER: "true"
+    SERVER_TYPE: navidrome
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 64Mi
+    cpuLimit: 500m
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    path: /
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - music.x.pmcd.io
+  glance:
+    monitor: true
+    title: Music

@@ -140,6 +140,8 @@ spec:
                         url: https://jellyfin.x.pmcd.io
                       - title: Lidarr
                         url: https://lidarr.x.pmcd.io
+                      - title: Music
+                        url: https://music.x.pmcd.io
                       - title: Navidrome
                         url: https://navidrome.x.pmcd.io
                       - title: Prowlarr
