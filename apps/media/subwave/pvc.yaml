@@ -13,9 +13,10 @@ metadata:
     # Never delete the data volume if the app is removed from Argo.
     argocd.argoproj.io/sync-options: Delete=false
 spec:
+  # 25Gi: room for the heavy analyzer's Demucs stem cache (stemCacheGb).
   accessModes:
     - ReadWriteOnce
   storageClassName: longhorn
   resources:
     requests:
-      storage: 10Gi
+      storage: 25Gi
