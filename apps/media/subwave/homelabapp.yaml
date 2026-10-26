@@ -10,7 +10,7 @@ metadata:
   name: subwave
   namespace: media
 spec:
-  image: ghcr.io/perminder-klair/subwave-aio:1.27.0
+  image: ghcr.io/perminder-klair/subwave-aio:1.28.0
   port: 80
   env:
     TZ: America/Chicago
