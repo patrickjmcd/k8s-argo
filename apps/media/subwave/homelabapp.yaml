@@ -1,8 +1,9 @@
 # SUB/WAVE AI-DJ radio station (getsubwave.com). Uses the all-in-one image --
-# icecast + liquidsoap, controller, web UI, Piper/Kokoro TTS and the lean
-# analyzer behind one in-container Caddy on :80, which already does the
-# /api, /stream* and /api/listener-auth routing the split stack needs from
-# an external proxy. Navidrome, LLM, TTS and persona are set in the
+# icecast + liquidsoap, controller, web UI, Piper/Kokoro TTS and the heavy
+# analyzer (CLAP audio embeddings/moods + Demucs stems; the -heavy image, since
+# ANALYZER_HEAVY is inert on the AIO) behind one in-container Caddy on :80,
+# which already does the /api, /stream* and /api/listener-auth routing the
+# split stack needs from an external proxy. Navidrome, LLM, TTS and persona are set in the
 # /onboarding wizard and saved under the state dir.
 apiVersion: homelab.pmcd.io/v1alpha1
 kind: HomelabApp
@@ -10,7 +11,7 @@ metadata:
   name: subwave
   namespace: media
 spec:
-  image: ghcr.io/perminder-klair/subwave-aio:1.28.0
+  image: ghcr.io/perminder-klair/subwave-aio-heavy:1.28.0
   port: 80
   env:
     TZ: America/Chicago
@@ -25,13 +26,22 @@ spec:
   # The aio image is amd64-only.
   nodeSelector:
     kubernetes.io/arch: amd64
+  # CLAP/Demucs analysis is CPU-hungry: soft-prefer media-server (16 cores).
+  preferredNodes:
+    - media-server
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: heavy
+      effect: NoSchedule
   resources:
-    cpuRequest: 250m
-    memoryRequest: 1Gi
+    cpuRequest: 1000m
+    memoryRequest: 2Gi
     # No CPU limit: liquidsoap encodes the live stream in real time, and
     # throttling it stalls every listener (CLAUDE.md "Resource requests").
     cpuLimit: ""
-    memoryLimit: 4Gi
+    # CLAP + Demucs models on top of liquidsoap and the TTS workers.
+    memoryLimit: 8Gi
   probes:
     type: httpGet
     path: /api/health
