@@ -40,6 +40,30 @@ spec:
     crds: CreateReplace
   driftDetection:
     mode: enabled
+  # OIDC client credentials (flux-web.yaml).
+  valuesFrom:
+    - kind: Secret
+      name: flux-web-1pw
+      valuesKey: clientID
+      targetPath: web.config.authentication.oauth2.clientID
+    - kind: Secret
+      name: flux-web-1pw
+      valuesKey: clientSecret
+      targetPath: web.config.authentication.oauth2.clientSecret
   values:
     web:
       enabled: true
+      config:
+        baseURL: https://flux.x.pmcd.io
+        authentication:
+          type: OAuth2
+          oauth2:
+            provider: OIDC
+            issuerURL: https://auth.pmcd.dev
+      httpRoute:
+        enabled: true
+        parentRefs:
+          - name: traefik-gateway
+            namespace: default
+        hostnames:
+          - flux.x.pmcd.io
