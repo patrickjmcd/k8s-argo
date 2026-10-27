@@ -1,0 +1,157 @@
+# Cilium CNI, adopted from the Argo Application cilium (docs/flux-migration.md
+# §4.2). Sole CNI on every node since the 2026-09-06 flannel cutover
+# (docs/cilium-migration.md). Never remediate a failed install or upgrade:
+# for the CNI that would mean uninstalling pod networking. CRDs are created
+# by the operator at runtime, not by the chart.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cilium
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: cilium
+  targetNamespace: kube-system
+  storageNamespace: kube-system
+  chart:
+    spec:
+      chart: cilium
+      version: 1.20.4
+      sourceRef:
+        kind: HelmRepository
+        name: cilium
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  # Helm 4 keeps null values (Argo's Helm 3 dropped them): the chart default
+  # k8s.apiServerURLs: ~ then passes `hasKey`, and an empty
+  # --k8s-api-server-urls= lands in the agent's config initContainer, rolling
+  # the agent on every node. Remove it; the test op fails the upgrade instead
+  # of removing the wrong argument if a chart update moves it.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: DaemonSet
+              name: cilium
+            patch: |
+              - op: test
+                path: /spec/template/spec/initContainers/0/command/2
+                value: --k8s-api-server-urls=
+              - op: remove
+                path: /spec/template/spec/initContainers/0/command/2
+  values:
+    # IPAM: honour the podCIDR k3s already hands each node out of the
+    # cluster CIDR (10.42.0.0/16), so pods keep the same address space
+    # they had under flannel — no cluster-wide renumber.
+    ipam:
+      mode: kubernetes
+    # Match flannel's current datapath: VXLAN overlay on the flat L2
+    # network. Native routing is a later optimisation, not Phase 1.
+    routingMode: tunnel
+    tunnelProtocol: vxlan
+    # Non-default port chosen during the migration, when flannel's VXLAN
+    # still held UDP 8472 (Cilium's cilium_vxlan failed to bind: "address
+    # already in use"). flannel is gone, but changing the port now means
+    # every node's overlay flips at once - not worth it, so it stays.
+    # https://docs.cilium.io/en/stable/installation/k8s-install-migration/
+    tunnelPort: 8473
+    # Phase 1 KEEPS kube-proxy. Do not flip this to true without also
+    # starting k3s with --disable-kube-proxy and setting k8sServiceHost
+    # / k8sServicePort so the agents can still reach the API server.
+    kubeProxyReplacement: false
+    # Pre-existing NetworkPolicy objects in this cluster (argocd-*, longhorn
+    # instance-manager, minio, etc.) were effectively inert for a long time under
+    # a broken/inconsistent k3s kube-router netpol controller. Cilium enforces
+    # them for real the moment it's active, and many turned out to be too
+    # restrictive/stale, breaking legitimate traffic cluster-wide the moment of
+    # cutover (argocd, prometheus, cnpg, immich, etc. all went CrashLoopBackOff).
+    # Was "never" until every existing policy was re-audited one at a time as a
+    # deliberate follow-up (2026-09-08, see memory/cilium-migration-progress.md):
+    # deleted 8 stale/orphaned NetworkPolicy objects (minio/minio-console fully
+    # decommissioned; 6 untracked ~2yo argocd duplicates), and closed a real gap
+    # where argocd-applicationset-controller had zero chart-managed coverage.
+    # "default" enforces only on endpoints actually selected by a policy (unlike
+    # "always", which default-denies everything) -- matches standard Kubernetes
+    # NetworkPolicy semantics, so unselected pods stay fully open.
+    policyEnforcementMode: default
+    # Back to the chart default now that flannel is fully removed —
+    # Cilium owns /etc/cni/net.d exclusively.
+    cni:
+      exclusive: true
+    # cilium-agent is squarely on the pod-networking critical path, so
+    # NO CPU limit — same reasoning as flannel in CLAUDE.md "Resource
+    # requests and limits" (the July 2026 throttling incident). Eviction
+    # protection comes from the chart's default system-node-critical
+    # priorityClass, not from Guaranteed QoS. Memory limit has headroom.
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    operator:
+      # Two replicas across the 3 Pi 5s / x86 VMs for HA. Off the
+      # per-packet path, so a modest CPU limit is acceptable here.
+      replicas: 2
+      resources:
+        requests:
+          cpu: 25m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    # cilium-envoy crashes on boot on the Pi 4 nodes (pi4-kube0/pi4-kube1): tcmalloc
+    # assumes ARM64 always has 48-bit virtual address space, but Raspberry Pi kernels
+    # default to 39-bit (CONFIG_ARM64_VA_BITS_39), so it dies instantly with
+    # "MmapAligned() failed". Known upstream issue, not fixable from our side —
+    # cilium/proxy#1027, envoyproxy/envoy#23339, cilium/cilium#17467. Pi 5 nodes are
+    # unaffected (different default VA-bits config). Phase 1 only needs L3/L4
+    # NetworkPolicy + Hubble flow visibility, neither of which needs Envoy (only L7
+    # HTTP/gRPC/Kafka parsing does), so just disable it rather than patch around the
+    # bug. Pass --set envoy.enabled=false to the matching out-of-band `helm install`
+    # in §3 of the runbook too, so the manual install matches what this Application
+    # later adopts.
+    envoy:
+      enabled: false
+    # envoy.enabled=false only disables the separate Envoy DaemonSet - Cilium 1.20
+    # still runs Envoy EMBEDDED inside the main cilium-agent process whenever any L7
+    # feature is active (including Hubble L7 flow visibility), which is what actually
+    # triggers the Pi4 tcmalloc/ARM64-VA-bits bug above. Confirmed live post-cutover:
+    # cilium-agent on pi4-kube0/pi4-kube1 was hitting its 1Gi memory limit and getting
+    # OOM-killed, with dmesg showing cilium-envoy/cilium-envoy-starter processes inside
+    # the same cgroup as cilium-agent. l7Proxy=false (default true) disables the
+    # embedded proxy entirely - safe for Phase 1 since we only need L3/L4 NetworkPolicy
+    # + basic flow visibility, neither of which needs L7 parsing.
+    l7Proxy: false
+    # Observability — the main Phase 1 payoff alongside NetworkPolicy.
+    # UI exposed at hubble.x.pmcd.io via the HTTPRoute in core/cilium/ (cilium-extras
+    # source below). No ReferenceGrant needed in the end: the HTTPRoute lives
+    # in kube-system alongside hubble-ui (same-namespace backendRef), and
+    # traefik-gateway's listeners already allow routes from all namespaces.
+    hubble:
+      enabled: true
+      relay:
+        enabled: true
+      ui:
+        enabled: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cilium-extras
+  namespace: flux-system
+spec:
+  path: ./core/cilium

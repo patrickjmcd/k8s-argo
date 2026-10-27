@@ -39,6 +39,7 @@ resources:
   - node-tuning.yaml
   - kube-vip.yaml
   - longhorn.yaml
+  - cilium.yaml
 patches:
   - target:
       kind: Kustomization
