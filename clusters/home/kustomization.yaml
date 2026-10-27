@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - apps
   - core
+  - cronjobs.yaml
   - notifications.yaml
   - flux-operator.yaml
   - flux-instance.yaml

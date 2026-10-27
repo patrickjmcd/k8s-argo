@@ -1,0 +1,18 @@
+# Scheduled jobs in cronjobs/ (namespace cron). Under Argo this was a
+# manual-sync root Application; Flux keeps it reconciled like everything else
+# (set `suspend: true` here to pause it).
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cronjobs
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 2m
+  timeout: 5m
+  path: ./cronjobs
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

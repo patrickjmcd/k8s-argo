@@ -1,8 +1,9 @@
----
+# Never pruned: deleting a Namespace deletes everything in it.
 apiVersion: v1
 kind: Namespace
 metadata:
   name: cron
   labels:
     canUseExternalSecrets: "true"
-
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
