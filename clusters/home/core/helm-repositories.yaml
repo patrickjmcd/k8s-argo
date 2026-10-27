@@ -162,3 +162,12 @@ metadata:
 spec:
   interval: 12h
   url: https://helm.cilium.io/
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: onepassword
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://1password.github.io/connect-helm-charts

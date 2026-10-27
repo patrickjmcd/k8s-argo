@@ -39,6 +39,7 @@ resources:
   - kube-vip.yaml
   - longhorn.yaml
   - cilium.yaml
+  - onepassword-connect.yaml
 patches:
   - target:
       kind: Kustomization
