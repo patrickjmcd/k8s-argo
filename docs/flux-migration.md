@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2c done 2026-10-27; 60 apps on Flux (35 + 24 media + media-base). Next: 2d/2e.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. Next: 2e (nats, immich: first Helm adoptions).
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -454,7 +454,7 @@ HomelabApp and Kustomize apps, about 5 at a time:
 | 2a stateless ✅ 2026-10-27 | glance, go2rtc, homebox-companion, homelable, homelable-mcp, nut-exporter, pihole-exporter, pve-exporter, unifi-mcp, unpoller, reedme, kaneo, stubs |
 | 2b stateful (PVC) ✅ 2026-10-27 | adsb, dreeve, hivemq, homebox, homebridge, homelable-backend, mealie, minecraft, n8n, ntfy, outline, romm, sparkyfitness, sparkyfitness-server, speech-to-phrase, tracearr, unifi-toolkit, voice-assistant |
 | 2c media ✅ 2026-10-27 | Done in one batch: ResourceSet `media` (`clusters/home/apps/media.yaml`) generates `media-<app>` Kustomizations depending on `media-base`. Disarm took two commits (ApplicationSet template + media-base first, while the parent `media` app could still apply them; then the parent). After the handoff the orphaned ApplicationSet (with `preserveResourcesOnDeletion`) and media-base Application were deleted by hand. 86 objects, UIDs unchanged; copying `restartedAt` into git (§4.10) kept bazarr, dispatcharr(-celery), lidarr and sabnzbd from restarting |
-| 2d special | renovate; ia-ignition (manual → suspended); pihole (cluster DNS: do on a quiet evening; the secondary Pi-hole LXC covers clients) |
+| 2d special ✅ 2026-10-27 | renovate; ia-ignition (kept at `replicas: 0`, now enforced by Flux instead of Argo's manual sync; not suspended); pihole (cluster DNS; `restartedAt` copied into git, no restart, DNS answered throughout). pihole had been applied client-side by Argo (no ServerSideApply); the SSA takeover was clean |
 | 2e Helm | nats (HelmRelease, §4.2), immich (HelmRelease, §4.2; stateful) |
 
 Hold until Phase 4: **gitea** (source of truth for both Argo and Flux).
@@ -537,7 +537,7 @@ cluster-visible, **H** = cluster-wide blast radius.
 | homelable | homelable | HomelabApp | L | ✅ Flux (2a) |
 | homelable-backend | homelable | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | homelable-mcp | homelable | HomelabApp | L | ✅ Flux (2a) |
-| ia-ignition | default | kustomize | M | manual sync → suspended; PVC |
+| ia-ignition | default | kustomize | M | ✅ Flux (2d); replicas 0 enforced; manual sync → suspended; PVC |
 | immich | immich | Helm `immich@0.12.0` + kustomize | M | §4.2; PVC |
 | iss-in-space | default | HomelabApp | L | ✅ Flux (Phase 1) |
 | joshhawleygop | default | HomelabApp | L | ✅ Flux (Phase 1); outage fixed (see below) |
@@ -550,11 +550,11 @@ cluster-visible, **H** = cluster-wide blast radius.
 | ntfy | ntfy | HomelabApp | M | ✅ Flux (2b); PVC; alert path, so confirm alerts afterwards |
 | nut-exporter | default | HomelabApp | L | ✅ Flux (2a) |
 | outline | default | HomelabApp | M | ✅ Flux (2b); PVC; `markdown-export.yaml` has `Prune=false` |
-| pihole | pihole | kustomize | M | cluster DNS; namespace-less objects |
+| pihole | pihole | kustomize | M | ✅ Flux (2d); cluster DNS; namespace-less objects |
 | pihole-exporter | pihole | HomelabApp | L | ✅ Flux (2a) |
 | pve-exporter | prometheus | HomelabApp | L | ✅ Flux (2a) |
 | reedme | default | HomelabApp | L | ✅ Flux (2a); DB |
-| renovate | renovate | kustomize | L | update its config in the same phase (§4.8) |
+| renovate | renovate | kustomize | L | ✅ Flux (2d); update its config in the same phase (§4.8) |
 | romm | romm | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | sparkyfitness | sparkyfitness | HomelabApp | M | ✅ Flux (2b);  |
 | sparkyfitness-server | sparkyfitness | HomelabApp | M | ✅ Flux (2b); PVC |
