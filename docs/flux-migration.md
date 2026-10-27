@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phase 2a (13 stateless apps) done 2026-10-27; next: 2b.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phase 2a (13 stateless apps) and 2b-1 (9 stateful) done 2026-10-27; next: 2b-2.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -165,6 +165,9 @@ CRDs stuck since Jan 2024 were cleared the same day.
 
 For each app:
 
+0. **Pod-template leftovers** (§4.10): if a plain Deployment/DaemonSet/
+   StatefulSet in the app carries `kubectl.kubernetes.io/restartedAt`, copy it
+   into git or accept one restart.
 1. **Pre-check the manifests** (§4.3):
    ```bash
    kubectl kustomize apps/<name> | yq 'select(.metadata.namespace == null) | .kind + "/" + .metadata.name'
@@ -369,6 +372,42 @@ the Argo rule once no chart Application remains. Check that Renovate picks up
 `kro` (`oci://registry.k8s.io/kro/charts`) and `kubernetes-mcp-server`
 (`oci://ghcr.io/containers/charts`) from their OCIRepository objects.
 
+### 4.10 `kubectl rollout restart` leftovers restart workloads on handoff
+
+`kubectl rollout restart` writes `kubectl.kubernetes.io/restartedAt` into a pod
+template under a kubectl field manager. Flux takes over kubectl-managed fields
+and drops the ones not in git, so the first Flux apply removes the annotation,
+which changes the template and rolls the workload once. Seen on batch 2b-1
+(2026-10-27): the five adsb Deployments, dreeve and hivemq each restarted
+(~30 s, healthy after). HomelabApp Deployments are kro's, not Flux's, so they
+are never affected.
+
+Before handing over anything that must not restart, list the templates that
+carry it:
+
+```bash
+kubectl get deploy,ds,sts -A -o json | jq -r '.items[]
+  | select(.spec.template.metadata.annotations["kubectl.kubernetes.io/restartedAt"] != null)
+  | select((.metadata.ownerReferences // []) | map(.kind) | index("HomelabApp") | not)
+  | "\(.kind)/\(.metadata.namespace)/\(.metadata.name)"'
+```
+
+To avoid the restart, copy the live value into git as a pod annotation (the
+chart's `podAnnotations`, or the manifest's `spec.template.metadata.annotations`)
+in the disarm commit, so Flux's template matches the live one. As of
+2026-10-27 this covers, among others, DaemonSets `cilium`, `kube-vip-ds`,
+`longhorn-manager`, `metallb-speaker`, `csi-smb-node`, `csi-nfs-node`,
+`node-exporter`, and Deployments `pihole` (cluster DNS), `gitea`,
+`cert-manager*`, `kyverno-*`, `cloudflared`, `pocketid`, the 1Password Connect
+pair, and media `bazarr`, `dispatcharr`, `lidarr`, `sabnzbd`. Not affected:
+objects Argo doesn't manage (k3s's coredns/metrics-server/local-path, and the
+Prometheus/Alertmanager StatefulSets owned by prometheus-operator).
+
+Consequence after the migration: `kubectl rollout restart` on a Flux-managed
+*plain* Deployment/DaemonSet is undone on the next reconcile, which rolls it a
+second time. Restart those by deleting their pods instead (HomelabApps are
+unaffected; restart those however you like).
+
 ### 4.9 Web UI
 
 The operator serves the Flux web UI on port 9080; `clusters/home/flux-operator.yaml`
@@ -486,17 +525,17 @@ cluster-visible, **H** = cluster-wide blast radius.
 
 | App | Namespace | Type | Risk | Notes |
 |---|---|---|---|---|
-| adsb | adsb | kustomize | M | PVC |
-| dreeve | default | kustomize | M | PVC; namespace-less objects |
+| adsb | adsb | kustomize | M | ✅ Flux (2b-1); PVC |
+| dreeve | default | kustomize | M | ✅ Flux (2b-1); PVC; namespace-less objects |
 | gitea | gitea | kustomize | H | source of truth; Phase 4, last |
 | glance | default | HomelabApp | L | ✅ Flux (2a) |
 | go2rtc | default | HomelabApp | L | ✅ Flux (2a) |
-| hivemq | hivemq | kustomize | M | PVC |
-| homebox | default | HomelabApp | M | PVC |
+| hivemq | hivemq | kustomize | M | ✅ Flux (2b-1); PVC |
+| homebox | default | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | homebox-companion | default | HomelabApp | L | ✅ Flux (2a) |
 | homebridge | homebridge | HomelabApp | M | PVC |
 | homelable | homelable | HomelabApp | L | ✅ Flux (2a) |
-| homelable-backend | homelable | HomelabApp | M | PVC |
+| homelable-backend | homelable | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | homelable-mcp | homelable | HomelabApp | L | ✅ Flux (2a) |
 | ia-ignition | default | kustomize | M | manual sync → suspended; PVC |
 | immich | immich | Helm `immich@0.12.0` + kustomize | M | §4.2; PVC |
@@ -505,7 +544,7 @@ cluster-visible, **H** = cluster-wide blast radius.
 | kaneo | kaneo | HomelabApp | L | ✅ Flux (2a) |
 | mealie | default | HomelabApp | M | PVC |
 | media | media | app-of-apps | M | parent of ApplicationSet + media-base; remove last in 2c |
-| minecraft | minecraft | kustomize | M | PVC |
+| minecraft | minecraft | kustomize | M | ✅ Flux (2b-1); PVC |
 | n8n | default | HomelabApp | M | PVC; DB |
 | nats | nats | Helm `nats@2.15.1` + kustomize | M | §4.2 |
 | ntfy | ntfy | HomelabApp | M | PVC; alert path, so confirm alerts afterwards |
@@ -516,16 +555,16 @@ cluster-visible, **H** = cluster-wide blast radius.
 | pve-exporter | prometheus | HomelabApp | L | ✅ Flux (2a) |
 | reedme | default | HomelabApp | L | ✅ Flux (2a); DB |
 | renovate | renovate | kustomize | L | update its config in the same phase (§4.8) |
-| romm | romm | HomelabApp | M | PVC |
+| romm | romm | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | sparkyfitness | sparkyfitness | HomelabApp | M | |
 | sparkyfitness-server | sparkyfitness | HomelabApp | M | PVC |
 | speech-to-phrase | voice-assistant | HomelabApp | M | PVC |
 | spoolman | spoolman | HomelabApp | L | ✅ Flux (Phase 1); no PVC; Namespace manifest added |
 | stubs | default | HomelabApp | L | ✅ Flux (2a) |
-| tracearr | tracearr | HomelabApp | M | PVC |
+| tracearr | tracearr | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | tronbyt-server | default | HomelabApp | M | ✅ Flux (Phase 1); PVC prune-disabled |
 | unifi-mcp | default | HomelabApp | L | ✅ Flux (2a) |
-| unifi-toolkit | default | HomelabApp | M | PVC |
+| unifi-toolkit | default | HomelabApp | M | ✅ Flux (2b-1); PVC |
 | unpoller | default | HomelabApp | L | ✅ Flux (2a) |
 | voice-assistant | voice-assistant | HomelabApp | M | PVC |
 
