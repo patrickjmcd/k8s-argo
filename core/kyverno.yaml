@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: kyverno
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
     argocd.argoproj.io/tracking-method: annotation
@@ -16,9 +14,6 @@ spec:
     name: in-cluster
     namespace: kyverno
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
@@ -41,7 +36,6 @@ spec:
             # pod admission cluster-wide. Caused a wide BackOff cascade on
             # 2026-09-17 when it landed on the most memory-pressured node.
             replicas: 2
-
           # background-controller and reports-controller watch a large
           # number of CRD types each. Their watches periodically drop
           # ("http2: client connection lost") and all reconnect/re-list at
@@ -60,8 +54,6 @@ spec:
             extraArgs:
               clientRateLimitQPS: "600"
               clientRateLimitBurst: "1200"
-
-
     - repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main
       path: core/kyverno
