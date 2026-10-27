@@ -804,8 +804,9 @@ Progress:
   webhooks only ever excluded `kube-system` and `kyverno`, so `argocd` was
   never exempt), and the chart reads `config.webhookLabels`, not top-level
   `webhookLabels`. Both removed; the render is byte-identical. Exempting
-  `flux-system` from the fail-closed webhooks (via `config.webhooks`
-  namespaceSelector) would be a behaviour change and is left as a decision.
+  `flux-system` from the fail-closed webhooks was then done deliberately
+  (2026-10-27, `config.webhooks.namespaceSelector`; Flux pods no longer get
+  Kyverno's 30s node-failure tolerations or the Pi 5 preference).
 - ✅ **Docs** (2026-10-27): CLAUDE.md, README.md (including a Flux DR
   procedure: Cilium by hand first, then Flux from the GitHub mirror) and the
   `cluster-health` skill rewritten for Flux; current-tense Argo comments in

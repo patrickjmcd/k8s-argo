@@ -260,6 +260,10 @@ Kyverno mutates pods automatically:
 Audit-only (never blocks admission):
 - **cpu-limit-guard**: Flags containers with a CPU limit under 100m. See "Resource requests and limits" below. Findings: `kubectl get polr -A | grep cpu-limit-guard`
 
+Kyverno's webhooks skip `kube-system`, `kyverno` and `flux-system` (`config.webhooks` in
+`clusters/home/core/kyverno.yaml`), so a broken Kyverno can't stop Flux from recreating its
+own pods; the mutations above don't apply there.
+
 If Kyverno webhook gets stuck (failurePolicy=Fail + context deadline exceeded), temporarily patch to `Ignore`, fix root cause, then Kyverno restores `Fail`.
 
 ## Resource requests and limits
