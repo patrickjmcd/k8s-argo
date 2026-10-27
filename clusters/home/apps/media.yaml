@@ -1,0 +1,65 @@
+# The media apps (apps/media/<app>), one Flux Kustomization each, named
+# media-<app>. Replaces Argo's media-apps-kustomize ApplicationSet. To add an
+# app, add its directory name to inputs.
+#
+# Removing an input deletes that app's Kustomization, which prunes the app's
+# objects (its PVCs/PVs are prune-disabled and stay). Never pruned itself:
+# deleting this ResourceSet would do that to every media app at once.
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: media
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  inputs:
+    - app: bazarr
+    - app: jellyfin
+    - app: lidarr
+    - app: sabnzbd
+    - app: kometa
+    - app: youtarr
+    - app: dispatcharr
+    - app: ersatztv
+    - app: tautulli
+    - app: seerr
+    - app: radarr
+    - app: sonarr
+    - app: prowlarr
+    - app: readarr
+    - app: agregarr
+    - app: hdhr2xmltv
+    - app: concertarr
+    - app: recyclarr
+    - app: ytdl-triage
+    - app: sportarr
+    - app: navidrome
+    - app: subwave
+    - app: ollama
+    - app: aonsoku
+  resources:
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        name: media-<< inputs.app >>
+        namespace: flux-system
+      spec:
+        interval: 10m
+        retryInterval: 2m
+        timeout: 5m
+        sourceRef:
+          kind: GitRepository
+          name: flux-system
+        path: ./apps/media/<< inputs.app >>
+        prune: true
+        dependsOn:
+          - name: media-base
+        # Same as the shared settings in kustomization.yaml (that patch doesn't
+        # reach objects a ResourceSet generates).
+        wait: true
+        healthCheckExprs:
+          - apiVersion: homelab.pmcd.io/v1alpha1
+            kind: HomelabApp
+            current: has(status.conditions) && status.conditions.exists(e, e.type == 'Ready' && e.status == 'True')
+            failed: has(status.state) && status.state in ['ERROR', 'FAILED']

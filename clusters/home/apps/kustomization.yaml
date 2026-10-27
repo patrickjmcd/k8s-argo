@@ -40,6 +40,8 @@ resources:
   - n8n.yaml
   - ntfy.yaml
   - outline.yaml
+  - media-base.yaml
+  - media.yaml
 patches:
   - target:
       kind: Kustomization
