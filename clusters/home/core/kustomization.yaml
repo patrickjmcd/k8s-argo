@@ -36,6 +36,7 @@ resources:
   - metallb.yaml
   - csi-driver-smb.yaml
   - csi-driver-nfs.yaml
+  - node-tuning.yaml
 patches:
   - target:
       kind: Kustomization
