@@ -33,6 +33,7 @@ resources:
   - cert-manager.yaml
   - shared-postgres.yaml
   - cnpg.yaml
+  - metallb.yaml
 patches:
   - target:
       kind: Kustomization

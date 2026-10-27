@@ -1,0 +1,72 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: metallb
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: metallb
+  targetNamespace: metallb-system
+  storageNamespace: metallb-system
+  chart:
+    spec:
+      chart: metallb
+      version: 0.16.1
+      sourceRef:
+        kind: HelmRepository
+        name: metallb
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  # The chart's CRDs are templates with no annotations setting, so a Helm
+  # uninstall would delete them -- and with them the IPAddressPool every
+  # LoadBalancer Service gets its IP from. Keep them.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: CustomResourceDefinition
+            patch: |
+              - op: add
+                path: /metadata/annotations/helm.sh~1resource-policy
+                value: keep
+  values:
+    speaker:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - pi4-kube0
+                      - pi4-kube1
+    # Native L2 mode. The chart defaults to the frr-k8s backend (an FRR
+    # routing daemon per node), which only matters for BGP; we only
+    # announce over L2. Native mode drops ~1.4 GiB of FRR pods and the
+    # frr-k8s crashloop that took .204/.205 dark in Aug 2026.
+    frrk8s:
+      enabled: false
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: metallb-extras
+  namespace: flux-system
+spec:
+  path: ./core/metallb-system
