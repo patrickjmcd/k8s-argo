@@ -15,6 +15,8 @@ spec:
     metadata:
       labels:
         app: pihole
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-10-03T20:55:51Z"
     spec:
       initContainers:
         - name: patch-pihole-config

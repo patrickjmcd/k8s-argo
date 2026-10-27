@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: renovate
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
@@ -13,9 +11,6 @@ spec:
     namespace: renovate
   project: apps
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

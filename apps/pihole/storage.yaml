@@ -6,6 +6,8 @@ metadata:
     recurring-job-group.longhorn.io/b2-backup: enabled
     # makes Longhorn sync the label above from this PVC to its volume
     recurring-job.longhorn.io/source: enabled
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteOnce

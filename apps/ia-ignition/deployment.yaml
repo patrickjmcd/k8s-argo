@@ -11,7 +11,7 @@ spec:
   # Sep 2026: scaled to zero on request -- gateway parked while not in use.
   # Set back to 1 to bring it up again. PVC (longhorn-ia-ignition-config-rwo)
   # is retained, so no data is lost while parked.
-  replicas: 0
+  replicas: 0  # off on purpose; Flux keeps it at 0 (set >0 here to run Ignition)
   revisionHistoryLimit: 3
   # Sep 2026: required now that the PVC is ReadWriteOnce (see storage.yaml).
   # Default RollingUpdate tries to bring up the new pod before tearing down
@@ -29,6 +29,8 @@ spec:
       labels:
         app.kubernetes.io/instance: ia-ignition
         app.kubernetes.io/name: ia-ignition
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-15T13:21:29-05:00"
     spec:
       initContainers:
         - name: preconfigure
