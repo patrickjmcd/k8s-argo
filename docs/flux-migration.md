@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3a done 2026-10-27**: the 9 plain-kustomize core components are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). Next: Phase 3b (low-risk core charts).
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). Argo keeps 20 Applications (the Phase 4 core plus the root apps). Next: Phase 4 (high-risk core), one component per session with a fresh backup.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -406,10 +406,13 @@ not on each other). Deep chains stall everything behind one failing component.
 
 `renovate.json` configures the `argocd` manager, plus an `overridePackageName`
 rule for OCI chart sources (see memory note on the OCI/Renovate mismatch).
-Enable the `flux` manager (HelmRelease + HelmRepository/OCIRepository) and drop
-the Argo rule once no chart Application remains. Check that Renovate picks up
-`kro` (`oci://registry.k8s.io/kro/charts`) and `kubernetes-mcp-server`
-(`oci://ghcr.io/containers/charts`) from their OCIRepository objects.
+**Done 2026-10-27:** the `flux` manager is enabled for `clusters/**.yaml`
+(HelmRelease versions resolved through their HelmRepository), and the
+kubernetes-mcp-server image regex follows its values to
+`clusters/home/core/kubernetes-mcp-server.yaml`. Still to do: drop the
+`argocd` manager and its OCI override rules once no chart Application remains
+(kro is the last OCI one), and check the first Renovate run after this
+change actually lists the HelmRelease charts in its dependency dashboard.
 
 ### 4.10 `kubectl rollout restart` leftovers restart workloads on handoff
 
@@ -441,6 +444,14 @@ in the disarm commit, so Flux's template matches the live one. As of
 pair, and media `bazarr`, `dispatcharr`, `lidarr`, `sabnzbd`. Not affected:
 objects Argo doesn't manage (k3s's coredns/metrics-server/local-path, and the
 Prometheus/Alertmanager StatefulSets owned by prometheus-operator).
+
+**HelmReleases don't need this.** helm-controller applies with SSA and never
+takes over the `kubectl-rollout` manager's fields, so a live `restartedAt` that
+isn't in the chart values stays and nothing rolls. The §4.2 server-side diff
+(as `helm-controller`) shows this: it is empty even when the live template
+carries the annotation. Phase 3b adopted 11 charts this way, 6 of them with
+`restartedAt` on the template, and no pod restarted. Copying the value into
+values (as done for nats/immich) is harmless but unnecessary.
 
 Consequence after the migration: `kubectl rollout restart` on a Flux-managed
 *plain* Deployment/DaemonSet is undone on the next reconcile, which rolls it a
@@ -504,9 +515,15 @@ Hold until Phase 4: **gitea** (source of truth for both Argo and Flux).
 goldilocks-assets, pocketid, system-upgrade, garage (+ bootstrap job, §4.4),
 timescale (+ schema job), monitoring (only a Namespace, so a normal Kustomization).
 
-**3b.** HelmRelease, low blast radius: reloader, goldilocks, vpa, headlamp, loki,
+**3b ✅ 2026-10-27.** HelmRelease, low blast radius: reloader, goldilocks, vpa, headlamp, loki,
 alloy, blackbox-exporter, external-dns, trivy-operator,
-kubernetes-mcp-server, tailscale-operator.
+kubernetes-mcp-server, tailscale-operator. All 11 via the §4.2 recipe
+(script-generated from the Argo `valuesObject`s, empty server-side diff each);
+136 objects kept their UIDs and no pod restarted. headlamp's
+`sessionTTL: ~` was dropped: Argo's Helm had ignored the null and the live pod
+runs the chart default, while Helm 4 honours it and would have removed the
+flag. goldilocks `dependsOn` vpa (CRDs). Extras are `<app>-extras`
+Kustomizations; HelmRepositories in `clusters/home/core/helm-repositories.yaml`.
 
 ### Phase 4: `core/` high risk, one per session with a fresh backup
 
@@ -638,30 +655,30 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | metallb-system | metallb-system | -1 | `metallb@0.16.1` + kustomize | H | 4 | |
 | node-tuning | kube-system | -1 | kustomize | M | 4 | |
 | shared-postgres | postgres | -1 | kustomize | H | 4 | 6 hook Jobs |
-| tailscale-operator | tailscale | -1 | `tailscale-operator@1.104.2` + kustomize | M | 3 | |
+| ✅ tailscale-operator | tailscale | -1 | `tailscale-operator@1.104.2` + kustomize | M | 3 | |
 | ✅ timescale | timescale | -1 | kustomize | M | 3 | 1 hook Job |
-| alloy | loki | 0 | `alloy@1.14.3` | L | 3 | |
+| ✅ alloy | loki | 0 | `alloy@1.14.3` | L | 3 | |
 | kro | kro-system | 0 | `kro@0.9.4` (OCI) | H | 4 | CRD must never be pruned |
 | kyverno | kyverno | 0 | `kyverno@3.9.2` + kustomize | H | 4 | admission webhooks |
-| loki | loki | 0 | `loki@7.5.0` | L | 3 | |
+| ✅ loki | loki | 0 | `loki@7.5.0` | L | 3 | |
 | prometheus | prometheus | 0 | `kube-prometheus-stack@92.3.1` + 2 kustomize paths | M | 4 | CRDs every ServiceMonitor needs |
-| vpa | vpa | 0 | `vpa@5.1.0` | L | 3 | |
-| goldilocks | goldilocks | 1 | `goldilocks@11.2.0` | L | 3 | |
+| ✅ vpa | vpa | 0 | `vpa@5.1.0` | L | 3 | |
+| ✅ goldilocks | goldilocks | 1 | `goldilocks@11.2.0` | L | 3 | |
 | ✅ goldilocks-assets | goldilocks | 1 | kustomize | L | 3 | |
 | kro-definitions | kro-system | 1 | kustomize | H | 4 | the HomelabApp RGD |
 | traefik | default | 1 | `traefik@41.7.1` + kustomize | H | 4 | all ingress; assets dir has a PVC |
-| trivy-operator | trivy-system | 1 | `trivy-operator@0.37.0` + kustomize | L | 3 | |
-| blackbox-exporter | prometheus | — | `prometheus-blackbox-exporter@11.20.0` + kustomize | L | 3 | |
+| ✅ trivy-operator | trivy-system | 1 | `trivy-operator@0.37.0` + kustomize | L | 3 | |
+| ✅ blackbox-exporter | prometheus | — | `prometheus-blackbox-exporter@11.20.0` + kustomize | L | 3 | |
 | ✅ cloudflared-tunnel | default | — | kustomize | M | 3 | public ingress path |
 | ✅ csi-driver-nfs-assets | default | — | kustomize | L | 3 | |
 | ✅ dozzle | default | — | kustomize | L | 3 | |
-| external-dns | external-dns | — | `external-dns@1.23.0` + kustomize | M | 3 | |
+| ✅ external-dns | external-dns | — | `external-dns@1.23.0` + kustomize | M | 3 | |
 | ✅ garage | garage | — | kustomize | M | 3 | 1 hook Job; PVC |
-| headlamp | kube-system | — | `headlamp@0.46.0` | L | 3 | add Flux plugin here |
-| kubernetes-mcp-server | kubernetes-mcp-server | — | `kubernetes-mcp-server@0.1.0` (OCI) + kustomize | L | 3 | |
+| ✅ headlamp | kube-system | — | `headlamp@0.46.0` | L | 3 | add Flux plugin here |
+| ✅ kubernetes-mcp-server | kubernetes-mcp-server | — | `kubernetes-mcp-server@0.1.0` (OCI) + kustomize | L | 3 | |
 | ✅ monitoring | default | — | kustomize | L | 3 | just the Namespace; normal (not suspended) on Flux |
 | ✅ pocketid | pocketid | — | kustomize | M | 3 | SSO for everything |
-| reloader | reloader | — | `reloader@2.2.18` | L | 3 | |
+| ✅ reloader | reloader | — | `reloader@2.2.18` | L | 3 | |
 | ✅ system-upgrade | default | — | kustomize | M | 3 | k3s upgrade Plans |
 
 ### cronjobs/
