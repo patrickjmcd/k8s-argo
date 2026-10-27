@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. Next: Phase 2.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI at flux.x.pmcd.io waits on the PocketID client (§4.9). Next: Phase 2.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -46,47 +46,70 @@ for upstream charts.
 
 ```
 clusters/home/
-  flux-system/            # gotk-components.yaml + gotk-sync.yaml (GitRepository "k8s-argo")
-  infra.yaml              # Kustomizations for core/ (one per component, with dependsOn)
-  apps.yaml               # Kustomizations for apps/ (one per app)
-  media.yaml              # Kustomizations for apps/media/* (replaces the ApplicationSet)
-  cronjobs.yaml           # suspended Kustomization for cronjobs/
-  sources/                # HelmRepository / OCIRepository objects
+  kustomization.yaml      # root, synced by the operator-created flux-system Kustomization
+  flux-operator.yaml      # Flux Operator HelmRelease (+ web UI values, SSO via valuesFrom)
+  flux-instance.yaml      # FluxInstance "flux": the Flux install itself (version, components, sync)
+  flux-web.yaml           # web UI: OnePasswordItem for the OIDC client + RBAC binding
+  notifications.yaml      # Flux errors -> Alertmanager -> n8n -> ntfy
+  apps/                   # one Kustomization per app (name + path; shared settings patched in)
+  # to come: core/ Kustomizations + HelmReleases, a ResourceSet for apps/media, cronjobs
 ```
 
 The app directories (`apps/<name>/`, `core/<name>/`) don't change. Only the
 `apps/<name>.yaml` / `core/<name>.yaml` Application files are replaced by
 Kustomization or HelmRelease objects.
 
-**One GitRepository for everything.** Every Kustomization points at the
-`k8s-argo` GitRepository through `sourceRef`, so the "Gitea is down" fallback in
-CLAUDE.md shrinks from a `sed` over ~100 files to one patch:
+### Flux Operator (since 2026-10-27)
+
+Flux is installed and upgraded by the [Flux Operator](https://fluxoperator.dev)
+from the `FluxInstance` in `clusters/home/flux-instance.yaml`; bump
+`spec.distribution.version` to upgrade. The operator is itself a Flux
+HelmRelease, so each can repair the other. Both objects are
+`prune: disabled`: deleting the FluxInstance uninstalls Flux, and uninstalling
+the operator chart deletes its CRDs (and so the FluxInstance).
+
+The operator creates the root `GitRepository` and `Kustomization`, both named
+`flux-system`, from `spec.sync`: in-cluster Gitea URL, anonymous (the repo is
+public), `refs/heads/main`, path `clusters/home`. Every Kustomization uses
+`sourceRef: flux-system`.
+
+It also brings `ResourceSet` (a template generator, ApplicationSet's
+counterpart, used for `apps/media` in Phase 2c) and the web UI (§4.9).
+
+**"Gitea is down" fallback.** Change the sync URL in git *and* live; otherwise
+the first reconcile from GitHub re-applies `flux-instance.yaml` with the Gitea URL:
 
 ```bash
-kubectl -n flux-system patch gitrepository k8s-argo --type merge \
-  -p '{"spec":{"url":"https://github.com/patrickjmcd/k8s-argo.git"}}'
+sed -i 's#http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git#https://github.com/patrickjmcd/k8s-argo.git#' clusters/home/flux-instance.yaml
+git commit -am "flux: sync from GitHub while Gitea is down" && git push github main
+kubectl -n flux-system patch fluxinstance flux --type merge \
+  -p '{"spec":{"sync":{"url":"https://github.com/patrickjmcd/k8s-argo.git"}}}'
 ```
 
-### Install
+**`.sourceignore` (repo root).** The operator's GitRepository uses Flux's
+built-in ignore list, which drops images and archives (`*.png`, `*.jpg`,
+`*.zip`, ...). A file a kustomization needs (e.g. joshhawleygop's `og.png`)
+must be re-included there with a `!` pattern, or the build fails with "no
+such file or directory".
 
-Don't use `flux bootstrap gitea`. It wants to push a deploy key and talk to
-Gitea through its public hostname. Mirror what Argo does today instead: an
-anonymous in-cluster URL, applied by hand once, then self-managed.
+### History: how Flux was installed
 
-```bash
-flux install --export > clusters/home/flux-system/gotk-components.yaml
-# gotk-sync.yaml (hand-written):
-#   GitRepository k8s-argo  url: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git  ref.branch: main  interval: 1m
-#   Kustomization flux-system  path: ./clusters/home  prune: true
-kubectl apply -f clusters/home/flux-system/
-```
+Phase 1 used `flux install --export` committed under `clusters/home/flux-system/`
+(not `flux bootstrap gitea`, which wants a deploy key and Gitea's public
+hostname), applied by hand once. The same day it was handed to the operator in
+four commits, none of which restarted a controller:
+1. mark the exported manifests `prune: disabled` (commonAnnotations) and add
+   the operator HelmRelease;
+2. drop `flux-system` from `clusters/home/kustomization.yaml` (34 objects
+   "skipped", not pruned);
+3. add the FluxInstance (same version line, components, network policy);
+   the operator takes over the `flux-system` Kustomization in place;
+4. point app Kustomizations at the operator's `flux-system` GitRepository,
+   delete the export from git, and `kubectl delete` the old `k8s-argo`
+   GitRepository.
 
-Add a Gitea push webhook to a notification-controller `Receiver` so commits
-reconcile immediately rather than on the 1m poll.
-
-Resources: `flux install --export` ships 50m requests and a 1000m CPU limit
-per controller. That limit is a runaway guard far above observed use (~2m
-idle), which CLAUDE.md allows, so the export is used unmodified.
+Still to do: a Gitea push webhook to a notification-controller `Receiver` so
+commits reconcile immediately rather than on the 1m poll.
 
 **Stale RBAC from an old install (hit 2026-10-27).** The cluster ran Flux once
 before (2023) and later Rancher; Rancher's `wrangler.cattle.io/auth-prov-v2-*`
@@ -109,7 +132,7 @@ CRDs stuck since Jan 2024 were cleared the same day.
 |---|---|---|
 | `Application` (path source) | `Kustomization` | `sourceRef: k8s-argo`, `path: ./apps/<name>` |
 | `Application` (chart source) | `HelmRelease` + `HelmRepository`/`OCIRepository` | values inline in `spec.values`, or `valuesFrom` a ConfigMap |
-| `ApplicationSet` (list generator) | one Kustomization per app | or Flux Operator `ResourceSet` if you want a generator; plain files are simpler |
+| `ApplicationSet` (list generator) | Flux Operator `ResourceSet` | `inputs` list + a Kustomization template |
 | `spec.destination.namespace` | `kustomization.yaml` `namespace:`, or explicit `metadata.namespace` | **not** `targetNamespace` (see §4.3) |
 | `CreateNamespace=true` | a `Namespace` manifest in the app dir, annotated `kustomize.toolkit.fluxcd.io/prune: disabled` | Flux never creates namespaces; never let it prune one (see `apps/spoolman/namespace.yaml`) |
 | `sync-wave` on Applications | `dependsOn` between Kustomizations/HelmReleases | waits for Ready, not just applied |
@@ -346,6 +369,20 @@ the Argo rule once no chart Application remains. Check that Renovate picks up
 `kro` (`oci://registry.k8s.io/kro/charts`) and `kubernetes-mcp-server`
 (`oci://ghcr.io/containers/charts`) from their OCIRepository objects.
 
+### 4.9 Web UI
+
+The operator serves the Flux web UI on port 9080; `clusters/home/flux-operator.yaml`
+exposes it at `https://flux.x.pmcd.io` (internal `traefik-gateway`) with
+PocketID OIDC (`issuerURL: https://auth.pmcd.dev`, callback
+`/oauth2/callback`). The client ID/secret come from the 1Password item
+`flux-web` (`scripts/create-flux-web-item.sh`) through the HelmRelease's
+`valuesFrom`. The UI impersonates the user's `email` and `groups` claims, so
+access is plain RBAC: `clusters/home/flux-web.yaml` binds the PocketID group
+`argocd_admin` (Argo CD's admin group) to the operator's `flux-web-admin`
+ClusterRole. Rename the group at Phase 5. Radar (Skyhook) was considered and
+skipped: it overlaps Headlamp; it can run locally against a kubeconfig if its
+topology view is ever wanted.
+
 ---
 
 ## 5. Phases
@@ -376,7 +413,7 @@ HomelabApp and Kustomize apps, about 5 at a time:
 |---|---|
 | 2a stateless | glance, go2rtc, homebox-companion, homelable, homelable-mcp, nut-exporter, pihole-exporter, pve-exporter, unifi-mcp, unpoller, reedme, kaneo, stubs |
 | 2b stateful (PVC) | adsb, dreeve, hivemq, homebox, homebridge, homelable-backend, mealie, minecraft, n8n, ntfy, outline, romm, sparkyfitness, sparkyfitness-server, speech-to-phrase, tracearr, unifi-toolkit, voice-assistant |
-| 2c media | prep the ApplicationSet (§3), then the 24 elements + media-base, ~6 at a time |
+| 2c media | prep the ApplicationSet (§3), then the 24 elements + media-base, ~6 at a time, generated by one `ResourceSet` (list input of app names) instead of 25 hand-written Kustomizations |
 | 2d special | renovate; ia-ignition (manual → suspended); pihole (cluster DNS: do on a quiet evening; the secondary Pi-hole LXC covers clients) |
 | 2e Helm | nats (HelmRelease, §4.2), immich (HelmRelease, §4.2; stateful) |
 
