@@ -15,3 +15,18 @@ resources:
   - reedme-ownership-fix.yaml
   - dispatcharr-ownership-fix.yaml
   - restore-test-cronjob.yaml
+
+# Never let Flux prune the database cluster or anything holding its data or
+# backups (docs/flux-migration.md §2): removing one of these from git must be
+# a deliberate kubectl delete, not a side effect of a commit.
+patches:
+  - target:
+      kind: (Cluster|Database|ObjectStore|ScheduledBackup|PersistentVolume|PersistentVolumeClaim)
+    patch: |
+      apiVersion: v1
+      kind: Ignored
+      metadata:
+        name: ignored
+        annotations:
+          kustomize.toolkit.fluxcd.io/prune: disabled
+          argocd.argoproj.io/sync-options: Delete=false

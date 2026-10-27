@@ -3,16 +3,11 @@ kind: Application
 metadata:
   name: shared-postgres
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
     argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
