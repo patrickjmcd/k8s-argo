@@ -1,0 +1,27 @@
+# Flux web UI (served by the Flux Operator, flux-operator.yaml) at
+# https://flux.x.pmcd.io with PocketID SSO. The OIDC client lives in PocketID
+# (callback https://flux.x.pmcd.io/oauth2/callback); its ID and secret are the
+# clientID/clientSecret fields of the 1Password item flux-web, fed into the
+# HelmRelease through valuesFrom (scripts/create-flux-web-item.sh).
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: flux-web-1pw
+  namespace: flux-system
+spec:
+  itemPath: "vaults/Kubernetes/items/flux-web"
+---
+# The UI impersonates the signed-in user (email + groups claims), so access
+# is plain Kubernetes RBAC. Same PocketID group as Argo CD's admin role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flux-web-admins
+subjects:
+  - kind: Group
+    name: argocd_admin
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: flux-web-admin
+  apiGroup: rbac.authorization.k8s.io
