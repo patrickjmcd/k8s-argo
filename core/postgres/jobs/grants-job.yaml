@@ -24,10 +24,13 @@ spec:
           command:
             - /bin/sh
             - -c
+            # Kubernetes expands $(VAR) in command and turns $$ into $, so the
+            # dollar quotes are written $$$$ (they ran as `DO $` and failed,
+            # silently, until Oct 2026). ON_ERROR_STOP fails the Job on SQL errors.
             - |
               set -e
-              psql -h shared-postgres-rw -U "$PGUSER" -d postgres << 'ENDSQL'
-              DO $$
+              psql -h shared-postgres-rw -U "$PGUSER" -d postgres -v ON_ERROR_STOP=1 << 'ENDSQL'
+              DO $$$$
               DECLARE
                 db RECORD;
               BEGIN
@@ -38,7 +41,7 @@ spec:
                   EXECUTE format('GRANT CONNECT ON DATABASE %I TO backup', db.datname);
                 END LOOP;
                 GRANT pg_read_all_data TO backup;
-              END $$;
+              END $$$$;
               ENDSQL
           resources:
             requests:
