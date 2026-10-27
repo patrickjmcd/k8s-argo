@@ -9,6 +9,7 @@ An app opts in by setting, on its HTTPRoute (raw manifest):
       glance.pmcd.io/monitor-title: "ArgoCD"      # optional, else derived from hostname
       glance.pmcd.io/monitor-group: "Services"    # optional, else apps/media/* -> "Media Services", else "Services"
       glance.pmcd.io/monitor-hostname: "a.b.c"    # optional, disambiguates multi-hostname routes
+      glance.pmcd.io/monitor-path: "/admin/"      # optional, when / isn't a 2xx/3xx/401/403
 
 or, for apps using the homelab-app Helm chart, in their values.yaml (a plain
 key the chart itself ignores):
@@ -99,7 +100,11 @@ def collect_from_httproutes():
             hostname = pick_hostname(hostnames, ann.get(ANNOTATION_PREFIX + "monitor-hostname"))
             title = ann.get(ANNOTATION_PREFIX + "monitor-title") or title_from_hostname(hostname)
             group = ann.get(ANNOTATION_PREFIX + "monitor-group") or default_group(path)
-            entries.append((group, title, f"https://{hostname}", rel))
+            monitor_path = ann.get(ANNOTATION_PREFIX + "monitor-path", "")
+            if monitor_path and not monitor_path.startswith("/"):
+                print(f"ERROR: {rel} monitor-path {monitor_path!r} must start with /", file=sys.stderr)
+                sys.exit(1)
+            entries.append((group, title, f"https://{hostname}{monitor_path}", rel))
     return entries
 
 

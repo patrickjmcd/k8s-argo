@@ -68,7 +68,7 @@ spec:
         - https://n8n.x.pmcd.io
         - https://ntfy.x.pmcd.io
         - https://outline.pmcd.dev
-        - https://pihole.x.pmcd.io
+        - https://pihole.x.pmcd.io/admin/
         - https://prometheus.x.pmcd.io
         - https://romm.x.pmcd.io
         - https://showmeyourstubs.com

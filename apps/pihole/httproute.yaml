@@ -5,6 +5,8 @@ metadata:
   annotations:
     glance.pmcd.io/monitor: "true"
     glance.pmcd.io/monitor-title: "PiHole"
+    # Pi-hole answers / with 404; the admin UI is the health signal.
+    glance.pmcd.io/monitor-path: "/admin/"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

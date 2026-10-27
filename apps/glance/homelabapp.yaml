@@ -104,7 +104,7 @@ spec:
                       - title: Outline
                         url: https://outline.pmcd.dev
                       - title: PiHole
-                        url: https://pihole.x.pmcd.io
+                        url: https://pihole.x.pmcd.io/admin/
                       - title: Prometheus
                         url: https://prometheus.x.pmcd.io
                       - title: Romm
