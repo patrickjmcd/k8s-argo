@@ -1,8 +1,11 @@
 # Argo CD → Flux migration
 
-**Status: Phase 1 in progress.** Flux v2.10.0 installed and self-managing
-(2026-10-27); `iss-in-space` handed over and verified, including drift
-correction and HomelabApp health.
+**Status: Phase 1 complete (2026-10-27).** Flux v2.10.0 installed and
+self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
+`tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
+restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
+a Flux-created Namespace, `prune: disabled` keeping an object that left git,
+and error alerts reaching ntfy. Next: Phase 2.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -92,9 +95,11 @@ Terminating since Jan 2026, so the new flux-system Kustomization timed out
 waiting on them. Fix was to strip that finalizer from the five `*-flux-system`
 objects, then re-run `kubectl apply --server-side --force-conflicts -k
 clusters/home/flux-system` (deleting `cluster-reconciler-flux-system` also
-removes Flux's own permissions, so it can't recreate them itself). About 50 more
-Rancher, argo-rollouts, CAPI and open-feature-operator RBAC objects are still
-stuck the same way, plus two knative CRDs; they are unrelated leftovers.
+removes Flux's own permissions, so it can't recreate them itself). The other 51
+Rancher-finalized RBAC objects (Rancher, fleet, CAPI, argo-rollouts,
+open-feature-operator; one bound `cattle-system/rancher-webhook` to
+cluster-admin, another granted `default/default` extra rights) and two knative
+CRDs stuck since Jan 2024 were cleared the same day.
 
 ---
 
@@ -106,7 +111,7 @@ stuck the same way, plus two knative CRDs; they are unrelated leftovers.
 | `Application` (chart source) | `HelmRelease` + `HelmRepository`/`OCIRepository` | values inline in `spec.values`, or `valuesFrom` a ConfigMap |
 | `ApplicationSet` (list generator) | one Kustomization per app | or Flux Operator `ResourceSet` if you want a generator; plain files are simpler |
 | `spec.destination.namespace` | `kustomization.yaml` `namespace:`, or explicit `metadata.namespace` | **not** `targetNamespace` (see §4.3) |
-| `CreateNamespace=true` | a `Namespace` manifest in the app dir | Flux never creates namespaces |
+| `CreateNamespace=true` | a `Namespace` manifest in the app dir, annotated `kustomize.toolkit.fluxcd.io/prune: disabled` | Flux never creates namespaces; never let it prune one (see `apps/spoolman/namespace.yaml`) |
 | `sync-wave` on Applications | `dependsOn` between Kustomizations/HelmReleases | waits for Ready, not just applied |
 | `selfHeal: true` | default for Kustomizations; HelmRelease needs `driftDetection.mode: enabled` | |
 | `prune: true` | `spec.prune: true` on the Kustomization | |
@@ -161,8 +166,11 @@ For each app:
    '[{"op":"remove","path":"/metadata/finalizers"}]'` and re-check. The root app
    no longer re-adds it once git has no finalizer.)
 4. **Handoff commit:** delete `apps/<name>.yaml` and add
-   `clusters/home/apps/<name>.yaml` + its line in `clusters/home/kustomization.yaml`.
-   Re-run the step-3 gate immediately before `git push`.
+   `clusters/home/apps/<name>.yaml` (just `metadata.name` and `spec.path`; the
+   shared settings come from the patch in `clusters/home/apps/kustomization.yaml`)
+   plus its line in that file's `resources`. Re-run the step-3 gate in the same
+   shell command as `git commit`, so a failing gate stops the commit.
+   Several apps can share one disarm commit and one handoff commit.
 5. **Verify:**
    ```bash
    flux get ks <name>                        # Ready=True, applied revision = HEAD
@@ -323,10 +331,11 @@ not on each other). Deep chains stall everything behind one failing component.
   dashboards. Add Flux resource state to kube-state-metrics (custom resource
   state config from the flux2-monitoring-example repo), then an alert
   `FluxReconcileFailed` (Ready=False for 15m) in `rules.yaml` → ntfy `alerts`.
-- notification-controller: an `Alert` on all Kustomizations/HelmReleases with
-  severity `error` → `Provider` for ntfy (use a native ntfy provider if the
-  installed version has one, otherwise `generic` webhook to
-  `https://ntfy.../alerts`).
+- notification-controller (done, `clusters/home/notifications.yaml`): Flux
+  v2.10 has no ntfy provider, so the `alertmanager` provider posts error events
+  to Alertmanager, whose root route already sends non-`info` alerts through n8n
+  to the ntfy `alerts` topic. Tested 2026-10-27 with a deliberately broken path
+  (alert `FluxKustomizationArtifactfailed`, severity `error`).
 
 ### 4.8 Renovate
 
@@ -365,8 +374,8 @@ HomelabApp and Kustomize apps, about 5 at a time:
 
 | Batch | Apps |
 |---|---|
-| 2a stateless | glance, go2rtc, homebox-companion, homelable, homelable-mcp, nut-exporter, pihole-exporter, pve-exporter, unifi-mcp, unpoller, reedme, kaneo |
-| 2b stateful (PVC) | adsb, dreeve, hivemq, homebox, homebridge, homelable-backend, mealie, minecraft, n8n, ntfy, outline, romm, sparkyfitness, sparkyfitness-server, speech-to-phrase, tracearr, tronbyt-server, unifi-toolkit, voice-assistant |
+| 2a stateless | glance, go2rtc, homebox-companion, homelable, homelable-mcp, nut-exporter, pihole-exporter, pve-exporter, unifi-mcp, unpoller, reedme, kaneo, stubs |
+| 2b stateful (PVC) | adsb, dreeve, hivemq, homebox, homebridge, homelable-backend, mealie, minecraft, n8n, ntfy, outline, romm, sparkyfitness, sparkyfitness-server, speech-to-phrase, tracearr, unifi-toolkit, voice-assistant |
 | 2c media | prep the ApplicationSet (§3), then the 24 elements + media-base, ~6 at a time |
 | 2d special | renovate; ia-ignition (manual → suspended); pihole (cluster DNS: do on a quiet evening; the secondary Pi-hole LXC covers clients) |
 | 2e Helm | nats (HelmRelease, §4.2), immich (HelmRelease, §4.2; stateful) |
@@ -453,8 +462,8 @@ cluster-visible, **H** = cluster-wide blast radius.
 | homelable-mcp | homelable | HomelabApp | L | |
 | ia-ignition | default | kustomize | M | manual sync → suspended; PVC |
 | immich | immich | Helm `immich@0.12.0` + kustomize | M | §4.2; PVC |
-| iss-in-space | default | HomelabApp | L | **pilot** |
-| joshhawleygop | default | HomelabApp | L | namespace-less objects |
+| iss-in-space | default | HomelabApp | L | ✅ Flux (Phase 1) |
+| joshhawleygop | default | HomelabApp | L | ✅ Flux (Phase 1); HomelabApp not deployed since Oct 11 (see below) |
 | kaneo | kaneo | HomelabApp | L | |
 | mealie | default | HomelabApp | M | PVC |
 | media | media | app-of-apps | M | parent of ApplicationSet + media-base; remove last in 2c |
@@ -473,14 +482,22 @@ cluster-visible, **H** = cluster-wide blast radius.
 | sparkyfitness | sparkyfitness | HomelabApp | M | |
 | sparkyfitness-server | sparkyfitness | HomelabApp | M | PVC |
 | speech-to-phrase | voice-assistant | HomelabApp | M | PVC |
-| spoolman | spoolman | HomelabApp | M | **pilot** for `prune: disabled` |
+| spoolman | spoolman | HomelabApp | L | ✅ Flux (Phase 1); no PVC; Namespace manifest added |
 | stubs | default | HomelabApp | L | |
 | tracearr | tracearr | HomelabApp | M | PVC |
-| tronbyt-server | default | HomelabApp | M | PVC |
+| tronbyt-server | default | HomelabApp | M | ✅ Flux (Phase 1); PVC prune-disabled |
 | unifi-mcp | default | HomelabApp | L | |
 | unifi-toolkit | default | HomelabApp | M | PVC |
 | unpoller | default | HomelabApp | L | |
 | voice-assistant | voice-assistant | HomelabApp | M | PVC |
+
+joshhawleygop (found during Phase 1, not fixed, waiting on a decision):
+`build.py`'s generated `kustomization.yaml` has no `resources:` entry, so the
+Oct 11 bot rebuild dropped the hand-added `homelabapp.yaml` and Argo pruned the
+HomelabApp; only the two ConfigMaps are deployed. The HomelabApp also has
+`route.enabled: false`: the old chart values used `httproute:` (the chart key is
+`httpRoute`), so the public hostnames may never have been live. joshhawleygop.com
+returns 404 from Cloudflare.
 
 ### apps/media (ApplicationSet `media-apps-kustomize`, ns `media`)
 
