@@ -2,6 +2,10 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: prometheus-usb
+  annotations:
+    # Never prune: Retain-policy storage for the Prometheus TSDB on media-server.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   capacity:
     storage: 50Gi

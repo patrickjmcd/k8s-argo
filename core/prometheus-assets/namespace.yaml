@@ -1,7 +1,11 @@
----
+# Never prune the namespace (docs/flux-migration.md §2): it holds the
+# Prometheus TSDB claim and Grafana's PVC.
 apiVersion: v1
 kind: Namespace
 metadata:
   name: prometheus
   labels:
     canUseExternalSecrets: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false

@@ -1,7 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+# Everything here lives in prometheus (Argo used to default the namespace; Flux
+# needs it set). The empty `grafana` Namespace that used to be listed here was
+# never used and is no longer managed.
+namespace: prometheus
 resources:
-  - namespace.yaml
   - httproute.yaml
   - dashboard-jellyfin.yaml
   - dashboard-k8s-global.yaml

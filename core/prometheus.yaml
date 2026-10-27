@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: prometheus
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "0"
@@ -14,9 +12,6 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - ServerSideApply=true
   sources:
@@ -95,12 +90,12 @@ spec:
                 limits:
                   cpu: 1000m
                   memory: 5Gi
-              podMonitorSelector: { }
+              podMonitorSelector: {}
               podMonitorSelectorNilUsesHelmValues: false
               podMonitorNamespaceSelector:
                 matchLabels:
                   prometheus: enabled
-              serviceMonitorSelector: { }
+              serviceMonitorSelector: {}
               serviceMonitorSelectorNilUsesHelmValues: false
               serviceMonitorNamespaceSelector:
                 matchLabels:
