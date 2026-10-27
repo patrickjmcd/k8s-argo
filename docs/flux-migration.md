@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers, node-tuning, kube-vip and longhorn are on Flux. Argo keeps 6 Applications (cilium, gitea, the 3 roots, argocd). Next: cilium.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers, node-tuning, kube-vip, longhorn and cilium are on Flux. Argo keeps 5 Applications (gitea, the 3 roots, argocd). Next: gitea.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -656,9 +656,8 @@ Per component:
   list the releases in its namespace from Helm's storage**: Helm 4 has no
   `helm list -a`, so use
   `kubectl get secret -n <ns> -l owner=helm -L name,version,status`.
-  Remaining as of 2026-10-27: **`kube-system/cilium` (revision 5,
-  `failed`)** and `argocd/argocd` (revision 2) have old releases; longhorn,
-  kube-vip, node-tuning and gitea don't.
+  Remaining as of 2026-10-27: `argocd/argocd` (revision 2) has an old
+  release; gitea doesn't. (cilium's was deleted at its handoff, below.)
 - ✅ **csi-driver-smb / csi-driver-nfs** (2026-10-27): SMB is plain
   manifests (Kustomization `csi-driver-smb`; its live `restartedAt` values
   copied into git, Namespace and CSIDriver prune-guarded); NFS a HelmRelease
@@ -690,6 +689,26 @@ Per component:
   `pre-delete` hook. **For any future Argo Application with Helm
   `pre-delete` hooks: point it at an empty path, or otherwise stop it
   rendering hooks, before deleting it.**
+- ✅ **cilium** (2026-10-27): HelmRelease `cilium` plus `cilium-extras`
+  (`core/cilium`: Hubble HTTPRoute, LAN CIDR groups, visibility policy). The
+  stored Helm release was the hand-run Sep 6 cutover install (chart 1.20.1,
+  revisions 1-5; v4 `deployed`, v5 `failed` on field conflicts with Argo),
+  covering the same 32 objects as today's chart. Its 5 storage Secrets were
+  backed up and deleted so Flux did a fresh install instead of an upgrade.
+  **Helm 4 null values again**: local `helm` 4.1.3 keeps the chart default
+  `k8s.apiServerURLs: ~`, so `hasKey` passes and an empty
+  `--k8s-api-server-urls=` lands in the `config` initContainer's command,
+  which would roll the agent on every node. A first post-render patch that
+  `test`ed for and removed that argument failed the install (nothing
+  applied, no release stored): helm-controller 1.7.1 does *not* render it.
+  The patch now pins that initContainer's command to its live value, so the
+  render is identical either way. Hubble TLS Secrets come from `lookup`, so
+  they were kept (render with `helm upgrade --dry-run=server` to see that;
+  `helm template` regenerates them). Result: 40 objects kept their UIDs, the
+  DaemonSet stayed at generation 8, no cilium/operator/Hubble pod restarted,
+  Hubble UI answered. **Lesson: a local Helm render is not proof of what
+  helm-controller renders; use a post-render patch that converges to the
+  live value rather than one that assumes the render.**
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -810,7 +829,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 
 | Component | Namespace | Wave | Source | Risk | Phase | Notes |
 |---|---|---|---|---|---|---|
-| cilium | kube-system | -4 | `cilium@1.20.4` + kustomize | H | 4 | CNI; maintenance window |
+| ✅ cilium | kube-system | -4 | `cilium@1.20.4` + kustomize | H | 4 | CNI; config initContainer command pinned (post-render) |
 | argocd | argocd | -2 | `argo-cd@10.10.3` + kustomize | — | 5 | removed, not migrated |
 | ✅ cert-manager | cert-manager | -2 | `cert-manager@v1.21.2` + kustomize | H | 4 | caBundle drift ignore |
 | ✅ kube-vip | kube-system | -2 | kustomize | H | 4 | control-plane VIP |

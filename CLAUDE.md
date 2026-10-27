@@ -398,7 +398,7 @@ The cluster has no GPU nodes. The Jetson Nano (`jetson-nano-kube0`) was retired 
 
 ## Node Bootstrap Requirements (all nodes)
 
-**CNI** — the cluster runs **Cilium** (`core/cilium.yaml`) as its only CNI; flannel was removed in Sept 2026 (`docs/cilium-migration.md`). k3s still runs with `--flannel-backend=none` — required, or k3s starts its built-in flannel alongside Cilium. Cilium's `install-cni-binaries` init container only drops in `cilium-cni` and writes `/etc/cni/net.d/05-cilium.conflist`, so k3s does NOT provide the standard CNI plugins either: every new node needs the base plugins (`loopback`, `portmap`, …) in `/opt/cni/bin` before pods can start. Symptom when missing: `FailedCreatePodSandBox … failed to find plugin "loopback" in path [/opt/cni/bin]`.
+**CNI** — the cluster runs **Cilium** (Flux HelmRelease in `clusters/home/core/cilium.yaml`) as its only CNI; flannel was removed in Sept 2026 (`docs/cilium-migration.md`). k3s still runs with `--flannel-backend=none` — required, or k3s starts its built-in flannel alongside Cilium. Cilium's `install-cni-binaries` init container only drops in `cilium-cni` and writes `/etc/cni/net.d/05-cilium.conflist`, so k3s does NOT provide the standard CNI plugins either: every new node needs the base plugins (`loopback`, `portmap`, …) in `/opt/cni/bin` before pods can start. Symptom when missing: `FailedCreatePodSandBox … failed to find plugin "loopback" in path [/opt/cni/bin]`.
 
 ```bash
 sudo apt-get install -y containernetworking-plugins
