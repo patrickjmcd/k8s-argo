@@ -45,8 +45,15 @@ Untested end to end; adapt as needed.
    helm install cilium cilium --repo https://helm.cilium.io/ --version <chart version from that file> \
      -n kube-system -f /tmp/cilium-values.yaml
    ```
-3. **1Password Connect + operator** (installed by hand, not yet in git): Helm
-   release `connect` in `default` with the Connect credentials and token.
+3. **1Password bootstrap Secrets.** Connect and its operator are a Flux
+   HelmRelease (`clusters/home/core/onepassword-connect.yaml`), but the two
+   Secrets they start from can't come from 1Password. Create them in `default`
+   first:
+   ```bash
+   kubectl -n default create secret generic op-credentials \
+     --from-file=1password-credentials.json=<path to the Connect server's credentials file>
+   kubectl -n default create secret generic onepassword-token --from-literal=token=<Connect token>
+   ```
    Every other secret comes from 1Password through `OnePasswordItem`s.
 4. **Flux.** Gitea doesn't exist yet, so sync from the GitHub mirror. The URL
    must change in git too, or Flux's first reconcile re-applies the Gitea URL

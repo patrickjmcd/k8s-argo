@@ -737,10 +737,21 @@ Per component:
 
 ### Phase 5: remove Argo
 
-Unmanaged as of 2026-10-27: 1Password Connect and its operator are a Helm
-release `connect` (chart `connect-2.2.0`) in `default`, installed by hand on
-2026-01-15 and in neither Argo nor git. Bring it into Flux as a HelmRelease
-separately.
+✅ 1Password Connect (2026-10-27): the hand-installed Helm release `connect`
+(chart 2.2.0, `default`, 2026-01-15) is now HelmRelease `connect`
+(`clusters/home/core/onepassword-connect.yaml`). Its values held the Connect
+credentials and operator token inline, rendering the Secrets `op-credentials`
+and `onepassword-token`; upgrading that release would have deleted them. So the
+release record was backed up (`~/backups/connect-helm-release-2026-10-27/` on
+media-server) and deleted, and Flux did a fresh install without secret values
+(the chart then only references those Secrets by name). The live Deployments
+carried the 30s node-failure tolerations in their templates; copied into
+values, giving an empty server-side diff. No UID, generation or pod changed.
+
+✅ Gitea webhook Receiver (2026-10-27): `clusters/home/receiver.yaml`
+(Receiver `gitea-k8s-argo`, type github, secret from 1Password item
+`flux-receiver`); `scripts/create-flux-receiver-hook.sh` creates the item and
+the Gitea repo webhook.
 
 Kyverno values still say Argo: `config.excludeNamespaces: [argocd]` keeps the
 GitOps engine's own pods out of a fail-closed webhook, and `webhookLabels`
