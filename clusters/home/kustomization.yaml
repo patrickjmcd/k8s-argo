@@ -6,3 +6,4 @@ resources:
   - apps
   - notifications.yaml
   - flux-operator.yaml
+  - flux-instance.yaml

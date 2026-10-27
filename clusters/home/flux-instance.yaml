@@ -1,0 +1,34 @@
+# The Flux install, managed by the Flux Operator (flux-operator.yaml). Upgrade
+# Flux by changing distribution.version. The operator creates the root
+# GitRepository and Kustomization, both named flux-system, from spec.sync.
+#
+# Never pruned: deleting this object uninstalls Flux.
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  distribution:
+    version: "2.10.x"
+    registry: ghcr.io/fluxcd
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+  cluster:
+    type: kubernetes
+    networkPolicy: true
+    domain: cluster.local
+  sync:
+    kind: GitRepository
+    # In-cluster and anonymous (the repo is public), so a broken Traefik can't
+    # stop Flux from fixing it. "Gitea is down" fallback:
+    # docs/flux-migration.md §1.
+    url: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
+    ref: refs/heads/main
+    path: clusters/home
+    interval: 1m
