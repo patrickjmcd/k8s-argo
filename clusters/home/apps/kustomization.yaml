@@ -45,6 +45,8 @@ resources:
   - renovate.yaml
   - ia-ignition.yaml
   - pihole.yaml
+  - nats.yaml
+  - nats-extras.yaml
 patches:
   - target:
       kind: Kustomization

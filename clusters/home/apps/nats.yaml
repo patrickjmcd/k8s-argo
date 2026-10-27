@@ -1,0 +1,84 @@
+# NATS server (single node, JetStream on). The chart replaces the first source
+# of Argo's old apps/nats.yaml; apps/nats (LAN LoadBalancer, monitor route,
+# ServiceMonitor) is the plain Kustomization in nats-extras.yaml.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: nats
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://nats-io.github.io/k8s/helm/charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nats
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: nats
+  targetNamespace: nats
+  storageNamespace: nats
+  chart:
+    spec:
+      chart: nats
+      version: 2.15.1
+      sourceRef:
+        kind: HelmRepository
+        name: nats
+  # Adopted from Argo (which only ran helm template), so the first install
+  # takes ownership of live objects. Never remediate a failed install: for an
+  # adopted release that means uninstalling what was already running.
+  install:
+    serverSideApply: true
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    config:
+      # Single server — no clustering needed for a homelab learning setup.
+      cluster:
+        enabled: false
+      # JetStream = NATS's persistence/streaming layer. Not needed for the
+      # live ADS-B firehose (that stays core pub/sub), but enabled so you
+      # can experiment with durable streams, consumers, and replay.
+      jetstream:
+        enabled: true
+        fileStore:
+          pvc:
+            enabled: true
+            size: 2Gi
+            storageClassName: longhorn
+      # HTTP monitoring endpoint on :8222 (varz, connz, subsz) — great for
+      # watching connections and message counts while you learn.
+      monitor:
+        enabled: true
+    # prometheus-nats-exporter sidecar: scrapes :8222 and exposes Prometheus
+    # metrics (gnatsd_*) on :7777. We wire our own ServiceMonitor in
+    # apps/nats/metrics.yaml to match the repo's monitoring convention.
+    promExporter:
+      enabled: true
+      port: 7777
+      podMonitor:
+        enabled: false
+    # Left by old kubectl rollout restarts; kept so adoption doesn't change the
+    # pod templates and roll the pods (docs/flux-migration.md §4.10).
+    podTemplate:
+      merge:
+        metadata:
+          annotations:
+            kubectl.kubernetes.io/restartedAt: "2026-09-06T11:22:25-05:00"
+    natsBox:
+      podTemplate:
+        merge:
+          metadata:
+            annotations:
+              kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:43-05:00"
