@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: csi-driver-nfs-assets
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
@@ -12,10 +10,6 @@ spec:
     namespace: default
     name: in-cluster
   project: core-components
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
   source:
     path: core/csi-driver-nfs-assets
     repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git

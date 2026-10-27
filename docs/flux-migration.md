@@ -307,7 +307,7 @@ Also:
 - Take a values diff first: `helm template` with Flux's merged values vs
   `kubectl get` of the live objects. Any unexplained diff blocks the cutover.
 
-**Name clash:** `kubectl get cluster` resolves to the leftover Rancher CAPI CRD (`clusters.cluster.x-k8s.io`), not CNPG. Use `clusters.postgresql.cnpg.io` explicitly.
+**Name clash (fixed 2026-10-27):** `kubectl get cluster` used to resolve to a leftover Rancher CAPI CRD (`clusters.cluster.x-k8s.io`) instead of CNPG. The five empty `cluster.x-k8s.io` CRDs were deleted. The `*.cattle.io` CRDs that remain belong to k3s (addons, etcd snapshots, HelmChart) and system-upgrade-controller (Plans), so keep them. `clusters.postgresql.cnpg.io` still works in scripts.
 
 ### 4.3 Namespaces: don't use `targetNamespace`
 

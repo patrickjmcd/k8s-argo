@@ -11,6 +11,8 @@ apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
   name: b2
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   retentionPolicy: "30d"
   configuration:
@@ -40,6 +42,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
   name: timescale-daily
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   # six-field cron (seconds first): 04:00 daily
   schedule: "0 0 4 * * *"

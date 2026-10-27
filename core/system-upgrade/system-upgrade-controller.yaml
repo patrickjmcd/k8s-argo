@@ -4,6 +4,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: privileged
   name: system-upgrade
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -223,6 +225,8 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:43-05:00"
       labels:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: system-upgrade-controller

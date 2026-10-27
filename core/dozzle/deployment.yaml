@@ -10,6 +10,8 @@ spec:
       app: dozzle
   template:
     metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:37-05:00"
       labels:
         app: dozzle
     spec:

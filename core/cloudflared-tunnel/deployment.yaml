@@ -12,6 +12,8 @@ spec:
   replicas: 2 # You could also consider elastic scaling for this deployment
   template:
     metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-22T21:13:40-05:00"
       labels:
         app.kubernetes.io/instance: cloudflared
         app.kubernetes.io/name: cloudflared

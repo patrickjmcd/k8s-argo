@@ -12,6 +12,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: timescale
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   instances: 1
   imageName: ghcr.io/cloudnative-pg/postgresql:18.4-standard-trixie

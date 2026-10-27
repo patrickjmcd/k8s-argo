@@ -2,6 +2,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
   name: tracearr
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   name: tracearr
   owner: tracearr
@@ -20,6 +22,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
   name: homeassistant
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   name: homeassistant
   owner: homeassistant

@@ -8,6 +8,7 @@ metadata:
     recurring-job.longhorn.io/source: enabled
   annotations:
     argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes: [ReadWriteOnce]
   storageClassName: longhorn

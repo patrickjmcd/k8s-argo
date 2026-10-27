@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: garage
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/compare-options: ServerSideDiff=true
@@ -16,9 +14,6 @@ spec:
   # bootstrapped by core/garage/bootstrap-job.yaml.
   project: core-components
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
