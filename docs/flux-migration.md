@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno and cert-manager are on Flux. Argo keeps 14 Applications. Next: shared-postgres.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager and shared-postgres are on Flux. Argo keeps 13 Applications. Next: cnpg.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -329,8 +329,8 @@ filter failed to parse `apps/ia-ignition`, `apps/media/youtarr`, `core/garage`,
 
 | Job | File |
 |---|---|
-| `shared-postgres-backup-grants` | `core/postgres/grants-job.yaml` |
-| `{dispatcharr,n8n,outline,reedme}-ownership-fix` | `core/postgres/*-ownership-fix.yaml` |
+| `shared-postgres-backup-grants` | ✅ `core/postgres/jobs/` (Kustomization `shared-postgres-jobs`) |
+| `{dispatcharr,n8n,outline,reedme}-ownership-fix` | ✅ `core/postgres/jobs/` |
 | `homeassistant-schema` | ✅ `core/timescale/jobs/` (Kustomization `timescale-jobs`) |
 | `garage-bootstrap` | ✅ `core/garage/jobs/` (Kustomization `garage-jobs`) |
 
@@ -613,6 +613,18 @@ Per component:
   `last-applied-configuration` annotations were removed along with 70
   managedFields entries. Pods, webhook CA bundle and the served certificates
   unchanged.
+- ✅ **shared-postgres** (2026-10-27): Kustomization `shared-postgres`
+  (`core/postgres`, empty server-side diff) plus `shared-postgres-jobs`. On-demand
+  B2 base backup `20261027T125502` first (3 min). Prune guards come from one
+  kustomize patch in `core/postgres/kustomization.yaml` (Cluster, 26
+  Databases, ObjectStore, ScheduledBackup, SMB PV/PVC). The 5 Jobs ran once on
+  adoption. The grants Job had never worked: Kubernetes turns `$$` in a
+  container `command` into `$` (the same `$(VAR)` expansion as env refs), so
+  its `DO $$` block failed, and psql exited 0 anyway. Now written `$$$$` with
+  `ON_ERROR_STOP=1`. The `backup` role it grants is unused (the pg_dump
+  CronJob runs as the superuser). Cluster, pods, PVCs and primary unchanged.
+  Two CronJobs carry old node affinity/tolerations applied by hand through
+  the Kubernetes MCP server (Apply manager, not in git); Flux leaves those.
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -735,7 +747,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | longhorn | longhorn-system | -1 | `longhorn@1.13.0` + kustomize | H | 4 | `Replace=true` node objects |
 | metallb-system | metallb-system | -1 | `metallb@0.16.1` + kustomize | H | 4 | |
 | node-tuning | kube-system | -1 | kustomize | M | 4 | |
-| shared-postgres | postgres | -1 | kustomize | H | 4 | 6 hook Jobs |
+| ✅ shared-postgres | postgres | -1 | kustomize | H | 4 | 6 hook Jobs |
 | ✅ tailscale-operator | tailscale | -1 | `tailscale-operator@1.104.2` + kustomize | M | 3 | |
 | ✅ timescale | timescale | -1 | kustomize | M | 3 | 1 hook Job |
 | ✅ alloy | loki | 0 | `alloy@1.14.3` | L | 3 | |
