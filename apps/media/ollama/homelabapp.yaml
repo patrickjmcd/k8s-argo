@@ -7,7 +7,7 @@ metadata:
   name: ollama
   namespace: media
 spec:
-  image: ollama/ollama:0.40.11
+  image: ollama/ollama:0.40.12
   port: 11434
   # Start the server, pull the embedding model once it answers, then wait on
   # the server so it stays PID 1's child.
