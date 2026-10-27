@@ -1,0 +1,49 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: reloader
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: reloader
+  targetNamespace: reloader
+  storageNamespace: reloader
+  chart:
+    spec:
+      chart: reloader
+      version: 2.2.18
+      sourceRef:
+        kind: HelmRepository
+        name: stakater
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    reloader:
+      # Restart by bumping a pod-template annotation rather than adding
+      # an env var: kro and Argo own the containers, not that annotation.
+      reloadStrategy: annotations
+      watchGlobally: true
+      logFormat: json
+      readOnlyRootFileSystem: true
+      deployment:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi

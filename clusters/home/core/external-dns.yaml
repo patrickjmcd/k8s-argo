@@ -1,0 +1,82 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-dns
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: external-dns
+  targetNamespace: external-dns
+  storageNamespace: external-dns
+  chart:
+    spec:
+      chart: external-dns
+      version: 1.23.0
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    provider:
+      name: cloudflare
+    env:
+      - name: CF_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: external-dns-cloudflare-1pw
+            key: CF_API_TOKEN
+    sources:
+      - gateway-httproute
+    # Only routes on the public Gateway get DNS; *.x.pmcd.io routes on
+    # traefik-gateway are ignored.
+    extraArgs:
+      - --gateway-name=public-gateway
+      - --gateway-namespace=default
+      - --cloudflare-proxied
+    domainFilters:
+      - pmcd.dev
+      - pmcd.io
+      - iss-in.space
+      - joshhawleygop.com
+      - senatorjoshhawley.com
+      - joshhawley4senate.com
+      - reedme.dev
+      - showmeyourstubs.com
+    # upsert-only never deletes records. Records that already exist
+    # (created by hand for the tunnel) are left alone; external-dns only
+    # manages records it created, tracked via TXT ownership records.
+    policy: upsert-only
+    registry: txt
+    txtOwnerId: k3s-home
+    interval: 5m
+    triggerLoopOnEvent: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-extras
+  namespace: flux-system
+spec:
+  path: ./core/external-dns

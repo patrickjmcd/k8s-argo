@@ -1,0 +1,69 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-blackbox-exporter
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: prometheus-blackbox-exporter
+  targetNamespace: prometheus
+  storageNamespace: prometheus
+  chart:
+    spec:
+      chart: prometheus-blackbox-exporter
+      version: 11.20.0
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+    config:
+      modules:
+        # "Is something answering?" -- redirects and auth walls
+        # (PocketID / basic auth) count as up; 404/5xx and TLS errors
+        # don't. TLS is verified, so a bad cert fails the probe.
+        http_up:
+          prober: http
+          timeout: 10s
+          http:
+            valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+            follow_redirects: false
+            preferred_ip_protocol: ip4
+            ip_protocol_fallback: false
+            valid_status_codes: [200, 204, 301, 302, 303, 307, 308, 401, 403]
+        tcp_connect:
+          prober: tcp
+          timeout: 5s
+          tcp:
+            preferred_ip_protocol: ip4
+            ip_protocol_fallback: false
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: blackbox-exporter-extras
+  namespace: flux-system
+spec:
+  path: ./core/blackbox-exporter

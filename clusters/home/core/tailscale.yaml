@@ -1,0 +1,47 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tailscale-operator
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  interval: 30m
+  releaseName: tailscale-operator
+  targetNamespace: tailscale
+  storageNamespace: tailscale
+  chart:
+    spec:
+      chart: tailscale-operator
+      version: 1.104.2
+      sourceRef:
+        kind: HelmRepository
+        name: tailscale
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    operatorConfig:
+      hostname: k8s-operator
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tailscale-extras
+  namespace: flux-system
+spec:
+  path: ./core/tailscale-assets

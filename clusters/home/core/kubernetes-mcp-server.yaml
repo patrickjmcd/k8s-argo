@@ -1,0 +1,54 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubernetes-mcp-server
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: kubernetes-mcp-server
+  targetNamespace: kubernetes-mcp-server
+  storageNamespace: kubernetes-mcp-server
+  chart:
+    spec:
+      chart: kubernetes-mcp-server
+      version: 0.1.0
+      sourceRef:
+        kind: HelmRepository
+        name: containers
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    image:
+      # renovate: datasource=docker depName=quay.io/containers/kubernetes_mcp_server
+      version: v0.0.69
+    ingress:
+      enabled: false
+    rbac:
+      extraClusterRoleBindings:
+        - name: kubernetes-mcp-server-admin
+          roleRef:
+            name: cluster-admin
+            external: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kubernetes-mcp-server-extras
+  namespace: flux-system
+spec:
+  path: ./apps/kubernetes-mcp-server

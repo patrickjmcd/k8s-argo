@@ -14,6 +14,18 @@ resources:
   - garage.yaml
   - timescale.yaml
   - monitoring.yaml
+  - helm-repositories.yaml
+  - reloader.yaml
+  - vpa.yaml
+  - goldilocks.yaml
+  - headlamp.yaml
+  - loki.yaml
+  - alloy.yaml
+  - blackbox-exporter.yaml
+  - external-dns.yaml
+  - trivy-operator.yaml
+  - kubernetes-mcp-server.yaml
+  - tailscale.yaml
 patches:
   - target:
       kind: Kustomization

@@ -1,0 +1,175 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: alloy
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: alloy
+  targetNamespace: loki
+  storageNamespace: loki
+  chart:
+    spec:
+      chart: alloy
+      version: 1.14.3
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    rbac:
+      create: true
+      clusterRules:
+        # Needed for discovery.kubernetes (role: pod) + loki.source.kubernetes
+        # to discover pods and tail their logs via the kubelet API — no
+        # /var/log or /var/lib/docker/containers hostPath mount needed for
+        # container logs, unlike Promtail.
+        - apiGroups: [""]
+          resources: ["pods", "pods/log", "namespaces", "nodes"]
+          verbs: ["get", "list", "watch"]
+    controller:
+      type: daemonset
+      # Without this, the DaemonSet skips the 3 control-plane nodes
+      # (node-role.kubernetes.io/control-plane:NoSchedule) and
+      # media-server (dedicated=heavy:NoSchedule) — discovered on first
+      # rollout (2026-09-11), only 6/10 nodes got a pod. Those are
+      # exactly the nodes where etcd/control-plane incidents happen, so
+      # skipping them defeats the point. Matches the broad toleration
+      # cilium already uses.
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      volumes:
+        extra:
+          # journald IS host-local — no Kubernetes API equivalent, so this
+          # one genuinely needs a hostPath mount.
+          - name: journal
+            hostPath:
+              path: /var/log/journal
+    alloy:
+      # journal files are root:systemd-journal 0640 on Debian/Ubuntu, and
+      # the systemd-journal GID isn't guaranteed consistent across nodes —
+      # running as root sidesteps that instead of chasing per-node GIDs.
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      resources:
+        requests:
+          # Goldilocks/VPA target after the first ~100min live on this
+          # cluster (2026-09-11): 442m. The original 50m badly
+          # understated real usage — on pi4-kube0/pi4-kube1 specifically,
+          # alloy settled at 337-436m steady-state (vs 16-54m on every
+          # other node), and the scheduler had no way to know that,
+          # since a request is the only signal it uses for bin-packing.
+          # That under-request let it overcommit both Pi4s, which
+          # combined with a heavy rollout evening (4 DaemonSet restarts)
+          # starved them to 98% CPU and crash-looped Grafana, which
+          # happened to land on pi4-kube0 at the same time. No CPU
+          # limit either way, so this only changes scheduling headroom,
+          # not alloy's own ceiling. Re-check `kubectl describe vpa
+          # goldilocks-alloy -n loki` after this has more history.
+          cpu: 442m
+          memory: 96Mi
+        limits:
+          # No CPU limit: log tailing is the same bursty,
+          # fsnotify/inotify-adjacent pattern CLAUDE.md's CPU-limit
+          # doctrine warns about (config reloaders, log tailers).
+          #
+          # 256Mi OOMKilled on first rollout (2026-09-11) — the
+          # discovery.kubernetes/loki.source.kubernetes fan-out opens a
+          # log stream per running container across the whole cluster
+          # simultaneously at startup, which spikes well above
+          # steady-state usage. 512Mi gave headroom for that burst but
+          # Goldilocks' target (628Mi) already exceeds it after 100min
+          # of real data — bumped to 768Mi for actual headroom rather
+          # than pinning close to a number that's already moving up.
+          memory: 768Mi
+      mounts:
+        extra:
+          - name: journal
+            mountPath: /var/log/journal
+            readOnly: true
+      configMap:
+        content: |
+          // Only this node's pods. Without the selector every Alloy pod
+          // (one per node) tailed every container in the cluster, so
+          // the apiserver held ~10x as many pods/log streams (~3.9k,
+          // Oct 2026) and Loki got each line once per node. That grew
+          // apiserver heap ~800Mi/day until kube-n3160 and
+          // kube-macmini were swapping, flapping TargetDown /
+          // KubeAPIInstanceUnreachable alerts.
+          discovery.kubernetes "pods" {
+            role = "pod"
+            selectors {
+              role  = "pod"
+              field = "spec.nodeName=" + sys.env("K8S_NODE_NAME")
+            }
+          }
+    
+          discovery.relabel "pods" {
+            targets = discovery.kubernetes.pods.targets
+    
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              target_label  = "namespace"
+            }
+    
+            rule {
+              source_labels = ["__meta_kubernetes_pod_name"]
+              target_label  = "pod"
+            }
+    
+            rule {
+              source_labels = ["__meta_kubernetes_pod_container_name"]
+              target_label  = "container"
+            }
+          }
+    
+          loki.source.kubernetes "pods" {
+            targets    = discovery.relabel.pods.output
+            forward_to = [loki.write.default.receiver]
+          }
+    
+          // Host-level systemd units that have actually been the root
+          // cause of real incidents in this cluster (k3s-agent
+          // crash-loops, containerd CNI failures, netpol/conntrack
+          // issues) — scoped rather than the full journald firehose to
+          // keep ingestion volume down.
+          //
+          // Query with {job="loki.source.journal.system"} — Alloy always
+          // sets `job` to the component's own path for loki.source.*
+          // components and a "job" key in `labels` below does not
+          // override it (confirmed empirically on rollout, 2026-09-11);
+          // don't rely on job="systemd-journal" ever showing up.
+          loki.source.journal "system" {
+            path    = "/var/log/journal"
+            matches = "_SYSTEMD_UNIT=k3s.service _SYSTEMD_UNIT=k3s-agent.service _SYSTEMD_UNIT=containerd.service _SYSTEMD_UNIT=systemd-networkd.service"
+            labels = {
+              node = sys.env("K8S_NODE_NAME"),
+            }
+            forward_to = [loki.write.default.receiver]
+          }
+    
+          loki.write "default" {
+            endpoint {
+              url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
+            }
+          }

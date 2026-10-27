@@ -1,0 +1,131 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headlamp
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: headlamp
+  targetNamespace: kube-system
+  storageNamespace: kube-system
+  chart:
+    spec:
+      chart: headlamp
+      version: 0.46.0
+      sourceRef:
+        kind: HelmRepository
+        name: headlamp
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    config:
+      watchPlugins: true
+      # sessionTTL: Argo's Helm ignored the old `sessionTTL: ~` and the live pod
+      # runs with the chart default (-session-ttl=86400), so it is left at that.
+      oidc:
+        callbackURL: "https://headlamp.x.pmcd.io/oidc-callback"
+        usePKCE: true
+        secret:
+          create: false
+        externalSecret:
+          enabled: true
+          name: headlamp-oidc-secret-1pw
+    pluginsManager:
+      enabled: true
+      configContent: |
+        plugins:
+          - name: cert-manager
+            source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
+            version: 0.1.0
+          - name: ai-assistant
+            source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_ai_assistant
+            version: 0.1.0-alpha
+        installOptions:
+          parallel: true
+          maxConcurrent: 2
+      #          httpRoute:
+      #            enabled: true
+      #            parentRefs:
+      #              - group: gateway.networking.k8s.io
+      #                kind: Gateway
+      #                name: traefik-gateway
+      #                namespace: default
+      #            hostnames:
+      #              - headlamp.x.pmcd.io
+      #            rules:
+      #              - matches:
+      #                  - path:
+      #                      type: PathPrefix
+      #                      value: /
+      #                backendRefs:
+      #                  - name: headlamp
+      #                    kind: Service
+      #                    namespace: kube-system
+      #                    port: 80
+    volumes:
+      - name: headlamp-config
+        emptyDir: {}
+    volumeMounts:
+      - name: headlamp-config
+        mountPath: /home/headlamp/.config/Headlamp
+    extraManifests:
+      - |
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: HTTPRoute
+        metadata:
+          name: headlamp-httproute
+          namespace: kube-system
+        spec:
+          parentRefs:
+            - group: gateway.networking.k8s.io
+              kind: Gateway
+              name: traefik-gateway
+              namespace: default
+          hostnames:
+            - headlamp.x.pmcd.io
+          rules:
+            - matches:
+                - path:
+                    type: PathPrefix
+                    value: /
+              backendRefs:
+                - name: headlamp
+                  kind: Service
+                  namespace: kube-system
+                  port: 80
+      - |
+        apiVersion: onepassword.com/v1
+        kind: OnePasswordItem
+        metadata:
+          name: headlamp-oidc-secret-1pw
+          namespace: kube-system
+        spec:
+          itemPath: "vaults/Kubernetes/items/headlamp"
+      - |
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          name: headlamp-view
+        subjects:
+          - kind: ServiceAccount
+            name: headlamp
+            namespace: kube-system
+        roleRef:
+            kind: ClusterRole
+            name: cluster-admin
+            apiGroup: rbac.authorization.k8s.io
