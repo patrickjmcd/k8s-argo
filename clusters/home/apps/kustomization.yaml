@@ -37,6 +37,9 @@ resources:
   - sparkyfitness-server.yaml
   - speech-to-phrase.yaml
   - voice-assistant.yaml
+  - n8n.yaml
+  - ntfy.yaml
+  - outline.yaml
 patches:
   - target:
       kind: Kustomization
