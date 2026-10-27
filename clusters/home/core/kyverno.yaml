@@ -1,0 +1,81 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kyverno
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: kyverno
+  targetNamespace: kyverno
+  storageNamespace: kyverno
+  chart:
+    spec:
+      chart: kyverno
+      version: 3.9.2
+      sourceRef:
+        kind: HelmRepository
+        name: kyverno
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    # The chart ships its CRDs as templates (not crds/), so an uninstall would
+    # delete them and every policy with them. Keep them.
+    crds:
+      annotations:
+        helm.sh/resource-policy: keep
+    kyverno-api:
+      annotations:
+        helm.sh/resource-policy: keep
+    config:
+      preserve: false
+      excludeNamespaces:
+        - argocd
+    webhookLabels:
+      app.kubernetes.io/managed-by: argocd
+    admissionController:
+      # Single replica was a cluster-wide SPOF: its webhook has
+      # failurePolicy=Fail, so one slow/overloaded pod blocks every
+      # pod admission cluster-wide. Caused a wide BackOff cascade on
+      # 2026-09-17 when it landed on the most memory-pressured node.
+      replicas: 2
+    # background-controller and reports-controller watch a large
+    # number of CRD types each. Their watches periodically drop
+    # ("http2: client connection lost") and all reconnect/re-list at
+    # once, which was enough to exhaust the default 300 QPS/burst
+    # client-side rate limit - starving the leader-election lease
+    # renewal itself, so they'd lose leadership and cleanly exit
+    # every few minutes (482+ and 500+ restarts respectively as of
+    # Sep 2026). Doesn't fix the underlying watch drops, but gives
+    # enough headroom to survive a reconnect storm without cascading
+    # into a leadership-loss restart loop.
+    backgroundController:
+      extraArgs:
+        clientRateLimitQPS: "600"
+        clientRateLimitBurst: "1200"
+    reportsController:
+      extraArgs:
+        clientRateLimitQPS: "600"
+        clientRateLimitBurst: "1200"
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kyverno-extras
+  namespace: flux-system
+spec:
+  path: ./core/kyverno

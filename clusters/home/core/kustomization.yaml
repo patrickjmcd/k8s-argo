@@ -29,6 +29,7 @@ resources:
   - kro.yaml
   - traefik.yaml
   - prometheus.yaml
+  - kyverno.yaml
 patches:
   - target:
       kind: Kustomization

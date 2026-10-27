@@ -99,3 +99,12 @@ metadata:
 spec:
   interval: 12h
   url: https://traefik.github.io/charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kyverno
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://kyverno.github.io/kyverno/
