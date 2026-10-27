@@ -35,11 +35,12 @@ spec:
       remediateLastFailure: false
   driftDetection:
     mode: enabled
-  # Helm 4 keeps null values (Argo's Helm 3 dropped them): the chart default
-  # k8s.apiServerURLs: ~ then passes `hasKey`, and an empty
-  # --k8s-api-server-urls= lands in the agent's config initContainer, rolling
-  # the agent on every node. Remove it; the test op fails the upgrade instead
-  # of removing the wrong argument if a chart update moves it.
+  # The chart default k8s.apiServerURLs: ~ is a null that some Helm 4 builds
+  # keep (local helm 4.1.3 does; helm-controller 1.7.1 apparently doesn't):
+  # when kept it passes `hasKey`, an empty --k8s-api-server-urls= lands in the
+  # config initContainer's command and the agent rolls on every node. Pin the
+  # command to its live value so the render is the same either way; the test
+  # op fails the upgrade if a chart update reorders the initContainers.
   postRenderers:
     - kustomize:
         patches:
@@ -48,10 +49,11 @@ spec:
               name: cilium
             patch: |
               - op: test
-                path: /spec/template/spec/initContainers/0/command/2
-                value: --k8s-api-server-urls=
-              - op: remove
-                path: /spec/template/spec/initContainers/0/command/2
+                path: /spec/template/spec/initContainers/0/name
+                value: config
+              - op: replace
+                path: /spec/template/spec/initContainers/0/command
+                value: [cilium-dbg, build-config]
   values:
     # IPAM: honour the podCIDR k3s already hands each node out of the
     # cluster CIDR (10.42.0.0/16), so pods keep the same address space
