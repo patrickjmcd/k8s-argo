@@ -1,0 +1,13 @@
+# Flux Kustomization garage-jobs (clusters/home/core/garage.yaml): applied
+# after garage is healthy, with force: true so a changed Job is recreated.
+# The ConfigMap name carries a content hash, so editing bootstrap.py changes
+# the Job spec and re-runs it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: garage
+resources:
+  - bootstrap-job.yaml
+configMapGenerator:
+  - name: garage-bootstrap
+    files:
+      - bootstrap.py

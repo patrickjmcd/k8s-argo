@@ -3,7 +3,7 @@
 
 Writes core/grafana-assets/dashboards/ha-*.json. The data is LTSS' ltss table
 on the TimescaleDB cluster, read through the helpers in
-core/timescale/homeassistant-schema.sql (ha_entities, ha_series, ha_states,
+core/timescale/jobs/homeassistant-schema.sql (ha_entities, ha_series, ha_states,
 ha_daily_delta, ltss_hourly). Edit this file and rerun it rather than editing
 the JSON:
 

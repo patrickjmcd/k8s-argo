@@ -1,6 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: timescale
+# The schema Job lives in jobs/ (its own Flux Kustomization, run after the
+# cluster is healthy).
 resources:
   - namespace.yaml
   - cluster.yaml
@@ -8,9 +10,3 @@ resources:
   - b2-backup.yaml
   - homeassistant-1pw.yaml
   - grafana-1pw.yaml
-  - homeassistant-schema-job.yaml
-
-configMapGenerator:
-  - name: homeassistant-schema
-    files:
-      - homeassistant-schema.sql

@@ -1,5 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+# The bootstrap Job lives in jobs/ (its own Flux Kustomization, run after
+# Garage is healthy).
 resources:
   - namespace.yaml
   - 1password.yaml
@@ -7,11 +9,3 @@ resources:
   - configmap.yaml
   - statefulset.yaml
   - service.yaml
-  - bootstrap-job.yaml
-configMapGenerator:
-  - name: garage-bootstrap
-    namespace: garage
-    files:
-      - bootstrap.py
-generatorOptions:
-  disableNameSuffixHash: true

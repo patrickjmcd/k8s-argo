@@ -1,0 +1,13 @@
+# Flux Kustomization timescale-jobs (clusters/home/core/timescale.yaml):
+# applied after timescale is healthy, with force: true so a changed Job is
+# recreated. The ConfigMap name carries a content hash, so editing the SQL
+# changes the Job spec and re-runs it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: timescale
+resources:
+  - homeassistant-schema-job.yaml
+configMapGenerator:
+  - name: homeassistant-schema
+    files:
+      - homeassistant-schema.sql

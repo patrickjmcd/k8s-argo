@@ -1,15 +1,11 @@
 # Applies homeassistant-schema.sql (LTSS compression, hourly rollup, entity
-# table, Grafana helper functions and grants) after every sync. Runs as the
-# homeassistant role, which owns the database and LTSS' ltss table.
+# table, Grafana helper functions and grants) whenever the SQL changes. Runs as
+# the homeassistant role, which owns the database and LTSS' ltss table.
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: homeassistant-schema
-  annotations:
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
-  ttlSecondsAfterFinished: 600
   backoffLimit: 6
   template:
     spec:

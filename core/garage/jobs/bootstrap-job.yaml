@@ -1,16 +1,13 @@
-# Runs bootstrap.py after every sync (it's idempotent): single-node layout,
-# buckets, imported keys, grants and CORS. Add buckets/keys in bootstrap.py.
+# Runs bootstrap.py (idempotent): single-node layout, buckets, imported keys,
+# grants and CORS. Add buckets/keys in bootstrap.py; the hashed ConfigMap name
+# makes any edit re-run the Job.
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: garage-bootstrap
   namespace: garage
-  annotations:
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 4
-  ttlSecondsAfterFinished: 3600
   template:
     spec:
       restartPolicy: OnFailure

@@ -398,7 +398,7 @@ spec:
                 secureJsonData:
                   password: $__env{ADSB_DB_PASSWORD}
               # Home Assistant history written by LTSS; dashboards use the
-              # ha_* helpers from core/timescale/homeassistant-schema.sql.
+              # ha_* helpers from core/timescale/jobs/homeassistant-schema.sql.
               - name: Home Assistant (TimescaleDB)
                 uid: ha-timescale
                 type: postgres

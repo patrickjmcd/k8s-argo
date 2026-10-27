@@ -1,0 +1,20 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage
+  namespace: flux-system
+spec:
+  path: ./core/garage
+---
+# Former Argo PostSync hook (docs/flux-migration.md §4.4): runs once garage is
+# healthy, and again whenever the Job spec changes (force: true recreates it).
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage-jobs
+  namespace: flux-system
+spec:
+  path: ./core/garage/jobs
+  dependsOn:
+    - name: garage
+  force: true
