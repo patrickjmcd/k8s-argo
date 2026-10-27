@@ -22,6 +22,15 @@ resources:
   - reedme.yaml
   - kaneo.yaml
   - stubs.yaml
+  - adsb.yaml
+  - dreeve.yaml
+  - hivemq.yaml
+  - homebox.yaml
+  - homelable-backend.yaml
+  - minecraft.yaml
+  - romm.yaml
+  - tracearr.yaml
+  - unifi-toolkit.yaml
 patches:
   - target:
       kind: Kustomization
