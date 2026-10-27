@@ -1,6 +1,8 @@
 # Argo CD → Flux migration
 
-**Status: planning (drafted 2026-10-27). Nothing has moved yet.**
+**Status: Phase 1 in progress.** Flux v2.10.0 installed and self-managing
+(2026-10-27); `iss-in-space` handed over and verified, including drift
+correction and HomelabApp health.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -79,9 +81,20 @@ kubectl apply -f clusters/home/flux-system/
 Add a Gitea push webhook to a notification-controller `Receiver` so commits
 reconcile immediately rather than on the 1m poll.
 
-Resource requests: give the controllers requests only, no CPU limits (see
-"Resource requests and limits" in CLAUDE.md). `flux install --export` ships
-CPU limits on every controller; patch them out in a kustomization overlay.
+Resources: `flux install --export` ships 50m requests and a 1000m CPU limit
+per controller. That limit is a runaway guard far above observed use (~2m
+idle), which CLAUDE.md allows, so the export is used unmodified.
+
+**Stale RBAC from an old install (hit 2026-10-27).** The cluster ran Flux once
+before (2023) and later Rancher; Rancher's `wrangler.cattle.io/auth-prov-v2-*`
+finalizer left the old `*-flux-system` ClusterRoles/ClusterRoleBindings stuck
+Terminating since Jan 2026, so the new flux-system Kustomization timed out
+waiting on them. Fix was to strip that finalizer from the five `*-flux-system`
+objects, then re-run `kubectl apply --server-side --force-conflicts -k
+clusters/home/flux-system` (deleting `cluster-reconciler-flux-system` also
+removes Flux's own permissions, so it can't recreate them itself). About 50 more
+Rancher, argo-rollouts, CAPI and open-feature-operator RBAC objects are still
+stuck the same way, plus two knative CRDs; they are unrelated leftovers.
 
 ---
 
@@ -116,9 +129,11 @@ CPU limits on every controller; patch them out in a kustomization overlay.
 > `resources-finalizer.argocd.argoproj.io`. Deleting an Application that still
 > has it **deletes everything it manages, PVCs included.** The root apps run
 > `prune: true`, so removing `apps/<name>.yaml` from git deletes the Application.
-> Also, `core/argocd.yaml` sets `ignoreDifferences` on Application
-> `/metadata/finalizers`, so **removing the finalizer in git does not propagate**.
-> It has to be patched live.
+> **A live patch alone is not enough** (learned on the iss-in-space pilot,
+> 2026-10-27): turning off `automated` on the child makes it differ from git,
+> so the root app's selfHeal re-applies the whole manifest from git within
+> seconds, finalizer included. The finalizer has to leave git first, in its
+> own commit, before the commit that deletes the file.
 
 For each app:
 
@@ -133,26 +148,41 @@ For each app:
    `kustomize.toolkit.fluxcd.io/prune: disabled`; `Replace=true` →
    `kustomize.toolkit.fluxcd.io/force: enabled`. Leave the Argo annotations in
    place for now; Argo is still managing the app.
-3. **Disarm the Application** (live, then git):
+3. **Disarm commit:** in `apps/<name>.yaml` delete the `finalizers:` block and
+   the `automated:` block. Push, refresh the root app, and **gate** on the live
+   object (a printed value isn't a gate; this exits non-zero):
    ```bash
-   kubectl -n argocd patch application <name> --type merge \
-     -p '{"spec":{"syncPolicy":{"automated":null}}}'
-   kubectl -n argocd patch application <name> --type json \
-     -p '[{"op":"remove","path":"/metadata/finalizers"}]'
-   kubectl -n argocd get application <name> -o jsonpath='{.metadata.finalizers}'   # must be empty
+   kubectl -n argocd annotate application apps argocd.argoproj.io/refresh=normal --overwrite
+   kubectl -n argocd get application <name> -o json | jq -e '(.metadata.finalizers // []) | length == 0'
    ```
-   (The root app's selfHeal will put `automated` back on its next sync, which is
-   fine: the finalizer is the part that matters, and the root app ignores it.)
-4. **One commit:** delete `apps/<name>.yaml` and add the Flux Kustomization for
-   `./apps/<name>`. Push.
+   (`core/argocd.yaml` ignores finalizer diffs on Applications, so the root app
+   may show Synced without having removed it. If the gate fails, strip it live:
+   `kubectl -n argocd patch application <name> --type json -p
+   '[{"op":"remove","path":"/metadata/finalizers"}]'` and re-check. The root app
+   no longer re-adds it once git has no finalizer.)
+4. **Handoff commit:** delete `apps/<name>.yaml` and add
+   `clusters/home/apps/<name>.yaml` + its line in `clusters/home/kustomization.yaml`.
+   Re-run the step-3 gate immediately before `git push`.
 5. **Verify:**
    ```bash
    flux get ks <name>                        # Ready=True, applied revision = HEAD
    kubectl -n argocd get application <name>  # gone
    kubectl get pvc -n <ns>                   # same PVCs, same age
    ```
-   Then confirm the app works (blackbox probe green in Grafana / Glance).
-6. **Rollback** if needed: `flux suspend ks <name>`, restore `apps/<name>.yaml`,
+   Compare UIDs of the main objects before and after (nothing recreated), then
+   confirm the app works (blackbox probe green in Grafana / Glance).
+6. **Drop Argo's field ownership** (§4.1) from every object in the app dir,
+   i.e. everything `kubectl kustomize apps/<name>` renders (for a HomelabApp app
+   that's the HomelabApp plus any extra files; kro's children were never Argo's):
+   ```bash
+   idx=$(kubectl -n <ns> get <kind> <obj> -o json --show-managed-fields \
+     | jq '[.metadata.managedFields[].manager] | index("argocd-controller")')
+   kubectl -n <ns> patch <kind> <obj> --type json -p "[
+     {\"op\":\"test\",\"path\":\"/metadata/managedFields/$idx/manager\",\"value\":\"argocd-controller\"},
+     {\"op\":\"remove\",\"path\":\"/metadata/managedFields/$idx\"}]"
+   kubectl -n <ns> annotate <kind> <obj> argocd.argoproj.io/tracking-id-
+   ```
+7. **Rollback** if needed: `flux suspend ks <name>`, restore `apps/<name>.yaml`,
    push. Argo re-adopts through SSA.
 
 ### ApplicationSet-generated apps (`apps/media`)
@@ -181,10 +211,11 @@ live patch in step 3 doesn't stick. Do this once before touching any media app:
 Argo applied with SSA as field manager `argocd-controller`. Flux applies as
 `kustomize-controller` and takes over the fields it sets. Fields that Argo set
 and that are no longer in git stay owned by `argocd-controller` and won't be
-removed. This only matters if a field was deleted from git while Argo was
-disarmed. **Check this during the pilot (§5 phase 1):** inspect
-`metadata.managedFields` on a handed-over Deployment and confirm that
-`argocd-controller` no longer owns anything.
+removed. **Confirmed on the pilot:** after adoption, `argocd-controller` still co-owned
+every `spec` field of the HomelabApp alongside `kustomize-controller`. Flux
+doesn't clean up that manager. Left alone, removing a field from git would not
+remove it live. Step 6 of §3 drops the entry; the object is not modified
+otherwise (generation unchanged).
 
 ### 4.2 Helm adoption (upstream charts)
 
