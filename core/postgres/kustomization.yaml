@@ -9,11 +9,6 @@ resources:
   - b2-backup-1pw.yaml
   - objectstore-b2.yaml
   - scheduledbackup.yaml
-  - grants-job.yaml
-  - outline-ownership-fix.yaml
-  - n8n-ownership-fix.yaml
-  - reedme-ownership-fix.yaml
-  - dispatcharr-ownership-fix.yaml
   - restore-test-cronjob.yaml
 
 # Never let Flux prune the database cluster or anything holding its data or

@@ -1,0 +1,16 @@
+# One-shot SQL fix-ups against shared-postgres, formerly Argo PostSync hooks
+# (re-run on every sync). Under Flux they run once, and again only when a
+# Job's spec changes: the SQL is inline, so editing it re-runs that Job
+# (Kustomization shared-postgres-jobs has force: true). No TTL, or Flux would
+# recreate and re-run them after each deletion (docs/flux-migration.md §4.4).
+# They are idempotent. The backup role granted by grants-job.yaml is unused
+# since backup-cronjob.yaml went back to the superuser.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: postgres
+resources:
+  - grants-job.yaml
+  - outline-ownership-fix.yaml
+  - n8n-ownership-fix.yaml
+  - reedme-ownership-fix.yaml
+  - dispatcharr-ownership-fix.yaml

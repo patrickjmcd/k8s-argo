@@ -31,6 +31,7 @@ resources:
   - prometheus.yaml
   - kyverno.yaml
   - cert-manager.yaml
+  - shared-postgres.yaml
 patches:
   - target:
       kind: Kustomization
