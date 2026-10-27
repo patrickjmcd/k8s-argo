@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: media
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
@@ -12,10 +10,7 @@ spec:
     namespace: media
     name: in-cluster
   project: apps
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  syncPolicy: {}
   source:
     path: apps/media
     repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
