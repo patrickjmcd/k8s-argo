@@ -6,6 +6,10 @@ metadata:
   name: prometheus
   labels:
     canUseExternalSecrets: "true"
+    # Prometheus only reads ServiceMonitors/PodMonitors from namespaces with
+    # this label (serviceMonitorNamespaceSelector), including its own. It was
+    # set by hand and lost at the Flux handoff, Oct 27 2026.
+    prometheus: enabled
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
     argocd.argoproj.io/sync-options: Delete=false
