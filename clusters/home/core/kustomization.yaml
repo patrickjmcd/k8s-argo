@@ -30,6 +30,7 @@ resources:
   - traefik.yaml
   - prometheus.yaml
   - kyverno.yaml
+  - cert-manager.yaml
 patches:
   - target:
       kind: Kustomization
