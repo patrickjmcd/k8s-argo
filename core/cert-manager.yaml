@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: cert-manager
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "-2"
@@ -23,9 +21,6 @@ spec:
       jqPathExpressions:
         - .webhooks[].clientConfig.caBundle
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
   sources:
