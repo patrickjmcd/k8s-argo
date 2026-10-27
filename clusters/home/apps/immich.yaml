@@ -1,0 +1,152 @@
+# Immich (photos). The chart replaces the chart source of Argo's old
+# apps/immich.yaml and its values moved here from apps/immich/values.yaml;
+# apps/immich (CNPG postgres, redis, SMB library, backups, routes) is the
+# plain Kustomization in immich-extras.yaml.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: immich
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://immich-app.github.io/immich-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: immich
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: immich
+  targetNamespace: immich
+  storageNamespace: immich
+  chart:
+    spec:
+      chart: immich
+      version: 0.12.0
+      sourceRef:
+        kind: HelmRepository
+        name: immich
+  # Adopted from Argo (which only ran helm template), so the first install
+  # takes ownership of live objects. Never remediate a failed install: for an
+  # adopted release that means uninstalling what was already running.
+  install:
+    serverSideApply: true
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              # renovate: depName=ghcr.io/immich-app/immich-server
+              tag: v3.3.5
+            env:
+              DB_HOSTNAME: "postgres-rw"
+              DB_DATABASE_NAME: "app"
+              REDIS_HOSTNAME: "immich-redis"
+            envFrom:
+              - secretRef:
+                  name: immich-1pw
+    immich:
+      persistence:
+        library:
+          existingClaim: immich-library
+    server:
+      enabled: true
+      defaultPodOptions:
+        nodeSelector:
+          node-type: heavy
+        tolerations:
+          - key: dedicated
+            operator: Equal
+            value: heavy
+            effect: NoSchedule
+          # the kyverno node-failure-tolerations mutation now appends these
+          # instead of replacing the list — kept as belt-and-suspenders
+          - key: node.kubernetes.io/not-ready
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 30
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 30
+        annotations:
+          kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:39-05:00"
+      controllers:
+        main:
+          containers:
+            main:
+              probes:
+                liveness:
+                  spec:
+                    timeoutSeconds: 10
+                    failureThreshold: 10
+                readiness:
+                  spec:
+                    timeoutSeconds: 10
+                    failureThreshold: 10
+                startup:
+                  spec:
+                    # default failureThreshold(30) * periodSeconds(10) = 5m is too
+                    # short for a one-time clip_index/face_index reindex (triggered
+                    # by a pgvector version bump) on a large library
+                    periodSeconds: 10
+                    failureThreshold: 180
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 1500Mi
+                limits:
+                  memory: 4Gi
+    machine-learning:
+      enabled: true
+      defaultPodOptions:
+        nodeSelector:
+          node-type: heavy
+        tolerations:
+          - key: dedicated
+            operator: Equal
+            value: heavy
+            effect: NoSchedule
+          # the kyverno node-failure-tolerations mutation now appends these
+          # instead of replacing the list — kept as belt-and-suspenders
+          - key: node.kubernetes.io/not-ready
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 30
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 30
+        annotations:
+          kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:39-05:00"
+      controllers:
+        main:
+          containers:
+            main:
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 1Gi
+                limits:
+                  memory: 4Gi
+      persistence:
+        cache:
+          enabled: true
+          size: 10Gi
+          # Longhorn can't attach on the tainted media-server node (no longhorn
+          # daemonset there); NFS from the UNAS works on every node.
+          storageClass: nfs-csi
+          accessMode: ReadWriteOnce

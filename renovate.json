@@ -39,7 +39,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^apps/immich/values\\.yaml$/"],
+      "managerFilePatterns": ["/^clusters/home/apps/immich\\.yaml$/"],
       "matchStrings": [
         "# renovate: depName=(?<depName>.*?)\\s*\\n\\s*tag: (?<currentValue>.*)"
       ],

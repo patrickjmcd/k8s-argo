@@ -47,6 +47,8 @@ resources:
   - pihole.yaml
   - nats.yaml
   - nats-extras.yaml
+  - immich.yaml
+  - immich-extras.yaml
 patches:
   - target:
       kind: Kustomization
