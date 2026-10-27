@@ -1,0 +1,7 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: sparkyfitness-server
+  namespace: flux-system
+spec:
+  path: ./apps/sparkyfitness-server

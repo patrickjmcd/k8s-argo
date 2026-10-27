@@ -31,6 +31,12 @@ resources:
   - romm.yaml
   - tracearr.yaml
   - unifi-toolkit.yaml
+  - homebridge.yaml
+  - mealie.yaml
+  - sparkyfitness.yaml
+  - sparkyfitness-server.yaml
+  - speech-to-phrase.yaml
+  - voice-assistant.yaml
 patches:
   - target:
       kind: Kustomization
