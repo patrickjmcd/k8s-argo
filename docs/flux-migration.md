@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers, node-tuning, kube-vip, longhorn, cilium and gitea are on Flux. **Phase 4 complete 2026-10-27**: Argo keeps only its 3 root Applications and argocd itself, which now manage nothing else. Next: Phase 5 (remove Argo).
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers, node-tuning, kube-vip, longhorn, cilium and gitea are on Flux. **Phase 4 complete 2026-10-27**. **Phase 5 done 2026-10-27**: Argo CD is uninstalled and gone from the repo; remaining clean-up items are listed under Phase 5.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -779,6 +779,35 @@ Progress:
   media) and 26 Roles/RoleBindings still carry them: deleting any of those
   will hang the same way. All 99 Kustomizations and 25 HelmReleases Ready
   afterwards.
+
+- ✅ **Repo cleanup** (2026-10-27): removed `argo/`, `core/argocd.yaml`,
+  `core/argo-assets/`, the Argo ServiceMonitor and Grafana dashboard and the
+  disabled `apps/media/beets.yaml.disabled`; stripped every
+  `argocd.argoproj.io/*` annotation (74 lines in 68 files, plus 10 emptied
+  `annotations:` keys; every guard already had its Flux equivalent); Glance
+  bookmark now points at the Flux UI, probes regenerated; Renovate's `argocd`
+  manager and `argo-cd` group dropped. Only pod change: Glance rolled for its
+  new config.
+- ✅ **Kyverno values** (2026-10-27): the planned switch turned out moot. Both
+  values were dead: `config.excludeNamespaces` is not a chart value (the live
+  webhooks only ever excluded `kube-system` and `kyverno`, so `argocd` was
+  never exempt), and the chart reads `config.webhookLabels`, not top-level
+  `webhookLabels`. Both removed; the render is byte-identical. Exempting
+  `flux-system` from the fail-closed webhooks (via `config.webhooks`
+  namespaceSelector) would be a behaviour change and is left as a decision.
+- ✅ **Docs** (2026-10-27): CLAUDE.md, README.md (including a Flux DR
+  procedure: Cilium by hand first, then Flux from the GitHub mirror) and the
+  `cluster-health` skill rewritten for Flux; current-tense Argo comments in
+  `clusters/` and `apps/gitea` updated.
+- **Pending (needs the user):** strip the orphaned Rancher-auth finalizers
+  (`wrangler.cattle.io/auth-prov-v2-{crb,crole,rb,role}`,
+  `controller.cattle.io/namespace-auth`) from 216 objects (13 namespaces, 100
+  ClusterRoles, 77 ClusterRoleBindings, 12 Roles, 14 RoleBindings), so their
+  future deletion doesn't hang. Leave k3s's own wrangler finalizers on nodes,
+  etcd snapshots and HelmCharts alone. Outside the cluster: delete the Argo
+  OIDC client in PocketID, the `argo.pmcd.dev` record in Cloudflare
+  (external-dns is `upsert-only`), and any manual `argo.x.pmcd.io` record in
+  the Pi-holes / UniFi.
 
 1. Confirm `kubectl -n argocd get applications` lists only the 3 roots and
    `argocd` itself, none with a finalizer.

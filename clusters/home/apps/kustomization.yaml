@@ -1,8 +1,6 @@
-# One Flux Kustomization per app under apps/ (the Flux side of
-# argo/applications/apps.yaml). Each file sets name + path, plus
-# `dependsOn: kro-definitions` when the app has a HomelabApp; the shared
-# settings below are patched onto all of them. Handoff procedure:
-# docs/flux-migration.md §3.
+# One Flux Kustomization per app under apps/. Each file sets name + path,
+# plus `dependsOn: kro-definitions` when the app has a HomelabApp; the shared
+# settings below are patched onto all of them.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -69,7 +67,7 @@ patches:
           name: flux-system
         prune: true
         # Wait on everything applied; HomelabApps report through kro's Ready
-        # condition (ports the Lua health check in core/argocd.yaml).
+        # condition.
         wait: true
         healthCheckExprs:
           - apiVersion: homelab.pmcd.io/v1alpha1

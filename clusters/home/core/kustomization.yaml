@@ -1,7 +1,6 @@
-# One Flux Kustomization per core/ component (the Flux side of
-# argo/applications/core.yaml). Each file only sets name + path (and
-# dependsOn/force for hook Jobs); the shared settings below are patched onto
-# all of them. Handoff procedure: docs/flux-migration.md §3.
+# One Flux Kustomization per core/ component, plus the core HelmReleases.
+# Each Kustomization file only sets name + path (and dependsOn/force for hook
+# Jobs); the shared settings below are patched onto all of them.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

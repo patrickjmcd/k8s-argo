@@ -1,220 +1,104 @@
 # k8s-argo
 
-GitOps repository for managing Kubernetes cluster with ArgoCD.
+GitOps repository for the homelab k3s cluster, reconciled by
+[Flux](https://fluxcd.io) (Argo CD until Oct 2026; the name is historical).
+Push to `main` on Gitea and Flux applies it. Day-to-day conventions live in
+[`CLAUDE.md`](CLAUDE.md); the migration record is
+[`docs/flux-migration.md`](docs/flux-migration.md).
 
-## Architecture
+## Layout
 
 ```
-├── argo/                    # ArgoCD configuration
-│   ├── apps.yaml           # App-of-apps for user applications
-│   ├── core.yaml           # App-of-apps for core infrastructure
-│   └── projects/           # ArgoCD AppProjects
-├── apps/                    # User applications
-│   ├── home/               # Home automation apps
-│   ├── media/              # Media management apps
-│   └── ...
-└── core/                    # Core infrastructure components
-    ├── argocd.yaml         # ArgoCD self-management
-    ├── traefik.yaml        # Ingress controller
-    ├── cert-manager.yaml   # TLS certificate management
-    ├── external-secrets.yaml
-    ├── metallb-system.yaml # Load balancer
-    └── ...
+clusters/home/            # Everything Flux applies
+├── kustomization.yaml    # root (synced by the operator-created flux-system Kustomization)
+├── flux-operator.yaml    # Flux Operator HelmRelease (+ web UI)
+├── flux-instance.yaml    # FluxInstance: Flux version, components, git source
+├── notifications.yaml    # Flux errors -> Alertmanager -> ntfy
+├── cronjobs.yaml         # Kustomization for cronjobs/
+├── apps/                 # one Kustomization / HelmRelease per app; media ResourceSet
+└── core/                 # one per core component; helm-repositories.yaml
+apps/                     # App manifests (HomelabApp instances, kustomize)
+core/                     # Core component manifests and chart extras
+cronjobs/                 # Scheduled jobs
 ```
 
-## Sync Wave Order
+Ordering between components is expressed with `dependsOn` (e.g. every app
+with a HomelabApp depends on `kro-definitions`).
 
-Components deploy in this order based on sync waves:
+## Disaster recovery (fresh cluster)
 
-| Wave | Components |
-|------|------------|
-| -2   | ArgoCD (self-management) |
-| -1   | cert-manager, external-secrets, metallb |
-| 0    | traefik, kyverno, csi drivers |
-| 1    | monitoring, applications |
+Untested end to end; adapt as needed.
 
-## Disaster Recovery Setup
-
-### Prerequisites
-
-- Fresh Ubuntu/Debian server(s)
-- Access to external secrets provider (1Password, etc.)
-- DNS configured for your domain
-
-### Step 1: Install k3s
-
-On the first/primary node:
-
-```bash
-curl -sfL https://get.k3s.io | sh -s - \
-  --disable traefik \
-  --disable servicelb \
-  --write-kubeconfig-mode 644
-```
-
-For additional nodes (get token from `/var/lib/rancher/k3s/server/node-token`):
-
-```bash
-curl -sfL https://get.k3s.io | K3S_URL=https://<PRIMARY_IP>:6443 K3S_TOKEN=<TOKEN> sh -
-```
-
-### Step 2: Install ArgoCD
-
-```bash
-kubectl create namespace argocd
-
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-```
-
-Wait for ArgoCD to be ready:
-
-```bash
-kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
-```
-
-### Step 3: Create Required Secrets
-
-ArgoCD needs certain secrets before it can manage itself and other apps:
-
-#### ArgoCD OIDC Secret (if using OIDC authentication)
-
-```bash
-kubectl create secret generic argocd-secret -n argocd \
-  --from-literal=oidc.pocketID.clientSecret='<YOUR_OIDC_SECRET>' \
-  --dry-run=client -o yaml | kubectl apply -f -
-```
-
-#### External Secrets Operator - 1Password Connect Credentials
-
-```bash
-kubectl create namespace external-secrets
-
-kubectl create secret generic onepassword-connect-token -n external-secrets \
-  --from-literal=token='<1PASSWORD_CONNECT_TOKEN>'
-```
-
-#### Cloudflare Tunnel Token (if using Cloudflare tunnels)
-
-```bash
-kubectl create namespace cloudflared
-
-kubectl create secret generic cloudflared-token -n cloudflared \
-  --from-literal=TUNNEL_TOKEN='<CLOUDFLARE_TUNNEL_TOKEN>'
-```
-
-### Step 4: Bootstrap with App-of-Apps
-
-Apply the ArgoCD projects first:
-
-```bash
-kubectl apply -f argo/projects/
-```
-
-Then apply the root applications:
-
-```bash
-kubectl apply -f argo/core.yaml
-kubectl apply -f argo/apps.yaml
-```
-
-ArgoCD will now:
-1. Deploy itself via Helm (sync wave -2)
-2. Deploy cert-manager, external-secrets, metallb (sync wave -1)
-3. Deploy traefik and other core components (sync wave 0)
-4. Deploy all user applications (sync wave 1)
-
-### Step 5: Verify Deployment
-
-Check ArgoCD UI (get initial admin password):
-
-```bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-```
-
-Port-forward to access ArgoCD UI:
-
-```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-```
-
-Or access via your configured ingress URL once Traefik is running.
+1. **k3s.** Install with Traefik/servicelb disabled and no built-in flannel
+   (the cluster runs Cilium); see "Node Bootstrap Requirements" in
+   `CLAUDE.md` for the CNI plugins and sysctls every node needs.
+   ```bash
+   curl -sfL https://get.k3s.io -o k3s-install.sh   # read it before running
+   sh k3s-install.sh --disable traefik --disable servicelb \
+     --flannel-backend=none --write-kubeconfig-mode 644
+   ```
+2. **Cilium, by hand.** Flux's controllers need pod networking, so install the
+   CNI first with the values from `clusters/home/core/cilium.yaml`; Flux adopts
+   the release later:
+   ```bash
+   yq 'select(.kind=="HelmRelease") | .spec.values' clusters/home/core/cilium.yaml > /tmp/cilium-values.yaml
+   helm install cilium cilium --repo https://helm.cilium.io/ --version <chart version from that file> \
+     -n kube-system -f /tmp/cilium-values.yaml
+   ```
+3. **1Password Connect + operator** (installed by hand, not yet in git): Helm
+   release `connect` in `default` with the Connect credentials and token.
+   Every other secret comes from 1Password through `OnePasswordItem`s.
+4. **Flux.** Gitea doesn't exist yet, so sync from the GitHub mirror. The URL
+   must change in git too, or Flux's first reconcile re-applies the Gitea URL
+   from `flux-instance.yaml`:
+   ```bash
+   sed -i 's#http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git#https://github.com/patrickjmcd/k8s-argo.git#' clusters/home/flux-instance.yaml
+   git commit -am "flux: sync from GitHub (DR)" && git push github main
+   helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
+     -n flux-system --create-namespace
+   kubectl apply -f clusters/home/flux-instance.yaml
+   ```
+   Flux then installs everything else from git and adopts the Cilium release.
+5. **Data.** Longhorn volumes restore from the B2 backup target; shared-postgres
+   from its B2 barman backups; Gitea from its Longhorn volume + `gitea` DB.
+6. **Back to Gitea.** Once Gitea is up with its data, push this repo to it
+   (`origin`), revert the URL change there, and patch the live FluxInstance the
+   same way back to
+   `http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git`.
+   Gitea's push mirror then overwrites GitHub again.
 
 ## Key URLs
 
 | Service | URL |
 |---------|-----|
-| ArgoCD | https://argo.x.pmcd.io |
+| Flux UI | https://flux.x.pmcd.io |
+| Gitea | https://git.x.pmcd.io |
+| Grafana | https://grafana.x.pmcd.io |
 | Traefik Dashboard | https://traefik.x.pmcd.io/dashboard/ |
-
-## Secrets Management
-
-This cluster uses External Secrets Operator with 1Password Connect to manage secrets.
-
-Secrets are defined as `ExternalSecret` resources that reference items in 1Password. The operator automatically syncs these to Kubernetes Secrets.
-
-Example ExternalSecret:
-```yaml
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: my-secret
-spec:
-  refreshInterval: 1h
-  secretStoreRef:
-    name: onepassword-connect
-    kind: ClusterSecretStore
-  target:
-    name: my-secret
-  data:
-    - secretKey: password
-      remoteRef:
-        key: my-1password-item
-        property: password
-```
 
 ## Troubleshooting
 
-### ArgoCD Application Stuck
-
-If an application is stuck syncing:
+### Something isn't deploying
 
 ```bash
-# Check application status
-kubectl get application -n argocd <app-name> -o yaml
-
-# Force refresh
-argocd app get <app-name> --refresh
-
-# Hard refresh (invalidate cache)
-argocd app get <app-name> --hard-refresh
+flux get kustomizations -A --status-selector ready=false
+flux get helmreleases -A --status-selector ready=false
+flux reconcile kustomization <name> --with-source   # force a reconcile now
+flux events --for Kustomization/<name> -n flux-system
 ```
 
-### Sync Wave Issues
+A chart version Renovate just bumped can fail with "no chart with version
+matching" until Flux's cached index refreshes: `flux reconcile source helm <repo>`.
 
-If components are deploying out of order, check sync wave annotations:
-
-```bash
-kubectl get applications -n argocd -o custom-columns='NAME:.metadata.name,WAVE:.metadata.annotations.argocd\.argoproj\.io/sync-wave'
-```
-
-### External Secrets Not Syncing
-
-Check ExternalSecret status:
+### Secrets not syncing (1Password)
 
 ```bash
-kubectl get externalsecret -A
-kubectl describe externalsecret <name> -n <namespace>
-```
-
-Check 1Password Connect logs:
-
-```bash
-kubectl logs -n external-secrets deployment/onepassword-connect
+kubectl get onepassworditem -A
+kubectl annotate onepassworditem <name> -n <ns> force-sync=$(date +%s) --overwrite
+kubectl rollout restart deployment onepassword-connect -n default   # if a field stays empty
 ```
 
 ### Gateway API / HTTPRoute Issues
-
-Check Gateway status:
 
 ```bash
 kubectl get gateways -A
@@ -274,26 +158,6 @@ sudo systemctl restart k3s
 kubectl get pods -A -o wide --field-selector spec.nodeName=<node-name>
 ```
 
-## Backup and Restore
-
-### What to Backup
-
-1. **Secrets** - Most important! Back up to a secure location:
-   - `argocd-secret` in `argocd` namespace
-   - 1Password Connect token
-   - Any manually created secrets
-
-2. **Persistent Volumes** - Application data stored on PVCs
-
-3. **This Git Repository** - All configuration is in Git
-
-### Restore Process
-
-1. Follow DR setup steps above
-2. Restore secrets before bootstrapping
-3. Apply app-of-apps to restore all applications
-4. Restore PV data if needed
-
 ## Development
 
 ### Security Commit Agent
@@ -319,20 +183,18 @@ SECURITY_AGENT_BYPASS=1 git commit -m "..."
 
 ### Renovate
 
-This repository uses Renovate for automated dependency updates. Configuration is in `renovate.json`.
-
-Package rules:
-- ArgoCD updates are grouped and require manual approval
-- Infrastructure charts (traefik, cert-manager, external-secrets) are grouped
-- Longhorn and k3s updates are grouped and need review
+Configuration is in `renovate.json`. The `flux` manager updates chart versions
+under `clusters/`; image tags in `apps/` and `core/` manifests are updated by
+the kubernetes, kustomize and custom regex managers.
 
 ### Adding New Applications
 
-1. Create application manifests in `apps/<category>/<app-name>/`
-2. Either:
-   - Add to an existing ApplicationSet, or
-   - Create a new ArgoCD Application in `apps/<category>/`
-3. Commit and push - ArgoCD will auto-sync
+1. Put the manifests in `apps/<name>/` (a HomelabApp where possible, see `CLAUDE.md`).
+2. Add `clusters/home/apps/<name>.yaml` (a Kustomization with `path: ./apps/<name>`,
+   plus `dependsOn: kro-definitions` for a HomelabApp) and list it in
+   `clusters/home/apps/kustomization.yaml`. Media apps: add the directory name
+   to the `inputs` of `clusters/home/apps/media.yaml`.
+3. Commit and push to Gitea; Flux applies it within about a minute.
 
 ---
 

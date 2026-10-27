@@ -1,6 +1,6 @@
 ---
 name: cluster-health
-description: Run a read-only health check of the homelab k3s cluster (nodes, memory/swap, pods, ArgoCD, Longhorn volumes and backups, alerts and flapping, control-plane memory, certs). Use when the user asks to check on the cluster, asks why alerts keep firing, or runs /cluster-health.
+description: Run a read-only health check of the homelab k3s cluster (nodes, memory/swap, pods, Flux, Longhorn volumes and backups, alerts and flapping, control-plane memory, certs). Use when the user asks to check on the cluster, asks why alerts keep firing, or runs /cluster-health.
 argument-hint: "[focus area, e.g. alerts | longhorn | control-plane]"
 allowed-tools: Bash(kubectl get:*), Bash(kubectl top:*), Bash(kubectl describe:*), Bash(kubectl logs:*), Bash(.claude/skills/cluster-health/promq.sh:*), Bash(jq:*)
 ---
@@ -43,7 +43,7 @@ kube-n3160 and kube-macmini have only ~7.6G of RAM and also run etcd.
 - Pods not Running/Completed: `kubectl get pods -A --no-headers | awk '$4!="Running" && $4!="Completed"'`.
 - Recent restarts: `topk(15, increase(kube_pod_container_status_restarts_total[24h]) > 0)`. Lifetime restart counts are misleading here, so ignore them.
 - `kubectl get pvc -A` not Bound. `kubectl get certificates -A` not Ready.
-- ArgoCD: `kubectl get applications -n argocd --no-headers | awk '$2!="Synced" || $3!="Healthy"'`. For each one, list its non-Synced resources with `.status.resources[] | select(.status!="Synced")`. Some apps (e.g. `ia-ignition`) have no `syncPolicy.automated`, so committed changes sit OutOfSync until someone syncs by hand. Check `.spec.syncPolicy.automated` before assuming drift is just noise.
+- Flux: `flux get kustomizations -A --status-selector ready=false` and `flux get helmreleases -A --status-selector ready=false`; also `flux get sources all -A --status-selector ready=false`. Suspended objects (`flux get ... | grep True` in the SUSPENDED column) don't reconcile at all, so committed changes never land. A HelmRelease failing with "no chart with version matching" right after a Renovate bump is a stale index: `flux reconcile source helm <repo>`. For a failing Kustomization, `flux events --for Kustomization/<name> -n flux-system` shows the apply or health-check error.
 
 ## 4. Longhorn
 

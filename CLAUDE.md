@@ -1,58 +1,79 @@
 # k8s-argo GitOps Repository
 
-Homelab Kubernetes cluster managed with k3s and ArgoCD. All changes are GitOps — push to `main` and ArgoCD reconciles automatically.
+Homelab Kubernetes cluster managed with k3s and **Flux** (Argo CD until Oct 27
+2026; the repo name is historical). All changes are GitOps — push to `main` and
+Flux reconciles within about a minute. Migration history and per-component
+notes: `docs/flux-migration.md`.
 
 ## Where the repo lives (since Oct 2026)
 
 - **Primary: Gitea in the cluster** (`apps/gitea`), `https://git.x.pmcd.io/patrickjmcd/k8s-argo`
   (git remote `origin`; push with a Gitea token over HTTPS, or over SSH as
   `git@git-ssh.x.pmcd.io:patrickjmcd/<repo>.git` -- MetalLB `.210`, LAN/tailnet only).
-- **Argo CD reads** `http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git`
+- **Flux reads** `http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git`
   (in-cluster, anonymous -- the repo is public) -- not via Traefik, so a broken Traefik can't
-  stop Argo from fixing it. Every `repoURL` uses this URL.
+  stop Flux from fixing it. The URL is set once, in `clusters/home/flux-instance.yaml`
+  (`spec.sync`); the Flux Operator creates the root GitRepository/Kustomization `flux-system`
+  from it, and every other Kustomization uses that source.
 - **GitHub is a push mirror** (`github` remote): Gitea force-pushes every commit there. Never
   commit or merge on GitHub -- it gets overwritten.
-- **If Gitea (or the cluster) is down:** the AppProjects in `argo/projects` allow both URLs. Repoint
-  Argo at GitHub with `git grep -l gitea.gitea.svc -- . ':!argo/projects' | xargs sed -i
-  's#http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git#https://github.com/patrickjmcd/k8s-argo.git#g'`,
-  push to `github`, and `kubectl apply -f argo/projects/ -f argo/applications/` (the root apps
-  and projects are applied by hand). Gitea's data restores from B2 (Longhorn volume +
-  shared-postgres `gitea` DB).
+- **If Gitea (or the cluster) is down:** point Flux at GitHub, in git *and* live (otherwise the
+  first reconcile from GitHub re-applies the Gitea URL):
+  ```bash
+  sed -i 's#http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git#https://github.com/patrickjmcd/k8s-argo.git#' clusters/home/flux-instance.yaml
+  git commit -am "flux: sync from GitHub while Gitea is down" && git push github main
+  kubectl -n flux-system patch fluxinstance flux --type merge \
+    -p '{"spec":{"sync":{"url":"https://github.com/patrickjmcd/k8s-argo.git"}}}'
+  ```
+  Gitea reconciles itself from this repo (`clusters/home/apps/gitea.yaml`). Its data restores
+  from B2 (Longhorn volume + shared-postgres `gitea` DB).
+- Flux web UI: https://flux.x.pmcd.io (PocketID SSO). Flux errors reach ntfy via
+  Alertmanager (`clusters/home/notifications.yaml`).
 
 ## Directory Structure
 
 ```
-argo/           # ArgoCD app-of-apps and AppProjects
-apps/           # User applications
-charts/         # Local Helm charts (homelab-app)
-core/           # Core infrastructure components
-cronjobs/       # Scheduled jobs
+clusters/home/  # What Flux applies: FluxInstance, Kustomizations, HelmReleases
+  apps/         #   one file per app (Kustomization and/or HelmRelease)
+  core/         #   one file per core component; helm-repositories.yaml
+  cronjobs.yaml #   Kustomization for cronjobs/
+apps/           # App manifests (HomelabApp instances, plain kustomize)
+core/           # Core component manifests and chart extras
+cronjobs/       # Scheduled jobs (namespace cron)
+charts/         # homelab-app chart (retired, unused)
 infra/          # Terraform for Proxmox VMs
 scripts/        # Utility scripts
+docs/           # Runbooks (flux-migration.md, cilium-migration.md, ...)
 ```
 
-## App-of-Apps Pattern
+## How Flux is wired
 
-Three root Applications in `argo/applications/` each point to a directory:
-- `core.yaml` → `core/` — infrastructure (cert-manager, traefik, metallb, longhorn, etc.)
-- `apps.yaml` → `apps/` — user applications
-- `cronjobs.yaml` → `cronjobs/` — scheduled jobs (sync disabled, manual only)
-
-Any `.yaml` file dropped into `core/` or `apps/` is automatically picked up as an ArgoCD Application.
-
-## ArgoCD Projects
-
-- **core-components** — infrastructure apps (`core/`)
-- **apps** — user applications (`apps/`)
-- **cronjobs** — scheduled jobs
-
-## Sync Waves
-
-Order matters; set via `argocd.argoproj.io/sync-wave` annotation:
-- `-2`: ArgoCD self
-- `-1`: Longhorn, cert-manager, metallb, kyverno, CSI drivers
-- `0`: Traefik, monitoring
-- (default): Applications
+- `clusters/home/kustomization.yaml` lists everything Flux manages; a file in
+  `clusters/home/apps/` or `clusters/home/core/` does nothing until it is
+  listed in that directory's `kustomization.yaml`.
+- Each directory's `kustomization.yaml` patches shared settings onto every
+  Flux Kustomization in it (interval 10m, retryInterval 2m, timeout 5m,
+  `sourceRef: flux-system`, `prune: true`, `wait: true`; apps also get a
+  HomelabApp health check). So an app's file only needs `name` + `path`
+  (+ `dependsOn`).
+- Ordering is `dependsOn`, not sync waves. Every Kustomization containing a
+  HomelabApp needs `dependsOn: [{name: kro-definitions}]`, set per file
+  (patching it in the shared settings would replace other `dependsOn` lists).
+- The media apps are one ResourceSet (`clusters/home/apps/media.yaml`): add
+  the directory name under `apps/media/` to its `inputs`.
+- Upstream charts are HelmReleases in `clusters/home/{apps,core}/<name>.yaml`,
+  with their HelmRepository in `clusters/home/core/helm-repositories.yaml`
+  (or next to the release). Extra manifests for a chart go in a second
+  Kustomization `<name>-extras`.
+- Former Argo hook Jobs are plain Jobs in `core/<x>/jobs/` applied by a
+  `<x>-jobs` Kustomization (`dependsOn` + `force: true`); no TTL (Flux would
+  recreate a TTL-deleted Job), and a hashed script ConfigMap so edits re-run it.
+- Force a reconcile: `flux reconcile kustomization <name> --with-source`
+  (or `flux reconcile helmrelease <name>`). Pause one: `flux suspend
+  kustomization <name>` (`flux resume` to undo).
+- Renovate can bump a chart version before Flux's cached HelmRepository index
+  (12h interval) has it ("no chart with version matching"):
+  `flux reconcile source helm <repo>`.
 
 ## Defining Applications
 
@@ -60,22 +81,20 @@ Order matters; set via `argocd.argoproj.io/sync-wave` annotation:
 
 `core/kro-definitions/homelabapp.yaml` is a kro ResourceGraphDefinition that
 creates a `HomelabApp` CRD. Each instance gets a Deployment, Service, HTTPRoutes
-(internal + optional public), OnePasswordItem, ConfigMap and ServiceMonitor. It
-is replacing the homelab-app chart (migration started Oct 2026); the schema
-at the top of the RGD is the reference for every field.
+(internal + optional public), OnePasswordItem, ConfigMap and ServiceMonitor.
+The schema at the top of the RGD is the reference for every field.
 
 ```yaml
-# apps/myapp.yaml — single-source kustomize Application
+# clusters/home/apps/myapp.yaml (and list it in clusters/home/apps/kustomization.yaml)
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: myapp
+  namespace: flux-system
 spec:
-  syncPolicy:
-    automated: {prune: true, selfHeal: true}
-    syncOptions:
-      - ServerSideApply=true
-      - SkipDryRunOnMissingResource=true   # CRD comes from kro (fresh cluster)
-  source:
-    path: apps/myapp
-    repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
-    targetRevision: main
+  path: ./apps/myapp
+  dependsOn:
+    - name: kro-definitions
 ```
 
 ```yaml
@@ -103,169 +122,71 @@ spec:
   glance: {monitor: true}               # Glance widget + blackbox probe (scripts/generate_glance_monitors.py)
 ```
 
+Flux never creates namespaces: an app in its own namespace needs an
+`apps/<name>/namespace.yaml` with `kustomize.toolkit.fluxcd.io/prune: disabled`
+(deleting a Namespace deletes everything in it).
+
 Rules:
 - **Persistence mounts a PVC you define yourself** in `apps/<name>/pvc.yaml`
   (and `pv.yaml` for SMB). Give it backup labels and
-  `argocd.argoproj.io/sync-options: Delete=false` -- which only keeps the PVC
-  when the *Application* is deleted; removing the manifest from git still
-  prunes it (seen Oct 2026), so for that use `Prune=false` or move the data
-  first. kro never owns the PVC:
+  `kustomize.toolkit.fluxcd.io/prune: disabled`, so removing the manifest
+  (or the app's Kustomization) never deletes the data. kro never owns the PVC:
   it deletes `includeWhen` resources when the condition turns false, which
   would lose data if persistence were toggled off.
 - HomelabApp covers extraVolumes/extraVolumeMounts (PVC, ConfigMap, Secret,
   hostPath, emptyDir), per-probe type/path overrides, command/args,
   nodeSelector/tolerations/hostNetwork, podAnnotations, dnsNdots, a basic
   securityContext, route middlewares and ServiceMonitor basic auth. Extra
-  manifests (the chart's extraObjects) go in the app's kustomization as plain
-  files. `loadBalancer.enabled` adds a `<name>-lan` LoadBalancer Service
+  manifests go in the app's kustomization as plain files.
+  `loadBalancer.enabled` adds a `<name>-lan` LoadBalancer Service
   (optionally pinned `loadBalancer.ip`) next to the ClusterIP one, and
   `preferredNodes` sets a soft node preference. Not covered: sidecars and
   initContainers (use plain Kustomize).
 - kro owns the Deployment's replicas, so `kubectl scale` is undone within
   a minute. To stop an app (e.g. for a restore), set `replicas: 0` on the
-  HomelabApp (in git, or patched with the Application's auto-sync off).
-- HomelabApp Applications set
-  `argocd.argoproj.io/compare-options: ServerSideDiff=true`: CRD defaults
-  filled into list items (extraVolumes, tolerations) otherwise read as drift.
+  HomelabApp (in git, or patched live after `flux suspend kustomization <name>`).
 - Every HomelabApp Deployment carries `reloader.stakater.com/auto: "true"`;
-  Reloader (`core/reloader.yaml`, Oct 2026) restarts it when its `<name>-1pw`
-  Secret or ConfigMap changes, so editing a 1Password field reaches the pod
-  once the operator syncs (force it with the `force-sync` annotation below).
+  Reloader (`clusters/home/core/reloader.yaml`, Oct 2026) restarts it when its
+  `<name>-1pw` Secret or ConfigMap changes, so editing a 1Password field
+  reaches the pod once the operator syncs (force it with the `force-sync`
+  annotation below).
 - `${VAR}` inside instance values (configs, commands) passes through kro
   literally; only `${` written in the RGD itself is evaluated.
 - When converting a chart app, merge its values over the chart defaults first
-  (Helm does), and use the Helm **release name** as the HomelabApp name (it
-  can differ from the Application name, e.g. homelable-backend -> backend).
-- Children carry ownerReferences to their HomelabApp, so Argo CD shows them in
-  the app's tree; a Lua health check in `core/argocd.yaml` maps kro's Ready
-  condition to Argo health.
+  (Helm does), and use the Helm **release name** as the HomelabApp name.
+- Children carry ownerReferences to their HomelabApp; the apps Kustomizations
+  report HomelabApp health through kro's Ready condition (`healthCheckExprs`
+  in `clusters/home/apps/kustomization.yaml`).
 - Editing the RGD: build the container as one CEL expression and use the
   optional map-entry syntax (`?"key": cond ? optional.of(v) : optional.none()`),
   sort map keys before turning them into lists, and validate as a throwaway
   RGD (different name/kind/group) before touching the real one. Comments at
-  the top of the RGD explain why.
-- After an RGD **schema** change (new defaulted fields), some HomelabApp apps
-  go permanently OutOfSync in Argo with no real diff: Argo caches server-side
-  diff results in Redis keyed by the live resourceVersion, so objects that
-  haven't changed keep a prediction made under the old schema (restarting
-  the controller doesn't help). Bump every instance's resourceVersion:
-  `kubectl annotate homelabapp -A --all homelab.pmcd.io/rgd-touch=$(date +%s) --overwrite`
+  the top of the RGD explain why. Never edit it with `yq -i` (it reflows the
+  CEL template); use an editor or sed.
 
-### Helm app using homelab-app chart (only for what HomelabApp can't express)
+### Upstream Helm chart (HelmRelease)
 
-```yaml
-# apps/myapp.yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: myapp
-  namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-  annotations:
-    # Multi-source: list the chart and the values dir explicitly. "." only
-    # covers the chart source, so a values-only commit would be served from
-    # Argo's manifest cache and never deployed.
-    argocd.argoproj.io/manifest-generate-paths: /charts/homelab-app;/apps/myapp
-spec:
-  destination:
-    namespace: myapp
-    name: in-cluster
-  project: apps
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
-  sources:
-    - repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
-      targetRevision: main
-      ref: values
-    - chart: homelab-app
-      repoURL: https://patrickjmcd.github.io/homelab-app
-      targetRevision: <version>
-      helm:
-        releaseName: myapp
-        valueFiles:
-          - $values/apps/myapp/values.yaml
-    - path: apps/myapp
-      repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
-      targetRevision: main
-```
+For apps an upstream chart covers (immich, nats, every core chart). Copy the
+shape of an existing one, e.g. `clusters/home/apps/immich.yaml`: HelmRelease in
+`flux-system` with `targetNamespace`/`storageNamespace`, `serverSideApply`,
+`driftDetection.mode: enabled`, values inline. Keep `remediation.retries: 0`
+with `remediateLastFailure: false` on releases adopted from live objects:
+remediating a failed install means uninstalling what was running. Check the
+chart for CRDs shipped as templates and keep them
+(`helm.sh/resource-policy: keep` via values or a `postRenderers` patch).
+Helm 4 (helm-controller) keeps `null` values that Helm 3 dropped, and a local
+`helm template` is not proof of what helm-controller renders.
 
-The third source applies the `kustomization.yaml` in `apps/myapp/` for any extra resources (OnePasswordItem, PVCs, HTTPRoutes, etc.).
+### Kustomize-only app (initContainers, multi-container pods, CronJobs, StatefulSets)
 
-### Kustomize-only app (for apps needing initContainers, CronJobs, StatefulSets, etc.)
+A Flux Kustomization with `path: ./apps/myapp` over plain manifests. Copy the
+live `kubectl.kubernetes.io/restartedAt` of an existing workload into git
+before adopting it, or Flux strips it and the pods roll.
 
-```yaml
-sources:
-  - path: apps/myapp
-    repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
-    targetRevision: main
-```
+## homelab-app Chart (retired)
 
-Apps that **stay as Kustomize**: anything needing initContainers, multi-container pods, CronJob kind, or complex StatefulSets.
-
-## homelab-app Chart
-
-Generic chart at `charts/homelab-app/`. Key values:
-
-```yaml
-image:
-  repository: ghcr.io/example/app
-  tag: latest
-
-service:
-  port: 8080
-  containerPort: 0  # set if container port ≠ service port
-  type: ClusterIP   # LoadBalancer for non-HTTP LAN services (e.g. apps/voice-assistant)
-  loadBalancerIP: "" # pin a MetalLB pool address
-  annotations: {}   # e.g. kube-vip.io/ignore: "true" on LoadBalancer services
-
-httpRoute:
-  enabled: true
-  hostnames:
-    - myapp.example.com
-  parentRefs:
-    - name: traefik-gateway
-      namespace: default
-
-probes:
-  startup:
-    type: httpGet   # httpGet | tcpSocket | exec
-    path: /health
-    port: 8080
-  readiness: ...
-  liveness: ...
-
-persistence:
-  longhorn:
-    enabled: true
-    size: 5Gi
-    mountPath: /data
-  smb:
-    enabled: true
-    mountPath: /mnt/media
-    claimName: smb-media-claim
-
-onePassword:
-  enabled: true
-  # secret name defaults to <release>-1pw
-  # itemPath defaults to vaults/Kubernetes/items/<release>
-
-env:
-  MY_VAR: value
-
-configMap:
-  enabled: true
-  mountPath: /config
-  subPath: config.yml   # for single-file mounts
-  data:
-    config.yml: |
-      ...
-```
+`charts/homelab-app/` is no longer used by any app (all were converted to
+HomelabApp or upstream HelmReleases in Oct 2026); kept for reference only.
 
 ## Secrets — 1Password Operator
 
@@ -410,7 +331,7 @@ Also install the storage clients so CSI mounts work: `nfs-common` and `cifs-util
 
 **No flannel leftovers** — a node that ever ran flannel keeps its host state until cleaned or rebooted: a `cni0` bridge holding the `.1` of the node's pod CIDR, `flannel.1`, `/etc/cni/net.d/10-flannel.conflist`, `/run/flannel` and `FLANNEL-*` iptables chains. The stale `cni0` is not cosmetic: Cilium (`ipam.mode: kubernetes`) hands out the same `.1`, and a pod that gets it can't receive replies because the host owns that address — seen Sept 2026 as a Traefik pod on `pi5-kube2` crashlooping on "timed out waiting for controller caches to sync". Clean-up steps are in `docs/cilium-migration.md` §6.5.
 
-**inotify instance limit** — `fs.inotify.max_user_instances` is a per-UID limit shared by every root-owned container on the node (not namespaced per-pod), and most system/sidecar containers run as root. A node hosting many containers with fsnotify-based watchers (config reloaders, log tailers, etc.) can silently approach the default cap of 128 as container density grows, at which point the next container to request an inotify instance crash-loops with `OSError: [Errno 24] inotify instance limit reached` — a red herring that looks like an app bug. Confirmed on `pi5-kube0/1/2` in Sept 2026 (91, 72, and 127 of 128 respectively) when the `youtubedl` postprocessor's `watchdog` Observer tipped `pi5-kube2` over the edge. It recurred in Sept 2026 via Grafana Alloy (`core/alloy.yaml`, tails every pod's log file over inotify) exhausting the limit and breaking ArgoCD's CronJob log stream.
+**inotify instance limit** — `fs.inotify.max_user_instances` is a per-UID limit shared by every root-owned container on the node (not namespaced per-pod), and most system/sidecar containers run as root. A node hosting many containers with fsnotify-based watchers (config reloaders, log tailers, etc.) can silently approach the default cap of 128 as container density grows, at which point the next container to request an inotify instance crash-loops with `OSError: [Errno 24] inotify instance limit reached` — a red herring that looks like an app bug. Confirmed on `pi5-kube0/1/2` in Sept 2026 (91, 72, and 127 of 128 respectively) when the `youtubedl` postprocessor's `watchdog` Observer tipped `pi5-kube2` over the edge. It recurred in Sept 2026 via Grafana Alloy (`clusters/home/core/alloy.yaml`, tails every pod's log file over inotify) exhausting the limit and breaking Argo CD's CronJob log stream (Argo was still in use then).
 
 As of Sept 2026 this is enforced **declaratively**, not just at bootstrap: the `node-tuning` DaemonSet (`core/node-tuning/daemonset.yaml`, applied by the Flux Kustomization in `clusters/home/core/node-tuning.yaml`) runs on every node — including control-plane/tainted ones — and sets both `fs.inotify.max_user_instances=1024` and `fs.inotify.max_user_watches=1048576` via a privileged initContainer, writing the same values into `/etc/sysctl.d/99-inotify.conf` on the host so they survive a reboot before the pod is rescheduled. It self-heals: Flux re-applies it every 10 minutes and the DaemonSet covers every node, so drift (or a newly joined node) gets corrected automatically. `fs.inotify.*` are node-level (non-namespaced) sysctls, so they can't be set via a pod's `securityContext.sysctls` — hence the privileged container, scoped to only that DaemonSet.
 
@@ -473,11 +394,12 @@ Verify with: `sudo sysctl net.netfilter.nf_conntrack_checksum` → should be `0`
 
 ## Conventions
 
-- Always use `ServerSideApply=true` in syncOptions
-- Always set `CreateNamespace=true` when the namespace isn't pre-existing
-- Use `argocd.argoproj.io/manifest-generate-paths: .` on single-source Applications; for multi-source (homelab-app chart + `$values`) use absolute paths `/charts/homelab-app;/apps/<name>`
-- Prefer `selfHeal: true` and `prune: true` for automated apps
+- Every Flux Kustomization/HelmRelease applies server-side; HelmReleases use
+  `serverSideApply` on install and upgrade
+- Guard anything whose deletion loses data or takes others with it
+  (Namespaces, PVCs, PVs, CRDs, CNPG clusters, Longhorn settings) with
+  `kustomize.toolkit.fluxcd.io/prune: disabled`
+- Prefer `prune: true` (the default via the shared patches) and drift detection
 - Never use `latest` image tags
-- HTTPRoute `backendRef` API defaults cause ArgoCD diff noise — suppress with `ignoreDifferences` if needed
-- For apps with PVC resize conflicts, add `ServerSideApplyForceConflicts=true` to syncOptions
-- If adding a new application via helm chart, make sure the chart is allowed in the `sourceRepos` list for the ArgoCD project
+- For a new chart, add its HelmRepository to `clusters/home/core/helm-repositories.yaml`
+  (Renovate's `flux` manager updates chart versions under `clusters/`)

@@ -1,9 +1,9 @@
 # Gitea -- git hosting for k8s-argo and friends. Push over HTTPS with a
 # personal access token, or over SSH (built-in server on :2222, exposed on the
 # LAN as git-ssh.x.pmcd.io:22 by service-ssh.yaml; host keys live on the PVC
-# under data/ssh). Argo CD reads repos through the in-cluster
+# under data/ssh). Flux reads repos through the in-cluster
 # Service (gitea.gitea.svc:3000), not Traefik, so a broken Traefik can't stop
-# Argo from fixing it. Config is entirely the GITEA__* env below;
+# Flux from fixing it. Config is entirely the GITEA__* env below;
 # bootstrap.sh (init container) renders app.ini and seeds admin + PocketID.
 apiVersion: apps/v1
 kind: Deployment
@@ -85,7 +85,7 @@ spec:
             - name: GITEA__service__SHOW_REGISTRATION_BUTTON
               value: "false"
             # Public repos (k8s-argo, already public on GitHub) are readable
-            # anonymously, so Argo CD needs no credentials; everything else is
+            # anonymously, so Flux needs no credentials; everything else is
             # private by default.
             - name: GITEA__service__REQUIRE_SIGNIN_VIEW
               value: "false"
@@ -110,7 +110,7 @@ spec:
               value: main
             - name: GITEA__actions__ENABLED
               value: "true"
-            # Outbound requests (webhooks to Argo CD, push mirrors to GitHub)
+            # Outbound requests (webhooks, push mirrors to GitHub)
             # may reach in-cluster/LAN hosts as well as the internet.
             - name: GITEA__security__ALLOWED_HOST_LIST
               value: private,loopback
