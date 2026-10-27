@@ -6,3 +6,5 @@ metadata:
     # Prometheus only discovers ServiceMonitors in namespaces with this label
     # (its serviceMonitorNamespaceSelector). Without it, metrics.yaml is ignored.
     prometheus: enabled
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled

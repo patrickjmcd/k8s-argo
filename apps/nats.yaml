@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: nats
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/compare-options: ServerSideDiff=true
@@ -14,9 +12,6 @@ spec:
     name: in-cluster
     namespace: nats
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
