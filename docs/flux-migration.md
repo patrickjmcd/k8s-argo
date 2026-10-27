@@ -766,6 +766,20 @@ Progress:
   Kustomizations and 25 HelmReleases Ready. Argo CD itself still runs, idle
   and unmanaged, with 4 AppProjects left.
 
+- ✅ **Argo CD uninstalled** (2026-10-27): Secrets (incl. the hand-made
+  `argocd-secret` with the PocketID client secret), config, RBAC and CRDs
+  backed up to the session scratchpad first. Deleted the 4 AppProjects
+  (while the controller still ran, to clear their finalizers), the `argocd`
+  namespace, 4 ClusterRoles + 4 ClusterRoleBindings and the 3 Argo CRDs.
+  **Rancher leftovers blocked deletion**: the namespace, its 6 Roles and 6
+  RoleBindings, and 3 ClusterRoles + 3 ClusterRoleBindings carried
+  `wrangler.cattle.io/auth-prov-v2-*` / `controller.cattle.io/namespace-auth`
+  finalizers from the long-gone Rancher install; nothing will ever clear them,
+  so they were removed by hand. 13 namespaces (incl. kube-system, default,
+  media) and 26 Roles/RoleBindings still carry them: deleting any of those
+  will hang the same way. All 99 Kustomizations and 25 HelmReleases Ready
+  afterwards.
+
 1. Confirm `kubectl -n argocd get applications` lists only the 3 roots and
    `argocd` itself, none with a finalizer.
 2. Strip finalizers from those and delete them, then delete the Argo
