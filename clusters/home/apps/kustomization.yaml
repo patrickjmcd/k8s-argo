@@ -24,7 +24,7 @@ patches:
         timeout: 5m
         sourceRef:
           kind: GitRepository
-          name: k8s-argo
+          name: flux-system
         prune: true
         # Wait on everything applied; HomelabApps report through kro's Ready
         # condition (ports the Lua health check in core/argocd.yaml).
