@@ -638,8 +638,8 @@ Per component:
   meant deleting and recreating the Deployment. Only metadata labels changed.
   35 objects kept their UIDs; neither operator pod nor any of the 9 Postgres
   pods restarted; a forced WAL switch on shared-postgres archived to B2.
-  Other multi-chart Applications (metallb-system, longhorn?) need the same
-  release-name check.
+  No other remaining Application has two charts. longhorn has no
+  `releaseName`, so its release is the Application name `longhorn`.
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
