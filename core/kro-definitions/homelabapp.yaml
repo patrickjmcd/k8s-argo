@@ -27,6 +27,10 @@ apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
   name: homelabapp
+  annotations:
+    # Deleting the RGD would delete the HomelabApp CRD and every instance.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   schema:
     apiVersion: v1alpha1
