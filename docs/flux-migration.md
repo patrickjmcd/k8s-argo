@@ -573,7 +573,7 @@ Per component:
     checksum still changed once, so Grafana restarted once at handoff
     (`Recreate` strategy, RWO PVC, no deadlock).
   - The extras' plain `json-exporter` Deployment rolled once: it carried a
-    `restartedAt` (§4.10) that I only checked on the chart's workloads. Check
+    `restartedAt` (§4.10); only the chart's workloads had been checked. Check
     the extras directories too.
   - Grafana's PVC is a chart object, so it now has `helm.sh/resource-policy:
     keep`. The Prometheus TSDB claim is the operator's (volumeClaimTemplate) on
