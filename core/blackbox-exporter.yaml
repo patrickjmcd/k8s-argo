@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: blackbox-exporter
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     # Multi-source: list the probe/rule dir explicitly so a probes-only
     # commit isn't served from Argo's manifest cache.
@@ -15,9 +13,6 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - ServerSideApply=true
   sources:

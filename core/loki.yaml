@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: loki
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
@@ -13,9 +11,6 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
@@ -30,7 +25,6 @@ spec:
         # this is a homelab log volume, not the >1TB/day scale those modes
         # are built for.
         deploymentMode: SingleBinary
-
         loki:
           auth_enabled: false
           commonConfig:
@@ -67,7 +61,6 @@ spec:
           compactor:
             retention_enabled: true
             delete_request_store: filesystem
-
         singleBinary:
           replicas: 1
           persistence:
@@ -80,7 +73,6 @@ spec:
               memory: 256Mi
             limits:
               memory: 1Gi
-
         # No gateway/read/write/backend split, no memcached caches, no
         # loki-canary, no bundled test pod, no MinIO — all of that is
         # SimpleScalable/Distributed-mode scaffolding this deployment

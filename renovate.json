@@ -21,6 +21,11 @@
       "/core/.+/values\\.yaml$/"
     ]
   },
+  "flux": {
+    "managerFilePatterns": [
+      "/^clusters/.+\\.yaml$/"
+    ]
+  },
   "argocd": {
     "managerFilePatterns": [
       "/apps/.+\\.yaml$/",
@@ -32,7 +37,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^core/kubernetes-mcp-server\\.yaml$/"],
+      "managerFilePatterns": ["/^clusters/home/core/kubernetes-mcp-server\\.yaml$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s*\\n\\s*version: (?<currentValue>\\S+)"
       ]
@@ -161,7 +166,7 @@
       "automerge": false,
       "addLabels": ["needs-review"],
       "prBodyNotes": [
-        "Merging starts the node upgrade rollout immediately (ArgoCD auto-sync). Servers upgrade first, then agents, one node at a time. Never merge a minor-version jump larger than one; check no Proxmox host maintenance is in progress."
+        "Merging starts the node upgrade rollout immediately (Flux applies it within minutes). Servers upgrade first, then agents, one node at a time. Never merge a minor-version jump larger than one; check no Proxmox host maintenance is in progress."
       ]
     }
   ]

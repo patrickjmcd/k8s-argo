@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: trivy-operator
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "1"
@@ -14,9 +12,6 @@ spec:
     name: in-cluster
     namespace: trivy-system
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
@@ -68,7 +63,6 @@ spec:
           nodeCollector:
             tolerations:
               - operator: Exists
-
     - path: core/trivy-operator
       repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
       targetRevision: main

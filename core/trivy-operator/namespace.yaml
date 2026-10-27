@@ -2,6 +2,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: trivy-system
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
   labels:
     # Prometheus only discovers ServiceMonitors in namespaces with this label
     # (its serviceMonitorNamespaceSelector). Without it, the chart's

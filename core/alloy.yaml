@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: alloy
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
@@ -13,9 +11,6 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
@@ -36,7 +31,6 @@ spec:
             - apiGroups: [""]
               resources: ["pods", "pods/log", "namespaces", "nodes"]
               verbs: ["get", "list", "watch"]
-
         controller:
           type: daemonset
           # Without this, the DaemonSet skips the 3 control-plane nodes
@@ -58,7 +52,6 @@ spec:
               - name: journal
                 hostPath:
                   path: /var/log/journal
-
         alloy:
           # journal files are root:systemd-journal 0640 on Debian/Ubuntu, and
           # the systemd-journal GID isn't guaranteed consistent across nodes —

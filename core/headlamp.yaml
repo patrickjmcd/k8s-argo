@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: headlamp
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
@@ -12,10 +10,7 @@ spec:
     namespace: kube-system
     name: in-cluster
   project: core-components
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  syncPolicy: {}
   sources:
     - chart: headlamp
       targetRevision: 0.46.0
@@ -47,28 +42,28 @@ spec:
               installOptions:
                 parallel: true
                 maxConcurrent: 2
-#          httpRoute:
-#            enabled: true
-#            parentRefs:
-#              - group: gateway.networking.k8s.io
-#                kind: Gateway
-#                name: traefik-gateway
-#                namespace: default
-#            hostnames:
-#              - headlamp.x.pmcd.io
-#            rules:
-#              - matches:
-#                  - path:
-#                      type: PathPrefix
-#                      value: /
-#                backendRefs:
-#                  - name: headlamp
-#                    kind: Service
-#                    namespace: kube-system
-#                    port: 80
+            #          httpRoute:
+            #            enabled: true
+            #            parentRefs:
+            #              - group: gateway.networking.k8s.io
+            #                kind: Gateway
+            #                name: traefik-gateway
+            #                namespace: default
+            #            hostnames:
+            #              - headlamp.x.pmcd.io
+            #            rules:
+            #              - matches:
+            #                  - path:
+            #                      type: PathPrefix
+            #                      value: /
+            #                backendRefs:
+            #                  - name: headlamp
+            #                    kind: Service
+            #                    namespace: kube-system
+            #                    port: 80
           volumes:
             - name: headlamp-config
-              emptyDir: { }
+              emptyDir: {}
           volumeMounts:
             - name: headlamp-config
               mountPath: /home/headlamp/.config/Headlamp
@@ -118,5 +113,3 @@ spec:
                   kind: ClusterRole
                   name: cluster-admin
                   apiGroup: rbac.authorization.k8s.io
-
-
