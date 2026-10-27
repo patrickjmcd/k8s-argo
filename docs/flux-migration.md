@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers, node-tuning, kube-vip, longhorn and cilium are on Flux. Argo keeps 5 Applications (gitea, the 3 roots, argocd). Next: gitea.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers, node-tuning, kube-vip, longhorn, cilium and gitea are on Flux. **Phase 4 complete 2026-10-27**: Argo keeps only its 3 root Applications and argocd itself, which now manage nothing else. Next: Phase 5 (remove Argo).
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -709,6 +709,15 @@ Per component:
   Hubble UI answered. **Lesson: a local Helm render is not proof of what
   helm-controller renders; use a post-render patch that converges to the
   live value rather than one that assumes the render.**
+- ✅ **gitea** (2026-10-27): Kustomization `gitea` (`apps/gitea`, plain
+  manifests). Prep in the disarm commit: a prune-guarded `namespace.yaml`
+  (Flux doesn't create namespaces), `prune: disabled` on the PVC, and the
+  live `restartedAt` copied into the Deployment (a restart would also take
+  Flux's own source down for the Recreate rollout). Empty diff apart from
+  the guard annotations; 8 objects kept their UIDs and the Gitea pod did not
+  restart. The root `apps` app had not auto-synced the handoff revision
+  after ~2 min, so the disarmed `gitea` Application (no finalizer, no hooks)
+  was deleted by hand, which is all its prune would have done.
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -768,7 +777,7 @@ cluster-visible, **H** = cluster-wide blast radius.
 |---|---|---|---|---|
 | adsb | adsb | kustomize | M | ✅ Flux (2b-1); PVC |
 | dreeve | default | kustomize | M | ✅ Flux (2b-1); PVC; namespace-less objects |
-| gitea | gitea | kustomize | H | source of truth; Phase 4, last |
+| ✅ gitea | gitea | kustomize | H | source of truth; Phase 4, last |
 | glance | default | HomelabApp | L | ✅ Flux (2a) |
 | go2rtc | default | HomelabApp | L | ✅ Flux (2a) |
 | hivemq | hivemq | kustomize | M | ✅ Flux (2b-1); PVC |
