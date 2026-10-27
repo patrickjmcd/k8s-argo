@@ -25,6 +25,7 @@ spec:
     READARR__SERVER__PORT: '8787'
     READARR__SERVER__BINDADDRESS: '*'
     READARR__LOG__LEVEL: info
+    READARR__LOG__ANALYTICSENABLED: 'False'
     READARR__AUTH__METHOD: External
     READARR__AUTH__REQUIRED: DisabledForLocalAddresses
     READARR__APP__BRANCH: master

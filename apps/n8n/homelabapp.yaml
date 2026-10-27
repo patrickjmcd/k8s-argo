@@ -29,6 +29,9 @@ spec:
     WEBHOOK_URL: https://n8n.pmcd.dev
     N8N_PROXY_HOPS: '1'
     N8N_PORT: '5678'
+    N8N_DIAGNOSTICS_ENABLED: 'false'
+    N8N_VERSION_NOTIFICATIONS_ENABLED: 'false'
+    N8N_HIRING_BANNER_ENABLED: 'false'
     DB_TYPE: postgresdb
     DB_POSTGRESDB_DATABASE: n8n
     DB_POSTGRESDB_USER: n8n

@@ -147,6 +147,9 @@ spec:
             - name: pmcdio-tls-le
             - name: pmcddev-tls-le
     # Enable Observability
+    global:
+      checkNewVersion: false
+      sendAnonymousUsage: false
     log:
       level: INFO
     accessLog:

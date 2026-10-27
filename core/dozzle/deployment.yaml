@@ -44,3 +44,5 @@ spec:
           env:
             - name: DOZZLE_MODE
               value: "k8s"
+            - name: DOZZLE_NO_ANALYTICS
+              value: "true"

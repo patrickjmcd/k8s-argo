@@ -65,6 +65,7 @@ spec:
             hostPath:
               path: /var/log/journal
     alloy:
+      enableReporting: false
       # journal files are root:systemd-journal 0640 on Debian/Ubuntu, and
       # the systemd-journal GID isn't guaranteed consistent across nodes —
       # running as root sidesteps that instead of chasing per-node GIDs.

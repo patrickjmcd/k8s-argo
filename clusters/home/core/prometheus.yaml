@@ -378,6 +378,10 @@ spec:
       grafana.ini:
         server:
           root_url: https://grafana.x.pmcd.io
+        analytics:
+          reporting_enabled: false
+          check_for_updates: false
+          check_for_plugin_updates: false
       # ADS-B sightings DB (populated by apps/adsb adsb-recorder). Password
       # injected as an env var from the 1Password-synced secret.
       envValueFrom:

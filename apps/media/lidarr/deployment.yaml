@@ -33,6 +33,8 @@ spec:
               value: "8686"
             - name: LIDARR__SERVER__BINDADDRESS
               value: "*"
+            - name: LIDARR__LOG__ANALYTICSENABLED
+              value: "False"
             - name: LIDARR__LOG__LEVEL
               value: info
             - name: LIDARR__AUTH__METHOD

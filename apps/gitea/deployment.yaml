@@ -40,6 +40,8 @@ spec:
               value: America/Chicago
             - name: GITEA_APP_INI
               value: /etc/gitea/app.ini
+            - name: GITEA__cron.update_checker__ENABLED
+              value: "false"
             - name: GITEA__database__DB_TYPE
               value: postgres
             - name: GITEA__database__HOST

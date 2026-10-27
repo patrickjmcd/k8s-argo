@@ -40,6 +40,8 @@ spec:
             value: database
           - name: DB_PROVIDER
             value: postgres
+          - name: ANALYTICS_DISABLED
+            value: "true"
 
 
 
