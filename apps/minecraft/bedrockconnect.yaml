@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: bedrockconnect
-          image: pugmatt/bedrock-connect:1.71.0
+          image: pugmatt/bedrock-connect:1.72.0
           env:
             - name: BC_CUSTOM_SERVERS
               value: /config/custom_servers.json
