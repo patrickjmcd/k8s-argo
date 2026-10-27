@@ -98,6 +98,8 @@ spec:
           type: ClusterIP
     additionalArguments:
       - "--api.insecure=true"
+      # Hide the Traefik Hub upsell in the dashboard.
+      - "--api.disableDashboardAd=true"
     # Memory request follows Goldilocks (~260Mi target; observed peak
     # 221Mi over 7 days) - 160Mi was below real usage.
     resources:
