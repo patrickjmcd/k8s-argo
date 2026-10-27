@@ -37,6 +37,7 @@ resources:
   - csi-driver-smb.yaml
   - csi-driver-nfs.yaml
   - node-tuning.yaml
+  - kube-vip.yaml
 patches:
   - target:
       kind: Kustomization
