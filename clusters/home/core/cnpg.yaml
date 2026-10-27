@@ -1,0 +1,110 @@
+# CloudNativePG operator + Barman Cloud plugin, adopted from the Argo
+# Application cloudnative-pg (docs/flux-migration.md §4.2). Both charts keep
+# their CRDs (helm.sh/resource-policy: keep). Never remediate a failed
+# install: for an adopted release that means uninstalling what was running.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cloudnative-pg
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: cloudnative-pg
+  targetNamespace: cnpg-system
+  storageNamespace: cnpg-system
+  chart:
+    spec:
+      chart: cloudnative-pg
+      version: 0.29.1
+      sourceRef:
+        kind: HelmRepository
+        name: cnpg
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+---
+# Barman Cloud plugin: WAL archiving + base backups for the CNPG clusters
+# (core/postgres/objectstore-b2.yaml). Argo rendered both charts as one
+# release named cloudnative-pg, so this chart's objects carry that name.
+# fullnameOverride keeps their names; the post-render patch keeps
+# app.kubernetes.io/instance: cloudnative-pg in the Deployment and Service
+# selectors, which are immutable (the Deployment would otherwise have to be
+# deleted and recreated). Other objects' instance label reads
+# plugin-barman-cloud.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: plugin-barman-cloud
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: plugin-barman-cloud
+  targetNamespace: cnpg-system
+  storageNamespace: cnpg-system
+  dependsOn:
+    - name: cloudnative-pg
+    - name: cert-manager
+  chart:
+    spec:
+      chart: plugin-barman-cloud
+      version: 0.8.1
+      sourceRef:
+        kind: HelmRepository
+        name: cnpg
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    fullnameOverride: cloudnative-pg-plugin-barman-cloud
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: cloudnative-pg-plugin-barman-cloud
+            patch: |
+              - op: replace
+                path: /spec/selector/matchLabels/app.kubernetes.io~1instance
+                value: cloudnative-pg
+              - op: replace
+                path: /spec/template/metadata/labels/app.kubernetes.io~1instance
+                value: cloudnative-pg
+          - target:
+              kind: Service
+              name: barman-cloud
+            patch: |
+              - op: replace
+                path: /spec/selector/app.kubernetes.io~1instance
+                value: cloudnative-pg
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cnpg-extras
+  namespace: flux-system
+spec:
+  path: ./core/cnpg
