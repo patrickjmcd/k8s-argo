@@ -20,4 +20,16 @@ resources:
   - recurring-jobs.yaml
   - settings.yaml
 
-
+# Never let Flux prune Longhorn's node/disk config, backup target, recurring
+# jobs, settings or StorageClass (docs/flux-migration.md §2): deleting a
+# Longhorn Node object drops its disks from scheduling.
+patches:
+  - target:
+      kind: (Node|BackupTarget|RecurringJob|Setting|StorageClass)
+    patch: |
+      apiVersion: v1
+      kind: Ignored
+      metadata:
+        name: ignored
+        annotations:
+          kustomize.toolkit.fluxcd.io/prune: disabled
