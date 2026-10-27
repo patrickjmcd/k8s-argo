@@ -56,7 +56,6 @@ spec:
       labels:
         group: services
       static:
-        - https://argo.x.pmcd.io
         - https://git.x.pmcd.io
         - https://grafana.x.pmcd.io
         - https://homebox.x.pmcd.io

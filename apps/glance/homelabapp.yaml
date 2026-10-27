@@ -81,8 +81,6 @@ spec:
                       - title: PocketID
                         url: https://auth.pmcd.dev
                       # BEGIN GLANCE-GENERATED:Services
-                      - title: ArgoCD
-                        url: https://argo.x.pmcd.io
                       - title: Gitea
                         url: https://git.x.pmcd.io
                       - title: Grafana
@@ -486,8 +484,8 @@ spec:
                     groups:
                       - title: Infrastructure
                         links:
-                          - title: ArgoCD
-                            url: https://argo.x.pmcd.io
+                          - title: Flux
+                            url: https://flux.x.pmcd.io
                           - title: Grafana
                             url: https://grafana.x.pmcd.io
                           - title: Prometheus
