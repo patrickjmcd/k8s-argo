@@ -1,0 +1,32 @@
+# Gitea push webhook -> Flux, so a push to k8s-argo reconciles immediately
+# instead of on the GitRepository's 1m poll. Gitea sends GitHub-compatible
+# headers (X-GitHub-Event, X-Hub-Signature-256), hence type github.
+#
+# The HMAC secret is the `token` field of the 1Password item flux-receiver;
+# the Gitea repo webhook (POST to the in-cluster webhook-receiver Service at
+# status.webhookPath, same secret) is created by
+# scripts/create-flux-receiver-hook.sh.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: flux-receiver-1pw
+  namespace: flux-system
+spec:
+  itemPath: "vaults/Kubernetes/items/flux-receiver"
+---
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: gitea-k8s-argo
+  namespace: flux-system
+spec:
+  type: github
+  events:
+    - ping
+    - push
+  secretRef:
+    name: flux-receiver-1pw
+  resources:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      name: flux-system

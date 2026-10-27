@@ -6,6 +6,7 @@ resources:
   - core
   - cronjobs.yaml
   - notifications.yaml
+  - receiver.yaml
   - flux-operator.yaml
   - flux-instance.yaml
   - flux-web.yaml
