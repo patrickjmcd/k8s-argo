@@ -9,6 +9,19 @@ resources:
   - joshhawleygop.yaml
   - spoolman.yaml
   - tronbyt-server.yaml
+  - glance.yaml
+  - go2rtc.yaml
+  - homebox-companion.yaml
+  - homelable.yaml
+  - homelable-mcp.yaml
+  - nut-exporter.yaml
+  - pihole-exporter.yaml
+  - pve-exporter.yaml
+  - unifi-mcp.yaml
+  - unpoller.yaml
+  - reedme.yaml
+  - kaneo.yaml
+  - stubs.yaml
 patches:
   - target:
       kind: Kustomization
