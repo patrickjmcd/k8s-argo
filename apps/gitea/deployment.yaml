@@ -20,6 +20,10 @@ spec:
       app: gitea
   template:
     metadata:
+      # Copied from the live object so the Flux handoff doesn't restart Gitea
+      # (docs/flux-migration.md §4.10).
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-10-13T03:47:33Z"
       labels:
         app: gitea
     spec:
