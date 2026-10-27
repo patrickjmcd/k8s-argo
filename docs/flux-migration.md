@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI at flux.x.pmcd.io waits on the PocketID client (§4.9). Next: Phase 2.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Next: Phase 2.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -379,7 +379,8 @@ PocketID OIDC (`issuerURL: https://auth.pmcd.dev`, callback
 `valuesFrom`. The UI impersonates the user's `email` and `groups` claims, so
 access is plain RBAC: `clusters/home/flux-web.yaml` binds the PocketID group
 `argocd_admin` (Argo CD's admin group) to the operator's `flux-web-admin`
-ClusterRole. Rename the group at Phase 5. Radar (Skyhook) was considered and
+ClusterRole. Rename the group at Phase 5. Live since 2026-10-27; the server takes a
+few seconds to start after an operator restart (Traefik returns 502 until then). Radar (Skyhook) was considered and
 skipped: it overlaps Headlamp; it can run locally against a kubeconfig if its
 topology view is ever wanted.
 
