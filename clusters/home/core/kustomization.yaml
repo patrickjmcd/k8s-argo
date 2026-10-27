@@ -26,6 +26,7 @@ resources:
   - trivy-operator.yaml
   - kubernetes-mcp-server.yaml
   - tailscale.yaml
+  - kro.yaml
 patches:
   - target:
       kind: Kustomization

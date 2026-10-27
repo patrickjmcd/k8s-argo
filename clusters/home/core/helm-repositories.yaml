@@ -80,3 +80,13 @@ metadata:
 spec:
   interval: 12h
   url: https://pkgs.tailscale.com/helmcharts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kro
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: oci://registry.k8s.io/kro/charts
+  type: oci
