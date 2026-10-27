@@ -463,6 +463,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: default
 
+# The app itself. Keep in this template: a hand-added entry is lost on the
+# next rebuild (happened Oct 11 2026, site down for two weeks).
+resources:
+  - homelabapp.yaml
+
 # Site content and nginx config, mounted into the nginx container by
 # values.yaml. Fixed names so the Helm release can reference them.
 configMapGenerator:
