@@ -38,6 +38,7 @@ resources:
   - csi-driver-nfs.yaml
   - node-tuning.yaml
   - kube-vip.yaml
+  - longhorn.yaml
 patches:
   - target:
       kind: Kustomization
