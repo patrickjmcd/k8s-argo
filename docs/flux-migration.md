@@ -583,6 +583,16 @@ Per component:
     renames Namespace objects, so the empty, unused `grafana` Namespace was
     dropped from git. It is still in the cluster, unmanaged.
   - The chart's admission-webhook hook Jobs ran on install and completed.
+  - **Lost a hand-set namespace label.** The live `prometheus` Namespace had
+    `prometheus: enabled` (set by hand, never in git), which the Prometheus
+    CR's `serviceMonitorNamespaceSelector` needs for the chart's own
+    ServiceMonitors. Flux's apply of `namespace.yaml` dropped it: 55 targets
+    (kubelet, apiserver, node-exporter, kube-state-metrics, ...) disappeared
+    for ~20 minutes, firing `KubeAPIDown` and `BeelinkUsbDriveUnmounted`
+    (an `absent()` on node-exporter data). Fixed in git. **Before each
+    remaining handoff, compare the live labels of every Namespace the
+    component's manifests declare with git** (`kubectl get ns <ns>
+    --show-labels`).
 - ✅ **kyverno** (2026-10-27): HelmRelease plus `kyverno-extras` (the 6
   ClusterPolicies). The chart ships its CRDs as **templates**, not in `crds/`,
   so a Helm uninstall would delete them and every policy; all 22 now carry
