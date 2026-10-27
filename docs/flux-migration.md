@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. Next: 2e (nats, immich: first Helm adoptions).
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. nats adopted as a HelmRelease (§4.2 recipe); next: immich.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -252,6 +252,33 @@ remove it live. Step 6 of §3 drops the entry; the object is not modified
 otherwise (generation unchanged).
 
 ### 4.2 Helm adoption (upstream charts)
+
+**Proven on nats (2026-10-27), the recipe for every chart app:**
+1. Render exactly what Argo rendered: `helm template <release> <repo>/<chart>
+   --version <v> -n <ns> -f <values>` (values from the Application's
+   `valuesObject`/value files), dropping `helm.sh/hook` objects.
+2. Add the live `restartedAt` values (§4.10) through the chart's pod-template
+   values (nats: `podTemplate.merge` / `natsBox.podTemplate.merge`).
+3. `kubectl diff --server-side --field-manager=helm-controller --force-conflicts
+   -f render.yaml` must show nothing but managedFields. Fix values until it does.
+4. HelmRelease with `releaseName`, `targetNamespace`, `storageNamespace` set to
+   the app namespace (otherwise the release name becomes `<ns>-<name>`),
+   `install.serverSideApply: true`, `upgrade.serverSideApply: enabled`,
+   `driftDetection.mode: enabled`, and **`install/upgrade.remediation.retries:
+   0` with `remediateLastFailure: false`**: remediating a failed first install
+   would uninstall the adopted objects. Take-ownership is helm-controller's
+   default in v2.10 (`disableTakeOwnership` exists), so no manual
+   `meta.helm.sh/*` labelling was needed.
+5. The app's extra kustomize path becomes a separate `<app>-extras`
+   Kustomization.
+
+Result for nats: `helm list` shows `nats` rev 1 deployed, all 14 objects kept
+their UIDs, no pod restarted. helm-controller leaves the `kubectl-rollout`
+manager on the pod template (unlike kustomize-controller), so step 2 is about
+template equality, not field cleanup.
+
+Older notes, still relevant for the core charts:
+
 
 Argo rendered every chart with `helm template`, so **no Helm release secrets
 exist** and the live objects carry no Helm ownership metadata. A HelmRelease's
@@ -546,7 +573,7 @@ cluster-visible, **H** = cluster-wide blast radius.
 | media | media | app-of-apps | M | parent of ApplicationSet + media-base; remove last in 2c |
 | minecraft | minecraft | kustomize | M | ✅ Flux (2b-1); PVC |
 | n8n | default | HomelabApp | M | ✅ Flux (2b); PVC; DB |
-| nats | nats | Helm `nats@2.15.1` + kustomize | M | §4.2 |
+| nats | nats | Helm `nats@2.15.1` + kustomize | M | ✅ Flux (2e, HelmRelease adopted); §4.2 |
 | ntfy | ntfy | HomelabApp | M | ✅ Flux (2b); PVC; alert path, so confirm alerts afterwards |
 | nut-exporter | default | HomelabApp | L | ✅ Flux (2a) |
 | outline | default | HomelabApp | M | ✅ Flux (2b); PVC; `markdown-export.yaml` has `Prune=false` |
