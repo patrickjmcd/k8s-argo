@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus and kyverno are on Flux. Argo keeps 15 Applications. Next: cert-manager.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno and cert-manager are on Flux. Argo keeps 14 Applications. Next: shared-postgres.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -602,6 +602,17 @@ Per component:
   (only post-upgrade and pre-delete). 76 objects and kyverno's 10 generated
   webhook configurations kept their UIDs, no pod restarted, and a server-side
   dry-run pod still gets the tolerations and node affinity.
+- ✅ **cert-manager** (2026-10-27): HelmRelease (release name
+  `cert-manager`; the Argo Application set none) plus `cert-manager-extras`.
+  Its CRDs are templates but `crds.keep` (default true) already marks them
+  `keep`. The post-install `startupapicheck` hook Job ran once on adoption and
+  passed. Server-side diff empty, with and without `lookup`. The
+  OnePasswordItem relied on Argo's namespace default and now sets
+  `cert-manager` itself (a kustomization-wide `namespace:` would have moved
+  the Certificates out of `default`). Applied client-side by Argo, so 46
+  `last-applied-configuration` annotations were removed along with 70
+  managedFields entries. Pods, webhook CA bundle and the served certificates
+  unchanged.
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -716,7 +727,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 |---|---|---|---|---|---|---|
 | cilium | kube-system | -4 | `cilium@1.20.4` + kustomize | H | 4 | CNI; maintenance window |
 | argocd | argocd | -2 | `argo-cd@10.10.3` + kustomize | — | 5 | removed, not migrated |
-| cert-manager | cert-manager | -2 | `cert-manager@v1.21.2` + kustomize | H | 4 | caBundle drift ignore |
+| ✅ cert-manager | cert-manager | -2 | `cert-manager@v1.21.2` + kustomize | H | 4 | caBundle drift ignore |
 | kube-vip | kube-system | -2 | kustomize | H | 4 | control-plane VIP |
 | cloudnative-pg | cnpg-system | -1 | `cloudnative-pg@0.29.1`, `plugin-barman-cloud@0.8.1` + kustomize | H | 4 | two HelmReleases |
 | csi-driver-nfs | kube-system | -1 | `csi-driver-nfs@4.13.6` | H | 4 | |
