@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). Next: Phase 3 (low-risk core).
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3a done 2026-10-27**: the 9 plain-kustomize core components are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). Next: Phase 3b (low-risk core charts).
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -331,8 +331,8 @@ filter failed to parse `apps/ia-ignition`, `apps/media/youtarr`, `core/garage`,
 |---|---|
 | `shared-postgres-backup-grants` | `core/postgres/grants-job.yaml` |
 | `{dispatcharr,n8n,outline,reedme}-ownership-fix` | `core/postgres/*-ownership-fix.yaml` |
-| `homeassistant-schema` | `core/timescale/homeassistant-schema-job.yaml` |
-| `garage-bootstrap` | `core/garage/bootstrap-job.yaml` |
+| `homeassistant-schema` | ✅ `core/timescale/jobs/` (Kustomization `timescale-jobs`) |
+| `garage-bootstrap` | ✅ `core/garage/jobs/` (Kustomization `garage-jobs`) |
 
 Move each into its own sub-directory (e.g. `core/postgres/jobs/`) with a
 Kustomization that `dependsOn` the parent and sets `force: true`, so a changed
@@ -341,6 +341,16 @@ Job (immutable spec) is deleted and recreated. That is the
 every sync, only when the Job spec changes. Confirm each one is idempotent and
 that this is acceptable (the ownership fixes are one-shot repairs and arguably
 can be deleted).
+
+**Done for garage and timescale (2026-10-27).** Two changes made it work:
+- **Drop `ttlSecondsAfterFinished`.** Once the TTL deletes a finished Job, Flux
+  sees it missing and recreates it, so the Job would run every TTL+interval.
+- **Hash the script ConfigMap.** Move the script into `jobs/` and generate its
+  ConfigMap with the default name hash. Editing the script then changes the
+  Job spec, and the Job re-runs. With a fixed name, a new bucket in
+  `bootstrap.py` would never be applied.
+
+Both Jobs ran once on handoff and completed in about 5s.
 
 ### 4.5 HomelabApp health
 
@@ -490,11 +500,11 @@ Hold until Phase 4: **gitea** (source of truth for both Argo and Flux).
 
 ### Phase 3: `core/` low risk
 
-Kustomize-only: cloudflared-tunnel, dozzle, csi-driver-nfs-assets,
+**3a ✅ 2026-10-27.** Kustomize-only: cloudflared-tunnel, dozzle, csi-driver-nfs-assets,
 goldilocks-assets, pocketid, system-upgrade, garage (+ bootstrap job, §4.4),
-timescale (+ schema job), monitoring (manual → suspended).
+timescale (+ schema job), monitoring (only a Namespace, so a normal Kustomization).
 
-HelmRelease, low blast radius: reloader, goldilocks, vpa, headlamp, loki,
+**3b.** HelmRelease, low blast radius: reloader, goldilocks, vpa, headlamp, loki,
 alloy, blackbox-exporter, external-dns, trivy-operator,
 kubernetes-mcp-server, tailscale-operator.
 
@@ -629,7 +639,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | node-tuning | kube-system | -1 | kustomize | M | 4 | |
 | shared-postgres | postgres | -1 | kustomize | H | 4 | 6 hook Jobs |
 | tailscale-operator | tailscale | -1 | `tailscale-operator@1.104.2` + kustomize | M | 3 | |
-| timescale | timescale | -1 | kustomize | M | 3 | 1 hook Job |
+| ✅ timescale | timescale | -1 | kustomize | M | 3 | 1 hook Job |
 | alloy | loki | 0 | `alloy@1.14.3` | L | 3 | |
 | kro | kro-system | 0 | `kro@0.9.4` (OCI) | H | 4 | CRD must never be pruned |
 | kyverno | kyverno | 0 | `kyverno@3.9.2` + kustomize | H | 4 | admission webhooks |
@@ -637,22 +647,22 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | prometheus | prometheus | 0 | `kube-prometheus-stack@92.3.1` + 2 kustomize paths | M | 4 | CRDs every ServiceMonitor needs |
 | vpa | vpa | 0 | `vpa@5.1.0` | L | 3 | |
 | goldilocks | goldilocks | 1 | `goldilocks@11.2.0` | L | 3 | |
-| goldilocks-assets | goldilocks | 1 | kustomize | L | 3 | |
+| ✅ goldilocks-assets | goldilocks | 1 | kustomize | L | 3 | |
 | kro-definitions | kro-system | 1 | kustomize | H | 4 | the HomelabApp RGD |
 | traefik | default | 1 | `traefik@41.7.1` + kustomize | H | 4 | all ingress; assets dir has a PVC |
 | trivy-operator | trivy-system | 1 | `trivy-operator@0.37.0` + kustomize | L | 3 | |
 | blackbox-exporter | prometheus | — | `prometheus-blackbox-exporter@11.20.0` + kustomize | L | 3 | |
-| cloudflared-tunnel | default | — | kustomize | M | 3 | public ingress path |
-| csi-driver-nfs-assets | default | — | kustomize | L | 3 | |
-| dozzle | default | — | kustomize | L | 3 | |
+| ✅ cloudflared-tunnel | default | — | kustomize | M | 3 | public ingress path |
+| ✅ csi-driver-nfs-assets | default | — | kustomize | L | 3 | |
+| ✅ dozzle | default | — | kustomize | L | 3 | |
 | external-dns | external-dns | — | `external-dns@1.23.0` + kustomize | M | 3 | |
-| garage | garage | — | kustomize | M | 3 | 1 hook Job; PVC |
+| ✅ garage | garage | — | kustomize | M | 3 | 1 hook Job; PVC |
 | headlamp | kube-system | — | `headlamp@0.46.0` | L | 3 | add Flux plugin here |
 | kubernetes-mcp-server | kubernetes-mcp-server | — | `kubernetes-mcp-server@0.1.0` (OCI) + kustomize | L | 3 | |
-| monitoring | default | — | kustomize | L | 3 | manual sync → suspended |
-| pocketid | pocketid | — | kustomize | M | 3 | SSO for everything |
+| ✅ monitoring | default | — | kustomize | L | 3 | just the Namespace; normal (not suspended) on Flux |
+| ✅ pocketid | pocketid | — | kustomize | M | 3 | SSO for everything |
 | reloader | reloader | — | `reloader@2.2.18` | L | 3 | |
-| system-upgrade | default | — | kustomize | M | 3 | k3s upgrade Plans |
+| ✅ system-upgrade | default | — | kustomize | M | 3 | k3s upgrade Plans |
 
 ### cronjobs/
 
