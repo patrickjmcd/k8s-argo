@@ -1,0 +1,36 @@
+# One Flux Kustomization per app under apps/ (the Flux side of
+# argo/applications/apps.yaml). Each file only sets name + path; the shared
+# settings below are patched onto all of them. Handoff procedure:
+# docs/flux-migration.md §3.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - iss-in-space.yaml
+  - joshhawleygop.yaml
+  - spoolman.yaml
+  - tronbyt-server.yaml
+patches:
+  - target:
+      kind: Kustomization
+    patch: |
+      apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        name: all
+        namespace: flux-system
+      spec:
+        interval: 10m
+        retryInterval: 2m
+        timeout: 5m
+        sourceRef:
+          kind: GitRepository
+          name: k8s-argo
+        prune: true
+        # Wait on everything applied; HomelabApps report through kro's Ready
+        # condition (ports the Lua health check in core/argocd.yaml).
+        wait: true
+        healthCheckExprs:
+          - apiVersion: homelab.pmcd.io/v1alpha1
+            kind: HomelabApp
+            current: has(status.conditions) && status.conditions.exists(e, e.type == 'Ready' && e.status == 'True')
+            failed: has(status.state) && status.state in ['ERROR', 'FAILED']

@@ -1,0 +1,11 @@
+# Temporary: Phase 1 check that kustomize.toolkit.fluxcd.io/prune: disabled
+# keeps an object when it leaves git. Removed in the next commit.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flux-prune-test
+  namespace: default
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+data:
+  purpose: flux-migration-phase1
