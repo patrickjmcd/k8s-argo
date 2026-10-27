@@ -1,0 +1,10 @@
+# Gitea is also this Kustomization's source (GitRepository flux-system reads
+# gitea.gitea.svc), so Flux reconciles Gitea from Gitea. If Gitea is down,
+# repoint the source at the GitHub mirror (CLAUDE.md, "If Gitea is down").
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gitea
+  namespace: flux-system
+spec:
+  path: ./apps/gitea

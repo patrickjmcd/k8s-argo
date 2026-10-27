@@ -50,6 +50,7 @@ resources:
   - nats-extras.yaml
   - immich.yaml
   - immich-extras.yaml
+  - gitea.yaml
 patches:
   - target:
       kind: Kustomization
