@@ -1,0 +1,23 @@
+# Phase 1 pilot (docs/flux-migration.md §5): first app handed over from Argo CD.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: iss-in-space
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 2m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: k8s-argo
+  path: ./apps/iss-in-space
+  prune: true
+  # Wait on the HomelabApp's kro Ready condition (ports the Lua health check
+  # in core/argocd.yaml).
+  wait: true
+  healthCheckExprs:
+    - apiVersion: homelab.pmcd.io/v1alpha1
+      kind: HomelabApp
+      current: has(status.conditions) && status.conditions.exists(e, e.type == 'Ready' && e.status == 'True')
+      failed: has(status.state) && status.state in ['ERROR', 'FAILED']
