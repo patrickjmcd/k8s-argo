@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: minecraft
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
 spec:
@@ -13,9 +11,6 @@ spec:
     name: in-cluster
     namespace: minecraft
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

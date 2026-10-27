@@ -6,3 +6,5 @@ metadata:
     # Prometheus only discovers ServiceMonitors in namespaces with this label
     # (serviceMonitorNamespaceSelector) — needed for the adsb-exporter monitor.
     prometheus: enabled
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled

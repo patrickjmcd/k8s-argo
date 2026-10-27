@@ -4,17 +4,18 @@ metadata:
   name: smb-homebox
   annotations:
     argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: ''
   capacity:
     storage: 500Mi
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   mountOptions:
-  - dir_mode=0777
-  - file_mode=0777
-  - vers=3.0
+    - dir_mode=0777
+    - file_mode=0777
+    - vers=3.0
   csi:
     driver: smb.csi.k8s.io
     readOnly: false

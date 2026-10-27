@@ -2,6 +2,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: smb-romm-library
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: ""
   capacity:
@@ -28,6 +30,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: smb-romm-library-claim
   namespace: romm
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteMany

@@ -7,6 +7,7 @@ metadata:
     recurring-job.longhorn.io/source: enabled
   annotations:
     argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   # RWO is correct here: app + daemon are two containers in ONE pod, so a
   # single node always holds the mount. They MUST share these volumes - the
