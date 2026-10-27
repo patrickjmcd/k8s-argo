@@ -15,8 +15,6 @@ kind: Application
 metadata:
   name: cilium
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     # Earliest wave: the CNI must be the first thing reconciled.
     argocd.argoproj.io/sync-wave: "-4"
@@ -27,9 +25,6 @@ spec:
     name: in-cluster
   project: core-components
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
