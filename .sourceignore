@@ -1,0 +1,11 @@
+# Read by Flux's source-controller when it packages this repo (gitignore syntax,
+# applied after Flux's built-in ignore list).
+
+# Flux's defaults drop images and archives (*.png, *.jpg, *.zip, ...), but
+# joshhawleygop ships og.png inside a ConfigMap.
+!/apps/joshhawleygop/site/*.png
+
+# Nothing Flux deploys lives here; keeps the artifact small.
+/docs/
+/infra/
+/scripts/
