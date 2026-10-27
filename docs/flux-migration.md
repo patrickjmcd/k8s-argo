@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions and traefik are on Flux. Argo keeps 17 Applications. Next: prometheus.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik and prometheus are on Flux. Argo keeps 16 Applications. Next: kyverno.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -558,6 +558,31 @@ Per component:
   pods, the `.200` LoadBalancer IP, both Gateways and all 85 HTTPRoutes were
   untouched. The chart's CRDs (25, traefik.io/hub.traefik.io) are in `crds/`;
   the Gateway API CRDs are not the chart's.
+- ✅ **prometheus** (2026-10-27): HelmRelease `kube-prometheus-stack` plus
+  `prometheus-extras` and `grafana-extras`. 166 objects kept their UIDs;
+  Prometheus, Alertmanager, the operator, kube-state-metrics and node-exporter
+  did not restart. Lessons:
+  - **Charts that use `lookup` render differently under `helm template`.** The
+    Grafana chart reuses its existing admin Secret via `lookup`; Argo's
+    `helm template` can't look anything up, so every Argo render generated a
+    new random password and rolled Grafana (generation 388, five ReplicaSets
+    in the day before handoff). helm-controller does run `lookup`. To diff the
+    way it renders, use `helm install --dry-run=server --take-ownership
+    --skip-crds` and diff its `MANIFEST:` section (`helm template
+    --dry-run=server` fails Helm's ownership check instead). The secret
+    checksum still changed once, so Grafana restarted once at handoff
+    (`Recreate` strategy, RWO PVC, no deadlock).
+  - The extras' plain `json-exporter` Deployment rolled once: it carried a
+    `restartedAt` (§4.10) that I only checked on the chart's workloads. Check
+    the extras directories too.
+  - Grafana's PVC is a chart object, so it now has `helm.sh/resource-policy:
+    keep`. The Prometheus TSDB claim is the operator's (volumeClaimTemplate) on
+    the prune-guarded `prometheus-usb` local PV.
+  - `core/grafana-assets` had no namespace on its dashboard ConfigMaps; it now
+    sets `namespace: prometheus`. Kustomize's namespace transformer also
+    renames Namespace objects, so the empty, unused `grafana` Namespace was
+    dropped from git. It is still in the cluster, unmanaged.
+  - The chart's admission-webhook hook Jobs ran on install and completed.
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -682,7 +707,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | ✅ kro | kro-system | 0 | `kro@0.9.4` (OCI) | H | 4 | CRD must never be pruned |
 | kyverno | kyverno | 0 | `kyverno@3.9.2` + kustomize | H | 4 | admission webhooks |
 | ✅ loki | loki | 0 | `loki@7.5.0` | L | 3 | |
-| prometheus | prometheus | 0 | `kube-prometheus-stack@92.3.1` + 2 kustomize paths | M | 4 | CRDs every ServiceMonitor needs |
+| ✅ prometheus | prometheus | 0 | `kube-prometheus-stack@92.3.1` + 2 kustomize paths | M | 4 | CRDs every ServiceMonitor needs |
 | ✅ vpa | vpa | 0 | `vpa@5.1.0` | L | 3 | |
 | ✅ goldilocks | goldilocks | 1 | `goldilocks@11.2.0` | L | 3 | |
 | ✅ goldilocks-assets | goldilocks | 1 | kustomize | L | 3 | |
