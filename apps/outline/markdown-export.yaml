@@ -47,7 +47,6 @@ kind: PersistentVolume
 metadata:
   name: smb-outline-markdown-export
   annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: ""
@@ -71,7 +70,6 @@ metadata:
   name: smb-outline-markdown-export-claim
   namespace: default
   annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes: [ReadWriteMany]

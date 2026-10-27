@@ -5,8 +5,6 @@ metadata:
   namespace: longhorn-system
   finalizers:
     - longhorn.io
-  annotations:
-    argocd.argoproj.io/sync-options: Replace=true
 spec:
   # Beelink running bare-metal Plex/Jellyfin: the root disk is theirs, so
   # replicas go only on the USB drive. That drive occasionally drops off the

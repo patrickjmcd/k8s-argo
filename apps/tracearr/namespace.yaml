@@ -5,5 +5,4 @@ kind: Namespace
 metadata:
   name: tracearr
   annotations:
-    argocd.argoproj.io/sync-options: Delete=false
     kustomize.toolkit.fluxcd.io/prune: disabled

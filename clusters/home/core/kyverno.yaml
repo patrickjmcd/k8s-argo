@@ -43,10 +43,6 @@ spec:
         helm.sh/resource-policy: keep
     config:
       preserve: false
-      excludeNamespaces:
-        - argocd
-    webhookLabels:
-      app.kubernetes.io/managed-by: argocd
     admissionController:
       # Single replica was a cluster-wide SPOF: its webhook has
       # failurePolicy=Fail, so one slow/overloaded pod blocks every

@@ -5,8 +5,6 @@ metadata:
   namespace: longhorn-system
   finalizers:
     - longhorn.io
-  annotations:
-    argocd.argoproj.io/sync-options: Replace=true
 spec:
   # etcd/control-plane node: keep Longhorn replicas off its disk so replica
   # write bursts don't compete with etcd fsync latency (SATA SSD). Pods still

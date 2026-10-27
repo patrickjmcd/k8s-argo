@@ -3,7 +3,6 @@ kind: PersistentVolume
 metadata:
   name: smb-n8n
   annotations:
-    argocd.argoproj.io/sync-options: Delete=false
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: ''

@@ -5,7 +5,6 @@ metadata:
   annotations:
     # Never prune: Retain-policy storage for the Prometheus TSDB on media-server.
     kustomize.toolkit.fluxcd.io/prune: disabled
-    argocd.argoproj.io/sync-options: Delete=false
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain

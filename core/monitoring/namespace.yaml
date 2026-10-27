@@ -7,5 +7,4 @@ metadata:
   labels:
     canUseExternalSecrets: "true"
   annotations:
-    argocd.argoproj.io/sync-options: Delete=false
     kustomize.toolkit.fluxcd.io/prune: disabled

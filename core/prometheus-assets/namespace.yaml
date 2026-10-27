@@ -12,4 +12,3 @@ metadata:
     prometheus: enabled
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
-    argocd.argoproj.io/sync-options: Delete=false

@@ -22,7 +22,7 @@
 # creating one: kro deletes includeWhen resources when the condition turns
 # false, so a kro-owned PVC would lose its data if persistence were ever
 # toggled off. Define the PVC next to the instance (with backup labels and
-# argocd.argoproj.io/sync-options: Delete=false).
+# kustomize.toolkit.fluxcd.io/prune: disabled).
 apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
@@ -30,7 +30,6 @@ metadata:
   annotations:
     # Deleting the RGD would delete the HomelabApp CRD and every instance.
     kustomize.toolkit.fluxcd.io/prune: disabled
-    argocd.argoproj.io/sync-options: Delete=false
 spec:
   schema:
     apiVersion: v1alpha1

@@ -6,4 +6,3 @@ metadata:
   annotations:
     # Never prune: without it every LoadBalancer Service loses its LAN IP.
     kustomize.toolkit.fluxcd.io/prune: disabled
-    argocd.argoproj.io/sync-options: Delete=false

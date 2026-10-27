@@ -26,14 +26,6 @@
       "/^clusters/.+\\.yaml$/"
     ]
   },
-  "argocd": {
-    "managerFilePatterns": [
-      "/apps/.+\\.yaml$/",
-      "/core/.+\\.yaml$/",
-      "/github-action-runner/.+\\.yaml$/",
-      "/cronjobs/.+\\.yaml$/"
-    ]
-  },
   "customManagers": [
     {
       "customType": "regex",
@@ -99,14 +91,6 @@
         "nginxinc/nginx-unprivileged"
       ],
       "allowedVersions": "/^1\\.\\d*[02468]\\.\\d+/"
-    },
-    {
-      "matchPackageNames": [
-        "argo-cd"
-      ],
-      "groupName": "ArgoCD",
-      "automerge": false,
-      "addLabels": ["needs-review"]
     },
     {
       "groupName": "Infrastructure Charts",

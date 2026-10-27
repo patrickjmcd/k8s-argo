@@ -4,7 +4,6 @@ metadata:
   name: smb-homebox-claim
   namespace: default
   annotations:
-    argocd.argoproj.io/sync-options: Delete=false
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:

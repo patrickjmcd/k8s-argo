@@ -16,7 +16,6 @@ resources:
   - nut-ups-rules.yaml
   - macbook-thermal-rules.yaml
   - node-thermal-rules.yaml
-  - argocd-servicemonitor.yaml
   - local-usb.storageclass.yaml
 
 

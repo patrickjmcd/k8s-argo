@@ -5,7 +5,6 @@ metadata:
   annotations:
     # Every CNPG Cluster resolves its image here; never prune it.
     kustomize.toolkit.fluxcd.io/prune: disabled
-    argocd.argoproj.io/sync-options: Delete=false
 spec:
   images:
     # Pinned to a digest (rather than the floating :18-system-trixie tag) after

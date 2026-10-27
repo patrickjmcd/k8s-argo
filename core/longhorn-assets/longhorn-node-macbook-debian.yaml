@@ -5,8 +5,6 @@ metadata:
   namespace: longhorn-system
   finalizers:
     - longhorn.io
-  annotations:
-    argocd.argoproj.io/sync-options: Replace=true
 spec:
   # Bare-metal Mid-2012 MacBook Pro (replaced the macpro-kube0 Lima VM).
   # Disk lives on the root filesystem, hence the large reserve.

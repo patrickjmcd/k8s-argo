@@ -24,4 +24,3 @@ patches:
         name: ignored
         annotations:
           kustomize.toolkit.fluxcd.io/prune: disabled
-          argocd.argoproj.io/sync-options: Delete=false
