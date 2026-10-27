@@ -34,6 +34,8 @@ resources:
   - shared-postgres.yaml
   - cnpg.yaml
   - metallb.yaml
+  - csi-driver-smb.yaml
+  - csi-driver-nfs.yaml
 patches:
   - target:
       kind: Kustomization
