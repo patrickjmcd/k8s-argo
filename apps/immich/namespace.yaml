@@ -1,0 +1,9 @@
+# Flux never creates namespaces (Argo did via CreateNamespace=true). Never
+# pruned: deleting a Namespace deletes everything in it.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: immich
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled

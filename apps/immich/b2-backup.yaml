@@ -17,6 +17,8 @@ kind: ObjectStore
 metadata:
   name: b2
   namespace: immich
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   retentionPolicy: "30d"
   configuration:
@@ -50,6 +52,8 @@ kind: ScheduledBackup
 metadata:
   name: immich-postgres-daily
   namespace: immich
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   # six-field cron (seconds first): 03:45 daily, after the 03:00 pg_dump and
   # shared-postgres's 03:30 base backup

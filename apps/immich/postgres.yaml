@@ -3,21 +3,19 @@ kind: Cluster
 metadata:
   name: postgres
   namespace: immich
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   instances: 3
-
   imageCatalogRef:
     apiGroup: postgresql.cnpg.io
     kind: ClusterImageCatalog
     name: postgresql-standard-trixie
     major: 18
-
   storage:
     storageClass: local-path
     size: 15Gi
-
   primaryUpdateMethod: switchover
-
   # Archive WAL and take base backups to B2 (b2-backup.yaml).
   plugins:
     - name: barman-cloud.cloudnative-pg.io
@@ -25,7 +23,6 @@ spec:
       parameters:
         barmanObjectName: b2
         serverName: immich
-
   # Soft-prefer the Pi 5s over the Pi 4s - see core/postgres/cluster.yaml
   # for why (Sep 2026 incident where both this cluster and shared-postgres
   # independently piled replicas onto the weakest nodes in the fleet).
@@ -47,6 +44,8 @@ kind: Database
 metadata:
   name: immich-db
   namespace: immich
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   name: app
   owner: app

@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: immich-redis
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:39-05:00"
     spec:
       containers:
         - name: valkey
