@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: traefik
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "1"
@@ -13,10 +11,7 @@ spec:
     namespace: default
     name: in-cluster
   project: core-components
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  syncPolicy: {}
   sources:
     - path: core/traefik-assets
       repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
@@ -132,7 +127,7 @@ spec:
                   from: All
               websecure: # HTTPS listener that matches entryPoint `websecure`
                 port: 443
-                protocol: HTTPS  # TLS terminates inside Traefik
+                protocol: HTTPS # TLS terminates inside Traefik
                 namespacePolicy:
                   from: All
                 certificateRefs:
@@ -143,14 +138,12 @@ spec:
             level: INFO
           accessLog:
             enabled: true
-
           # Enables Prometheus for Metrics
           metrics:
             prometheus:
               enabled: true
               serviceMonitor:
                 enabled: true
-
-  #        persistence:
-  #          enabled: true
-  #          existingClaim: smb-appconfig-traefik-claim
+#        persistence:
+#          enabled: true
+#          existingClaim: smb-appconfig-traefik-claim

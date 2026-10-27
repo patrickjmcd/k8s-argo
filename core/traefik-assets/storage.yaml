@@ -4,6 +4,10 @@ kind: PersistentVolume
 metadata:
   name: smb-appconfig-traefik
   namespace: default
+  annotations:
+    # Never prune the share mapping (docs/flux-migration.md §2).
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   storageClassName: ""
   capacity:
@@ -30,6 +34,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: smb-appconfig-traefik-claim
   namespace: default
+  annotations:
+    # Never prune the share mapping (docs/flux-migration.md §2).
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   accessModes:
     - ReadWriteMany
