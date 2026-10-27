@@ -5,3 +5,5 @@ metadata:
   namespace: flux-system
 spec:
   path: ./apps/pve-exporter
+  dependsOn:
+    - name: kro-definitions

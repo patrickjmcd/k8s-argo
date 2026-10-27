@@ -5,3 +5,5 @@ metadata:
   namespace: flux-system
 spec:
   path: ./apps/romm
+  dependsOn:
+    - name: kro-definitions

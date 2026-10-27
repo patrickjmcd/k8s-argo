@@ -5,3 +5,5 @@ metadata:
   namespace: flux-system
 spec:
   path: ./apps/homelable-mcp
+  dependsOn:
+    - name: kro-definitions

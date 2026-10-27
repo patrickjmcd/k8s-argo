@@ -1,5 +1,6 @@
 # One Flux Kustomization per app under apps/ (the Flux side of
-# argo/applications/apps.yaml). Each file only sets name + path; the shared
+# argo/applications/apps.yaml). Each file sets name + path, plus
+# `dependsOn: kro-definitions` when the app has a HomelabApp; the shared
 # settings below are patched onto all of them. Handoff procedure:
 # docs/flux-migration.md §3.
 apiVersion: kustomize.config.k8s.io/v1beta1

@@ -5,3 +5,5 @@ metadata:
   namespace: flux-system
 spec:
   path: ./apps/media/base
+  dependsOn:
+    - name: kro-definitions
