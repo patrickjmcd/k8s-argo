@@ -1,0 +1,37 @@
+# Flux's root: the k8s-argo repo, read anonymously from in-cluster Gitea (same
+# URL Argo uses, so a broken Traefik can't stop Flux from fixing it). Every
+# Kustomization in clusters/home references this one GitRepository, so the
+# "Gitea is down" fallback is a single patch of spec.url -- see
+# docs/flux-migration.md §1. Applied by hand once (kubectl apply -k
+# clusters/home/flux-system), then Flux manages itself.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: k8s-argo
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git
+  ref:
+    branch: main
+  # Only what Flux reads; keeps the artifact small.
+  ignore: |
+    /*
+    !/apps/
+    !/charts/
+    !/clusters/
+    !/core/
+    !/cronjobs/
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-system
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: k8s-argo
+  path: ./clusters/home
+  prune: true

@@ -1,0 +1,6 @@
+# Everything Flux manages. Add an app here when it moves off Argo CD
+# (docs/flux-migration.md §3).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - flux-system

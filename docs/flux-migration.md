@@ -259,7 +259,7 @@ spec:
   healthCheckExprs:
     - apiVersion: homelab.pmcd.io/v1alpha1
       kind: HomelabApp
-      current: status.conditions.filter(e, e.type == 'Ready').all(e, e.status == 'True')
+      current: has(status.conditions) && status.conditions.exists(e, e.type == 'Ready' && e.status == 'True')
       failed: has(status.state) && status.state in ['ERROR', 'FAILED']
 ```
 
