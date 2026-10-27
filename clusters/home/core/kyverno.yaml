@@ -43,6 +43,20 @@ spec:
         helm.sh/resource-policy: keep
     config:
       preserve: false
+      # Webhooks skip these namespaces (the chart appends kyverno itself).
+      # flux-system: the webhooks fail closed, so a broken Kyverno would
+      # otherwise stop Flux's own pods from being recreated -- and Flux is
+      # what repairs Kyverno. Cost: Flux pods don't get the 30s node-failure
+      # tolerations or the Pi 5 preference. A list here replaces the chart
+      # default, hence kube-system.
+      webhooks:
+        namespaceSelector:
+          matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: NotIn
+              values:
+                - kube-system
+                - flux-system
     admissionController:
       # Single replica was a cluster-wide SPOF: its webhook has
       # failurePolicy=Fail, so one slow/overloaded pod blocks every
