@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - pvc.yaml
   - homelabapp.yaml
-  - flux-prune-test.yaml
