@@ -1,7 +1,7 @@
 # Flux failures -> Alertmanager -> n8n -> ntfy topic "alerts", the same path as
 # every Prometheus alert. Flux's alertmanager provider labels each alert with
 # the event severity; Alertmanager's root route already forwards anything that
-# isn't severity=info (core/prometheus.yaml), so only error events reach ntfy.
+# isn't severity=info (clusters/home/core/prometheus.yaml), so only error events reach ntfy.
 # Alerts carry no endsAt and resolve after Alertmanager's resolve_timeout (5m).
 apiVersion: notification.toolkit.fluxcd.io/v1
 kind: Provider

@@ -28,6 +28,7 @@ resources:
   - tailscale.yaml
   - kro.yaml
   - traefik.yaml
+  - prometheus.yaml
 patches:
   - target:
       kind: Kustomization

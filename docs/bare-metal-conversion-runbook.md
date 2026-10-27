@@ -229,7 +229,7 @@ Nothing is destroyed until you're confident:
 
 ## Post-conversion cleanup
 - Delete the old VMs (`qm destroy 106` / `127`) and the mini's stopped `mariadb` LXC (100) once stable.
-- Remove the retired host IPs from the `pve` scrape job in `core/prometheus.yaml` if the
+- Remove the retired host IPs from the `pve` scrape job in `clusters/home/core/prometheus.yaml` if the
   Proxmox exporter targets change (192.168.1.10 / .13 stop being Proxmox).
 - Update `infra/terraform` — these hosts are no longer Terraform-managed VMs.
 - Keep the pre-conversion vzdumps ~1 week, then let retention prune them.

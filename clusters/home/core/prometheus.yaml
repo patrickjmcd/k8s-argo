@@ -1,0 +1,460 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: kube-prometheus-stack
+  targetNamespace: prometheus
+  storageNamespace: prometheus
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: 92.3.1
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+  # Adopted from Argo (docs/flux-migration.md §4.2). Never remediate a failed
+  # install: for an adopted release that means uninstalling what was running.
+  install:
+    createNamespace: true
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    crds:
+      updateJob:
+        enabled: true
+    prometheus:
+      prometheusSpec:
+        scrapeInterval: 60s
+        retentionSize: 40GiB
+        nodeSelector:
+          # arch pinned explicitly: server-side apply merges this map with
+          # the previous arm64 selector instead of replacing it
+          kubernetes.io/arch: amd64
+          node-type: heavy
+        tolerations:
+          - key: dedicated
+            operator: Equal
+            value: heavy
+            effect: NoSchedule
+          # the kyverno node-failure-tolerations mutation now appends
+          # these instead of replacing the list — kept as belt-and-suspenders
+          - key: node.kubernetes.io/not-ready
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 30
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 30
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-usb
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 50Gi
+        containers:
+          - name: prometheus
+            startupProbe:
+              httpGet:
+                path: /-/ready
+                port: 9090
+                scheme: HTTP
+              failureThreshold: 40
+              periodSeconds: 15
+              timeoutSeconds: 10
+              successThreshold: 1
+            livenessProbe:
+              httpGet:
+                path: /-/healthy
+                port: 9090
+                scheme: HTTP
+              failureThreshold: 10
+              periodSeconds: 15
+              timeoutSeconds: 10
+              successThreshold: 1
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 5Gi
+        podMonitorSelector: {}
+        podMonitorSelectorNilUsesHelmValues: false
+        podMonitorNamespaceSelector:
+          matchLabels:
+            prometheus: enabled
+        serviceMonitorSelector: {}
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorNamespaceSelector:
+          matchLabels:
+            prometheus: enabled
+        secrets:
+          - jellyfin-json-exporter-1pw
+        additionalScrapeConfigs:
+          - job_name: jellyfin
+            metrics_path: /metrics
+            scrape_interval: 60s
+            authorization:
+              credentials_file: /etc/prometheus/secrets/jellyfin-json-exporter-1pw/api-key
+            static_configs:
+              - targets:
+                  - 192.168.1.210:8096
+          - job_name: jellyfin-sessions
+            metrics_path: /probe
+            params:
+              module: [jellyfin]
+            static_configs:
+              - targets:
+                  - http://jellyfin.media.svc.cluster.local:8096/Sessions
+            relabel_configs:
+              - source_labels: [__address__]
+                target_label: __param_target
+              - source_labels: [__param_target]
+                target_label: instance
+              - target_label: __address__
+                replacement: json-exporter.prometheus.svc:7979
+          - job_name: pve
+            static_configs:
+              - targets:
+                  # .10 (proxmox-mini) and .13 (pve13) were converted to bare-metal
+                  # k3s servers (kube-macmini / kube-n3160) — no longer Proxmox hosts.
+                  - 192.168.1.12
+            metrics_path: /pve
+            params:
+              module: [default]
+            relabel_configs:
+              - source_labels: [__address__]
+                target_label: __param_target
+              - source_labels: [__param_target]
+                target_label: instance
+              - target_label: __address__
+                replacement: pve-exporter.prometheus.svc:9221
+    # k3s runs apiserver, etcd and kubelet in one process, so the kubelet
+    # endpoint re-exports every apiserver_*/etcd_* series -- ~237k of the
+    # ~709k head series (Oct 2026). The apiserver job already has them.
+    kubelet:
+      serviceMonitor:
+        metricRelabelings:
+          - sourceLabels: [__name__]
+            regex: (apiserver|etcd)_.*
+            action: drop
+    # Latency/size histograms no rule uses (the SLO burn-rate rules read
+    # apiserver_request_sli_duration_seconds_bucket, which stays).
+    kubeApiServer:
+      serviceMonitor:
+        metricRelabelings:
+          - sourceLabels: [__name__]
+            regex: (apiserver_request_duration_seconds|etcd_request_duration_seconds|apiserver_request_body_size_bytes|apiserver_watch_list_duration_seconds|apiserver_response_sizes|apiserver_watch_cache_read_wait_seconds|apiserver_watch_events_sizes)_bucket
+            action: drop
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 15m
+          memory: 100Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    alertmanager:
+      alertmanagerSpec:
+        nodeSelector:
+          kubernetes.io/arch: arm64
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        alertmanagerConfigMatcherStrategy:
+          type: None
+        alertmanagerConfigSelector: {}
+        alertmanagerConfigNamespaceSelector: {}
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          group_by: ['alertname', 'namespace']
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 12h
+          receiver: "null"
+          routes:
+            - receiver: "null"
+              matchers:
+                - alertname = Watchdog
+            - receiver: "null"
+              matchers:
+                - alertname = InfoInhibitor
+            - receiver: "null"
+              matchers:
+                - alertname =~ "KubeSchedulerDown|KubeProxyDown|KubeControllerManagerDown"
+            - receiver: "null"
+              matchers:
+                - alertname = CPUThrottlingHigh
+                - severity = info
+        receivers:
+          - name: "null"
+        inhibit_rules:
+          - source_matchers:
+              - severity="critical"
+            target_matchers:
+              - severity="warning"
+            equal: ['alertname', 'namespace']
+    prometheus-node-exporter:
+      affinity: null
+      hostNetwork: false
+      hostPID: false
+      prometheus:
+        monitor:
+          relabelings:
+            # node-exporter's default `instance` label is the pod IP:port,
+            # so every node-based alert (built-in Node* rules + the custom
+            # homelab-storage rules) shows an IP address instead of a
+            # hostname. Rewrite `instance` to the Kubernetes node name so
+            # alerts (and the node dashboards) display node names.
+            - action: replace
+              sourceLabels: [__meta_kubernetes_pod_node_name]
+              targetLabel: instance
+      tolerations:
+        - effect: NoExecute
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+          tolerationSeconds: 30
+        - effect: NoExecute
+          key: node.kubernetes.io/unreachable
+          operator: Exists
+          tolerationSeconds: 30
+        # media-server is tainted opt-in; node-exporter should still run there
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: heavy
+        # Overriding tolerations drops the chart default (tolerate all
+        # NoSchedule), so control-plane nodes need listing explicitly or
+        # they get no node metrics at all.
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+      resources:
+        requests:
+          cpu: 23m
+          memory: 100Mi
+        limits:
+          memory: 100Mi
+    kube-state-metrics:
+      resources:
+        requests:
+          cpu: 23m
+          memory: 100Mi
+        limits:
+          memory: 100Mi
+    grafana:
+      deploymentStrategy:
+        type: Recreate
+      # pi4-kube0 and pi4-kube1 run sustained 98-99% CPU (2026-09-11:
+      # argocd-application-controller alone over 1 full core there,
+      # plus general cluster load) — a startupProbe budget can't fix a
+      # node that's genuinely out of CPU, only a slow boot on an idle
+      # one. Grafana landed on pi4-kube0 and crash-looped for over an
+      # hour despite the startupProbe below. Soft-prefer every other
+      # node instead of hard-pinning elsewhere, so this still
+      # schedules somewhere if those are the only nodes with room.
+      #
+      # matchFields against metadata.name is a node FIELD selector,
+      # not a label selector — it only accepts a single value for
+      # In/NotIn (confirmed via `kubectl apply --dry-run=server`,
+      # which is how this got caught: ArgoCD had been silently
+      # SyncFailed-and-retrying on this exact resource since the
+      # first attempt, which looked like "Synced" at a glance because
+      # the retry loop kept the overall app status looking healthy
+      # between polls). Two separate preference terms instead of one
+      # term with two values.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchFields:
+                  - key: metadata.name
+                    operator: NotIn
+                    values:
+                      - pi4-kube0
+            - weight: 100
+              preference:
+                matchFields:
+                  - key: metadata.name
+                    operator: NotIn
+                    values:
+                      - pi4-kube1
+      # No startupProbe by default, only a livenessProbe that starts at
+      # 60s and gives up ~160s later. On a Pi5 node, registering
+      # Grafana's bundled app plugins alone can take 2-2.5 minutes
+      # before it's even listening — kubelet was killing it mid-boot
+      # and crash-looping (hit 2026-09-11 after a Recreate rollout).
+      # Budget 5m (well above the observed ~150s worst case) before
+      # liveness/readiness kick in at all.
+      startupProbe:
+        httpGet:
+          path: /api/health
+          port: grafana
+        failureThreshold: 30
+        periodSeconds: 10
+        timeoutSeconds: 10
+        successThreshold: 1
+      tolerations:
+        - effect: NoExecute
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+          tolerationSeconds: 30
+        - effect: NoExecute
+          key: node.kubernetes.io/unreachable
+          operator: Exists
+          tolerationSeconds: 30
+      # Idles at 430-490Mi; at a 512Mi limit, opening the Home Assistant
+      # overview (15 Postgres queries via the out-of-process postgres
+      # plugin) GC-thrashed it for ~40s and OOMKilled it (2026-10-15).
+      resources:
+        requests:
+          cpu: 23m
+          memory: 512Mi
+        limits:
+          memory: 1Gi
+      # Infinity datasource: lets the ADS-B Station dashboard read
+      # ultrafeeder's live aircraft.json into a native Geomap panel.
+      # Grafana 13 moved several core datasource plugins (loki,
+      # grafana-postgresql-datasource, etc.) out of the compiled-in
+      # binary into separate plugin bundles shipped read-only inside
+      # the image at /usr/share/grafana/data/plugins-bundled. This
+      # container runs with readOnlyRootFilesystem: true, so every
+      # boot Grafana's own plugin auto-updater tries to sync those
+      # bundled plugins to match its version, fails with "unlinkat
+      # ...: read-only file system", and leaves them broken —
+      # confirmed 2026-09-11 as the actual cause of Loki showing
+      # "Data source with UID loki not found" in the UI (the raw
+      # datasource config was always fine; the plugin backing it
+      # was getting killed and never reinstalled). shadowBundledPlugins
+      # mounts an emptyDir over that read-only path so listed plugins
+      # install cleanly into /var/lib/grafana/plugins instead — but
+      # its side effect is any bundled plugin NOT listed under
+      # `plugins:` stops being available at all, so everything
+      # currently in use must be listed explicitly.
+      shadowBundledPlugins: true
+      plugins:
+        - yesoreyeram-infinity-datasource
+        - loki
+        - prometheus
+        - alertmanager
+        - grafana-postgresql-datasource
+      grafana.ini:
+        server:
+          root_url: https://grafana.x.pmcd.io
+      # ADS-B sightings DB (populated by apps/adsb adsb-recorder). Password
+      # injected as an env var from the 1Password-synced secret.
+      envValueFrom:
+        ADSB_DB_PASSWORD:
+          secretKeyRef:
+            name: adsb-postgres-1pw
+            key: password
+            optional: true # don't block Grafana startup if the item isn't made yet
+        # Home Assistant sensor history (LTSS on core/timescale), read-only role.
+        HA_DB_PASSWORD:
+          secretKeyRef:
+            name: timescale-grafana-1pw
+            key: password
+            optional: true
+      additionalDataSources:
+        - name: ADS-B (Postgres)
+          uid: adsb-postgres
+          type: postgres
+          access: proxy
+          url: shared-postgres-rw.postgres.svc.cluster.local:5432
+          database: adsb
+          user: adsb
+          jsonData:
+            # Grafana 13's Postgres datasource reads the DB name from
+            # jsonData.database; the deprecated top-level `database` field
+            # above is ignored, so it must be repeated here or queries fail
+            # with "no default database configured".
+            database: adsb
+            sslmode: disable
+            postgresVersion: 1000
+          secureJsonData:
+            password: $__env{ADSB_DB_PASSWORD}
+        # Home Assistant history written by LTSS; dashboards use the
+        # ha_* helpers from core/timescale/jobs/homeassistant-schema.sql.
+        - name: Home Assistant (TimescaleDB)
+          uid: ha-timescale
+          type: postgres
+          access: proxy
+          url: timescale-rw.timescale.svc.cluster.local:5432
+          database: homeassistant
+          user: grafana
+          jsonData:
+            database: homeassistant
+            sslmode: require
+            postgresVersion: 1500
+            timescaledb: true
+          secureJsonData:
+            password: $__env{HA_DB_PASSWORD}
+        # Live aircraft feed for the Geomap panel on the ADS-B Station
+        # dashboard — reads ultrafeeder's aircraft.json in-cluster.
+        - name: ADS-B Live (Infinity)
+          uid: adsb-infinity
+          type: yesoreyeram-infinity-datasource
+          access: proxy
+          jsonData: {}
+        - name: Loki
+          uid: loki
+          type: loki
+          access: proxy
+          url: http://loki.loki.svc.cluster.local:3100
+          jsonData: {}
+      persistence:
+        type: pvc
+        enabled: true
+        storageClassName: longhorn
+        # UI-made dashboards, users and preferences live here (the
+        # provisioned dashboards come from core/grafana-assets).
+        extraPvcLabels:
+          recurring-job-group.longhorn.io/b2-backup: enabled
+          recurring-job.longhorn.io/source: enabled
+        # The PVC is a chart object: keep it if the release is ever uninstalled.
+        annotations:
+          helm.sh/resource-policy: keep
+        accessModes:
+          - ReadWriteOnce
+        size: 5Gi
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: prometheus-extras
+  namespace: flux-system
+spec:
+  path: ./core/prometheus-assets
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: grafana-extras
+  namespace: flux-system
+spec:
+  path: ./core/grafana-assets
