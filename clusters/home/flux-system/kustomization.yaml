@@ -3,3 +3,7 @@ kind: Kustomization
 resources:
   - gotk-components.yaml   # flux install --export (Flux v2.10.0)
   - gotk-sync.yaml
+# Being handed to the Flux Operator (flux-instance.yaml). Never prune these:
+# they are Flux itself, and the operator takes them over in place.
+commonAnnotations:
+  kustomize.toolkit.fluxcd.io/prune: disabled

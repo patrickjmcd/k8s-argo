@@ -1,0 +1,45 @@
+# Flux Operator: manages the Flux install through the FluxInstance in
+# flux-instance.yaml, provides ResourceSets, and serves the Flux web UI
+# (port 9080). Installed by Flux itself; the operator in turn keeps Flux
+# running, so either can repair the other.
+#
+# Never pruned: the chart's templates include the operator's CRDs, so
+# uninstalling this release would delete the FluxInstance and with it Flux.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: flux-operator
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  interval: 1h
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+  ref:
+    tag: 0.62.0
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  interval: 30m
+  releaseName: flux-operator
+  chartRef:
+    kind: OCIRepository
+    name: flux-operator
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  driftDetection:
+    mode: enabled
+  values:
+    web:
+      enabled: true
