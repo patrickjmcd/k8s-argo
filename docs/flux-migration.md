@@ -463,7 +463,7 @@ cluster-visible, **H** = cluster-wide blast radius.
 | ia-ignition | default | kustomize | M | manual sync → suspended; PVC |
 | immich | immich | Helm `immich@0.12.0` + kustomize | M | §4.2; PVC |
 | iss-in-space | default | HomelabApp | L | ✅ Flux (Phase 1) |
-| joshhawleygop | default | HomelabApp | L | ✅ Flux (Phase 1); HomelabApp not deployed since Oct 11 (see below) |
+| joshhawleygop | default | HomelabApp | L | ✅ Flux (Phase 1); outage fixed (see below) |
 | kaneo | kaneo | HomelabApp | L | |
 | mealie | default | HomelabApp | M | PVC |
 | media | media | app-of-apps | M | parent of ApplicationSet + media-base; remove last in 2c |
@@ -491,13 +491,12 @@ cluster-visible, **H** = cluster-wide blast radius.
 | unpoller | default | HomelabApp | L | |
 | voice-assistant | voice-assistant | HomelabApp | M | PVC |
 
-joshhawleygop (found during Phase 1, not fixed, waiting on a decision):
-`build.py`'s generated `kustomization.yaml` has no `resources:` entry, so the
-Oct 11 bot rebuild dropped the hand-added `homelabapp.yaml` and Argo pruned the
-HomelabApp; only the two ConfigMaps are deployed. The HomelabApp also has
-`route.enabled: false`: the old chart values used `httproute:` (the chart key is
-`httpRoute`), so the public hostnames may never have been live. joshhawleygop.com
-returns 404 from Cloudflare.
+joshhawleygop (found during Phase 1, fixed 2026-10-27 in `3dba336`): the site
+was down Oct 11–27. `build.py`'s kustomization template had no `resources:`
+entry, so the Oct 11 bot rebuild dropped the hand-added `homelabapp.yaml` and
+Argo pruned the HomelabApp. Separately, the Oct 6 chart→HomelabApp conversion
+dropped `httproute.publicHostnames`. Both are restored; the template now carries
+`resources:` itself.
 
 ### apps/media (ApplicationSet `media-apps-kustomize`, ns `media`)
 
