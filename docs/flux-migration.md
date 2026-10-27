@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system and the SMB/NFS CSI drivers are on Flux. Argo keeps 9 Applications. Next: node-tuning.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg, metallb-system, the SMB/NFS CSI drivers and node-tuning are on Flux. Argo keeps 8 Applications. Next: kube-vip.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -667,6 +667,8 @@ Per component:
   `last-applied` annotations removed). 55 objects kept their UIDs, none of
   the 22 driver pods restarted, all 15 SMB/NFS PVs unchanged, and throwaway
   pods mounted an SMB and an NFS claim afterwards.
+- ✅ **node-tuning** (2026-10-27): Kustomization `node-tuning`. Empty diff,
+  no `restartedAt`; DaemonSet UID/generation and all 10 pods unchanged.
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -796,7 +798,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | ✅ csi-driver-smb | default | -1 | kustomize | H | 4 | |
 | longhorn | longhorn-system | -1 | `longhorn@1.13.0` + kustomize | H | 4 | `Replace=true` node objects |
 | ✅ metallb-system | metallb-system | -1 | `metallb@0.16.1` + kustomize | H | 4 | |
-| node-tuning | kube-system | -1 | kustomize | M | 4 | |
+| ✅ node-tuning | kube-system | -1 | kustomize | M | 4 | |
 | ✅ shared-postgres | postgres | -1 | kustomize | H | 4 | 6 hook Jobs |
 | ✅ tailscale-operator | tailscale | -1 | `tailscale-operator@1.104.2` + kustomize | M | 3 | |
 | ✅ timescale | timescale | -1 | kustomize | M | 3 | 1 hook Job |
