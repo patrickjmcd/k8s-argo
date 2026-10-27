@@ -747,6 +747,16 @@ GitOps engine's own pods out of a fail-closed webhook, and `webhookLabels`
 stamps `app.kubernetes.io/managed-by: argocd` on its generated webhooks.
 Switch both to `flux-system` / `flux` here.
 
+Progress:
+- ✅ **cronjobs** (2026-10-27): `cronjobs/` (CronJobs `github-backup` and
+  `lake-info-fetcher`, the UNAS backup PV/PVC, two OnePasswordItems) had never
+  moved; the manual-sync `cronjobs` root Application still owned it, with a
+  finalizer. Now Kustomization `cronjobs` (`clusters/home/cronjobs.yaml`,
+  auto-reconciled; `suspend: true` pauses it). Prune guards added to the
+  namespace, PV and PVC first (only Argo's `Prune=false,Delete=false`
+  protected them). Finalizer stripped live and in git, then the Application
+  deleted. 8 UIDs unchanged.
+
 1. Confirm `kubectl -n argocd get applications` lists only the 3 roots and
    `argocd` itself, none with a finalizer.
 2. Strip finalizers from those and delete them, then delete the Argo
