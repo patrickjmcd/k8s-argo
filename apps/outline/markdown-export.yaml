@@ -48,6 +48,7 @@ metadata:
   name: smb-outline-markdown-export
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: ""
   capacity: {storage: 5Gi}
@@ -71,6 +72,7 @@ metadata:
   namespace: default
   annotations:
     argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes: [ReadWriteMany]
   storageClassName: ""
