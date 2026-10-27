@@ -35,7 +35,7 @@ spec:
               effect: NoSchedule
           containers:
             - name: renovate
-              image: ghcr.io/renovatebot/renovate:44.186.7
+              image: ghcr.io/renovatebot/renovate:44.186.8
               env:
                 - name: RENOVATE_PLATFORM
                   value: gitea
