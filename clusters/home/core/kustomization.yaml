@@ -27,6 +27,7 @@ resources:
   - kubernetes-mcp-server.yaml
   - tailscale.yaml
   - kro.yaml
+  - traefik.yaml
 patches:
   - target:
       kind: Kustomization
