@@ -757,6 +757,15 @@ Progress:
   protected them). Finalizer stripped live and in git, then the Application
   deleted. 8 UIDs unchanged.
 
+- ✅ **Applications disarmed and deleted** (2026-10-27): `argocd` disarmed
+  through git (core root sync), the hand-applied roots `apps` and `core`
+  patched live (finalizer and `automated` removed; git updated to match), all
+  three gated with `jq`, then deleted. The argo-cd chart (with our values) has
+  only `pre-install`/`pre-upgrade` hooks (redis secret-init), no
+  `pre-delete`. Nothing cascaded: no deletionTimestamps, no new Jobs; all 99
+  Kustomizations and 25 HelmReleases Ready. Argo CD itself still runs, idle
+  and unmanaged, with 4 AppProjects left.
+
 1. Confirm `kubectl -n argocd get applications` lists only the 3 roots and
    `argocd` itself, none with a finalizer.
 2. Strip finalizers from those and delete them, then delete the Argo
