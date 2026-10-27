@@ -83,6 +83,11 @@ spec:
       app.kubernetes.io/name: kube-vip-ds
   template:
     metadata:
+      annotations:
+        # Live value of a past `kubectl rollout restart`, kept so Flux's first
+        # apply doesn't restart kube-vip and move the control-plane VIP
+        # (docs/flux-migration.md §4.10).
+        kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:44-05:00"
       labels:
         app.kubernetes.io/name: kube-vip-ds
         app.kubernetes.io/version: v0.8.2
