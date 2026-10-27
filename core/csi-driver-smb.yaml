@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: csi-driver-smb
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
     argocd.argoproj.io/sync-wave: "-1"
@@ -13,10 +11,7 @@ spec:
     namespace: default
     name: in-cluster
   project: core-components
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  syncPolicy: {}
   source:
     path: core/csi-driver-smb
     repoURL: http://gitea.gitea.svc.cluster.local:3000/patrickjmcd/k8s-argo.git

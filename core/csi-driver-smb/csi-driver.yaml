@@ -3,6 +3,10 @@ apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
   name: smb.csi.k8s.io
+  annotations:
+    # Never prune: every SMB PV mounts through this driver.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   attachRequired: false
   podInfoOnMount: true

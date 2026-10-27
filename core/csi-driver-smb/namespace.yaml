@@ -2,5 +2,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: csi-smb-provisioner
+  annotations:
+    # Never prune the namespace (docs/flux-migration.md §2).
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    argocd.argoproj.io/sync-options: Delete=false
   labels:
     canUseExternalSecrets: "true"
