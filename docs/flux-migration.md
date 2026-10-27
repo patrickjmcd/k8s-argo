@@ -5,7 +5,7 @@ self-managing. On Flux: `iss-in-space`, `joshhawleygop`, `spoolman`,
 `tronbyt-server`. Verified: in-place adoption (UIDs unchanged, no pod
 restarts), drift correction, HomelabApp health via CEL, namespace-less objects,
 a Flux-created Namespace, `prune: disabled` keeping an object that left git,
-and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres and cnpg are on Flux. Argo keeps 12 Applications. Next: metallb-system.
+and error alerts reaching ntfy. The Flux Operator now manages Flux (§1); web UI live at https://flux.x.pmcd.io with PocketID SSO (§4.9). Phases 2a–2d done 2026-10-27; 63 apps on Flux. **Phase 2 complete 2026-10-27**: every app except gitea (Phase 4) is on Flux (65 apps, 2 of them HelmReleases). **Phase 3 complete 2026-10-27**: 9 plain core components and 11 core charts are on Flux under `clusters/home/core/` (garage and timescale hook Jobs converted, §4.4). **Phase 4 started 2026-10-27**: kro, kro-definitions, traefik, prometheus, kyverno, cert-manager, shared-postgres, cnpg and metallb-system are on Flux. Argo keeps 11 Applications. Next: csi-driver-smb / csi-driver-nfs.
 
 Argo CD and Flux run side by side for the whole migration. Apps are handed over
 one at a time, leaf apps first, core last, Argo itself last. Any app can go back
@@ -640,6 +640,21 @@ Per component:
   pods restarted; a forced WAL switch on shared-postgres archived to B2.
   No other remaining Application has two charts. longhorn has no
   `releaseName`, so its release is the Application name `longhorn`.
+- ✅ **metallb-system** (2026-10-27): HelmRelease `metallb` plus
+  `metallb-extras` (IPAddressPool and L2Advertisement, prune-guarded). The
+  chart's 9 CRDs are templates with no annotations setting, so a
+  `postRenderers` patch adds `helm.sh/resource-policy: keep` to them.
+  **A Helm release `metallb` from 2023 (v11, chart 0.13.10) was still stored
+  in the namespace**, from before Argo managed it. helm-controller therefore
+  ran an *upgrade*, a three-way merge against v11's manifest rather than an
+  adoption: it deleted objects v11 had and the new chart lacks (the
+  `metallb-frr-startup` ConfigMap, the old `webhook-server-cert` Secret and
+  the deprecated `addresspools.metallb.io` CRD, all unused) and removed a
+  leftover empty `METALLB_BGP_TYPE` env var from the controller, which
+  restarted it once. The server-side diff can't predict this. Speakers did
+  not restart; all 11 LoadBalancer IPs stayed put. **Before adopting a chart,
+  run `helm list -n <ns> -a`** (done for the remaining components: none has
+  an old release).
 - **longhorn**: add `prune: disabled` to the chart's CRDs and the
   `longhorn-node-*` objects. The chart's pre-delete uninstall job is gated by
   `deletingConfirmationFlag`; confirm it is `false` before the HelmRelease
@@ -655,6 +670,11 @@ Per component:
   as today; the §1 GitHub patch is the escape hatch.
 
 ### Phase 5: remove Argo
+
+Unmanaged as of 2026-10-27: 1Password Connect and its operator are a Helm
+release `connect` (chart `connect-2.2.0`) in `default`, installed by hand on
+2026-01-15 and in neither Argo nor git. Bring it into Flux as a HelmRelease
+separately.
 
 Kyverno values still say Argo: `config.excludeNamespaces: [argocd]` keeps the
 GitOps engine's own pods out of a fail-closed webhook, and `webhookLabels`
@@ -760,7 +780,7 @@ dropped `httproute.publicHostnames`. Both are restored; the template now carries
 | csi-driver-nfs | kube-system | -1 | `csi-driver-nfs@4.13.6` | H | 4 | |
 | csi-driver-smb | default | -1 | kustomize | H | 4 | |
 | longhorn | longhorn-system | -1 | `longhorn@1.13.0` + kustomize | H | 4 | `Replace=true` node objects |
-| metallb-system | metallb-system | -1 | `metallb@0.16.1` + kustomize | H | 4 | |
+| ✅ metallb-system | metallb-system | -1 | `metallb@0.16.1` + kustomize | H | 4 | |
 | node-tuning | kube-system | -1 | kustomize | M | 4 | |
 | ✅ shared-postgres | postgres | -1 | kustomize | H | 4 | 6 hook Jobs |
 | ✅ tailscale-operator | tailscale | -1 | `tailscale-operator@1.104.2` + kustomize | M | 3 | |
