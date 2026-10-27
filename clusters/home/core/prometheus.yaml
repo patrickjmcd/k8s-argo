@@ -33,6 +33,18 @@ spec:
   driftDetection:
     mode: enabled
   values:
+    # k3s runs the scheduler, controller-manager, kube-proxy and etcd inside
+    # its own binary, with metrics on 127.0.0.1 only: the chart's Services
+    # select pods that don't exist, so these jobs never had targets and their
+    # *Down alerts fired permanently (since Jul 2026).
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeEtcd:
+      enabled: false
     crds:
       updateJob:
         enabled: true
