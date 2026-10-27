@@ -42,6 +42,9 @@ resources:
   - outline.yaml
   - media-base.yaml
   - media.yaml
+  - renovate.yaml
+  - ia-ignition.yaml
+  - pihole.yaml
 patches:
   - target:
       kind: Kustomization
