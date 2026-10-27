@@ -36,8 +36,6 @@ spec:
     metadata:
       name: '{{name}}'
       namespace: argocd
-      finalizers:
-        - resources-finalizer.argocd.argoproj.io
       annotations:
         argocd.argoproj.io/manifest-generate-paths: .
         # Compare through the API server so CRD defaults (e.g. HomelabApp
@@ -52,7 +50,6 @@ spec:
       destination:
         name: in-cluster
         namespace: media
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
+      syncPolicy: {}
+  syncPolicy:
+    preserveResourcesOnDeletion: true

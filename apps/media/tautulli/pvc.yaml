@@ -13,6 +13,7 @@ metadata:
   annotations:
     # Never delete the data volume if the app is removed from Argo.
     argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteOnce

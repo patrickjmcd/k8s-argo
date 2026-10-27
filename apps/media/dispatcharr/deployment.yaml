@@ -17,6 +17,8 @@ spec:
       labels:
         app.kubernetes.io/instance: dispatcharr
         app.kubernetes.io/name: dispatcharr
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-10-11T22:04:04Z"
     spec:
       containers:
         - name: dispatcharr
@@ -34,10 +36,8 @@ spec:
           envFrom:
             - secretRef:
                 name: dispatcharr-1pw
-
           image: dispatcharr
           imagePullPolicy: IfNotPresent
-
           ports:
             - containerPort: 9191
               name: http
@@ -46,7 +46,6 @@ spec:
             - containerPort: 9192
               name: metrics
               protocol: TCP
-
           readinessProbe:
             failureThreshold: 3
             periodSeconds: 10
@@ -54,7 +53,6 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           livenessProbe:
             tcpSocket:
               port: http
@@ -63,7 +61,6 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
-
           startupProbe:
             failureThreshold: 30
             periodSeconds: 5
@@ -71,7 +68,6 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           resources:
             limits:
               # Headroom for the Could Not Dispatch plugin's in-container ffmpeg
@@ -80,11 +76,9 @@ spec:
             requests:
               cpu: 15m
               memory: 991Mi
-
           volumeMounts:
             - mountPath: /data
               name: data
-
       restartPolicy: Always
       # The HDHomeRun (192.168.1.176) only streams to clients on its own
       # subnet: from VLAN 8 nodes it tunes, locks the tuner and sends 0 bytes.

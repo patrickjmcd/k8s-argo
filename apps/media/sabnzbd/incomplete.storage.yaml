@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: sab-incomplete-pvc
   namespace: media
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteMany

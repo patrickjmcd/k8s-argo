@@ -18,6 +18,8 @@ spec:
       labels:
         app.kubernetes.io/instance: sabnzbd
         app.kubernetes.io/name: sabnzbd
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-06T11:21:42-05:00"
     spec:
       initContainers:
         - name: setup-config
@@ -47,15 +49,12 @@ spec:
               value: "100"
             - name: PUID
               value: "1000"
-
           image: sabnzbd
           imagePullPolicy: IfNotPresent
-
           ports:
             - containerPort: 8080
               name: http
               protocol: TCP
-
           readinessProbe:
             failureThreshold: 3
             periodSeconds: 10
@@ -63,7 +62,6 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           livenessProbe:
             tcpSocket:
               port: http
@@ -72,7 +70,6 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
-
           startupProbe:
             failureThreshold: 60
             periodSeconds: 10
@@ -80,14 +77,12 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 5
-
           resources:
             limits:
               memory: 2Gi
             requests:
               cpu: 15m
               memory: 256Mi
-
           volumeMounts:
             - mountPath: /config
               name: config-empty
@@ -97,7 +92,6 @@ spec:
             - mountPath: /mnt/incomplete
               name: incomplete-storage
               subPath: sabnzbd/incomplete
-
       restartPolicy: Always
       volumes:
         - name: config-template

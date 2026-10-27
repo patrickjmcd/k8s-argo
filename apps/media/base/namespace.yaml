@@ -5,3 +5,5 @@ metadata:
   name: media
   labels:
     canUseExternalSecrets: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled

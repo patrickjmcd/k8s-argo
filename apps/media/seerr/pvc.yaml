@@ -5,9 +5,10 @@ metadata:
   namespace: media
   annotations:
     argocd.argoproj.io/sync-options: Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
   resources:
     requests:
       storage: 200Mi

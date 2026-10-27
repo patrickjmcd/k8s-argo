@@ -18,6 +18,8 @@ spec:
       labels:
         app.kubernetes.io/instance: lidarr
         app.kubernetes.io/name: lidarr
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-10-11T22:04:05Z"
     spec:
       containers:
         - name: lidarr
@@ -57,15 +59,12 @@ spec:
               value: lidarr-logs
             - name: LIDARR__POSTGRES__PASSWORD
               value: ""
-
           image: lidarr
           imagePullPolicy: IfNotPresent
-
           ports:
             - containerPort: 8686
               name: http
               protocol: TCP
-
           readinessProbe:
             failureThreshold: 3
             periodSeconds: 10
@@ -73,7 +72,6 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           livenessProbe:
             failureThreshold: 5
             initialDelaySeconds: 60
@@ -82,7 +80,6 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 10
-
           startupProbe:
             failureThreshold: 30
             periodSeconds: 5
@@ -90,14 +87,12 @@ spec:
             tcpSocket:
               port: http
             timeoutSeconds: 1
-
           resources:
             limits:
               memory: 1536Mi
             requests:
               cpu: 15m
               memory: 335Mi
-
           volumeMounts:
             - mountPath: /config
               name: config
@@ -105,7 +100,6 @@ spec:
               name: media
             - mountPath: /mnt/downloads
               name: downloads
-
       restartPolicy: Always
       volumes:
         - name: config

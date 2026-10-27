@@ -7,6 +7,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: longhorn-radarr-config
   namespace: media
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteOnce

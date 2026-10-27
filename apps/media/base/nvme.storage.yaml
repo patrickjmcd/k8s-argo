@@ -2,6 +2,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: rpi-nvme-pv
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   capacity:
     storage: 2Ti
@@ -25,6 +27,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: rpi-nvme-pvc
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteMany

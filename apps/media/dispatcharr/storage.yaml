@@ -4,6 +4,8 @@ kind: PersistentVolume
 metadata:
   name: smb-dispatcharr
   namespace: media
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: ""
   capacity:
@@ -30,6 +32,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: smb-dispatcharr-claim
   namespace: media
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteMany
