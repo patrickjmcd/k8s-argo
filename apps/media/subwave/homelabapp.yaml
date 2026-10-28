@@ -50,6 +50,11 @@ spec:
       failureThreshold: 60
     liveness:
       enabled: true
+      # The admin Library page's /api/library/* queries block the controller's
+      # event loop on the 26k-track library.db, stalling every /api route (incl.
+      # /api/health). The default 5 x 10s killed it mid-query 10x in 17h (Oct
+      # 2026); allow ~5 min instead.
+      failureThreshold: 30
   route:
     hostnames:
       - subwave.x.pmcd.io
