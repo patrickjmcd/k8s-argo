@@ -45,7 +45,9 @@ spec:
         name: media-<< inputs.app >>
         namespace: flux-system
       spec:
-        interval: 10m
+        # 1h like the shared settings: drift correction only, pushes reconcile
+        # at once via the Receiver.
+        interval: 1h
         retryInterval: 2m
         timeout: 5m
         sourceRef:
