@@ -5,8 +5,8 @@ metadata:
   annotations:
     # Autogen deliberately disabled: this policy mutates Pods at admission
     # only. Letting autogen also mutate Deployment/Job/etc templates would
-    # make ArgoCD see permanent drift on controller specs and fight the
-    # webhook. (The old `kyverno.io/pod-controllers` annotation was the
+    # make the GitOps controller (Flux, drift detection) see permanent
+    # drift on controller specs and fight the webhook. (The old `kyverno.io/pod-controllers` annotation was the
     # wrong name and silently left autogen enabled.)
     pod-policies.kyverno.io/autogen-controllers: none
     policies.kyverno.io/title: Node Failure Fast Eviction

@@ -4,7 +4,7 @@ Things only the site owner can do. Rough order of importance.
 
 ## This week
 
-- [ ] **Confirm the deploy.** After ArgoCD syncs, check https://joshhawleygop.com/january-6
+- [ ] **Confirm the deploy.** After Flux reconciles, check https://joshhawleygop.com/january-6
       loads and https://www.joshhawleygop.com/ redirects to the bare domain. If
       old pages still show, the pod didn't restart: check that
       `joshhawleygop/nginx-conf-rev` is `"3"` on the running Deployment.

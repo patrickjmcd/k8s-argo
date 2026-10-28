@@ -8,8 +8,9 @@ metadata:
 spec:
   # etcd/control-plane node (bare-metal Mac Mini, SATA SSD): keep Longhorn
   # replicas off it so replica writes don't compete with etcd fsync.
-  # The disks block must be present — Replace=true without it deletes the
-  # auto-registered disk and the longhorn validating webhook denies that.
+  # Keep the disks block: Flux owns it (server-side apply), so dropping it
+  # from git would remove the auto-registered disk, which the longhorn
+  # validating webhook denies.
   allowScheduling: false
   disks:
     default-disk-816d35431a8152e1:

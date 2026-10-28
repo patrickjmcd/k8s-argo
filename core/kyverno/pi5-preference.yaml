@@ -40,8 +40,8 @@ spec:
                 # Pi4 0, which outvoted free resources: by Oct 2026 the Pi5s
                 # carried 61-65% memory requests and crashed under load while
                 # the Pi4s sat at 68% free. (The Sep 2026 Pi4 CPU saturation
-                # was argocd-application-controller, which now prefers
-                # media-server in core/argocd.yaml.)
+                # was argocd-application-controller; Argo CD has since been
+                # replaced by Flux.)
                 #
                 # Now: every node gets the 80 baseline and Pi5s a 20 bonus, so
                 # Pi5 100 / everything else 80. Pi5 wins ties, but free

@@ -10,7 +10,7 @@ ConfigMap. Owner-facing material (outreach kit, video scripts, checklist) is in
    date; the URL becomes `/news/your-slug`.
 2. Push to `main` (the GitHub web editor works fine from a phone).
 3. The `Build joshhawleygop.com` workflow rebuilds `site/`, the sitemap, the
-   RSS feed and `kustomization.yaml`, commits them, and ArgoCD deploys. New
+   RSS feed and `kustomization.yaml`, commits them, and Flux deploys. New
    files appear on the live site within a few minutes, with no pod restart.
 
 Template:
