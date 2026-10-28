@@ -52,7 +52,8 @@ docs/           # Runbooks (flux-migration.md, cilium-migration.md, ...)
   `clusters/home/apps/` or `clusters/home/core/` does nothing until it is
   listed in that directory's `kustomization.yaml`.
 - Each directory's `kustomization.yaml` patches shared settings onto every
-  Flux Kustomization in it (interval 10m, retryInterval 2m, timeout 5m,
+  Flux Kustomization in it (interval 1h -- drift correction only, pushes
+  reconcile at once via the Receiver -- retryInterval 2m, timeout 5m,
   `sourceRef: flux-system`, `prune: true`, `wait: true`; apps also get a
   HomelabApp health check). So an app's file only needs `name` + `path`
   (+ `dependsOn`).

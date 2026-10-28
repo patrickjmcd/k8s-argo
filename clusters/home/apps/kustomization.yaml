@@ -60,7 +60,11 @@ patches:
         name: all
         namespace: flux-system
       spec:
-        interval: 10m
+        # Drift correction only: a push reconciles everything at once (Gitea
+        # webhook -> Receiver -> GitRepository, clusters/home/receiver.yaml).
+        # At 10m, re-rendering ~100 Kustomizations kept kustomize-controller
+        # at ~120m CPU around the clock.
+        interval: 1h
         retryInterval: 2m
         timeout: 5m
         sourceRef:

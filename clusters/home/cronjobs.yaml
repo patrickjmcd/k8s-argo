@@ -7,7 +7,8 @@ metadata:
   name: cronjobs
   namespace: flux-system
 spec:
-  interval: 10m
+  # Drift correction only; pushes reconcile at once (clusters/home/receiver.yaml).
+  interval: 1h
   retryInterval: 2m
   timeout: 5m
   path: ./cronjobs

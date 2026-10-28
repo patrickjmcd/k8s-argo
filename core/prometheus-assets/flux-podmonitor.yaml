@@ -1,0 +1,19 @@
+# Flux controller metrics (gotk_reconcile_duration_seconds, gotk_resource_info,
+# controller-runtime workqueue stats). Lives here because Prometheus only reads
+# PodMonitors from namespaces labelled prometheus=enabled, which flux-system
+# isn't. Controllers serve metrics on http-prom, the Flux Operator on
+# http-metrics (both :8080); flux-system's allow-scraping NetworkPolicy admits
+# :8080 from any namespace.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flux-system
+  namespace: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - flux-system
+  selector: {}
+  podMetricsEndpoints:
+    - port: http-prom
+    - port: http-metrics

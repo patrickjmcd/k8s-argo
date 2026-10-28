@@ -16,6 +16,7 @@ resources:
   - nut-ups-rules.yaml
   - macbook-thermal-rules.yaml
   - node-thermal-rules.yaml
+  - flux-podmonitor.yaml
   - local-usb.storageclass.yaml
 
 
