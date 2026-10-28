@@ -8,6 +8,10 @@
 # Secret, prompted if that fails); ntfy with the publisher token NTFY_TOKEN
 # from the ntfy-1pw Secret, stored in the hook's Authorization header.
 # Re-running replaces the hook (e.g. after rotating the ntfy token).
+# Gitea API quirks: without config.is_system_webhook="true" the admin API
+# makes a *default* hook (copied into new repos only), and "pull_request"
+# expands to every PR sub-event (sync, review, comment...); "pull_request_only"
+# is the open/close/reopen/edit event alone.
 set -euo pipefail
 
 GITEA=https://git.x.pmcd.io/api/v1
@@ -22,12 +26,12 @@ if [ "$(curl -s -o /dev/null -w '%{http_code}' -u "patrickjmcd:$PASS" "$GITEA/us
 fi
 api() { curl -sf -u "patrickjmcd:$PASS" -H 'Content-Type: application/json' "$@"; }
 
-for id in $(api "$GITEA/admin/hooks" | jq -r --arg u "$NTFY_URL" '.[] | select(.config.url == $u) | .id'); do
+for id in $(api "$GITEA/admin/hooks?type=all" | jq -r --arg u "$NTFY_URL" '.[] | select(.config.url == $u) | .id'); do
   api -X DELETE "$GITEA/admin/hooks/$id" >/dev/null && echo "removed old hook $id"
 done
 
 jq -n --arg url "$NTFY_URL" --arg auth "Bearer $NTFY_TOKEN" '{
   type: "gitea", name: "ntfy: new pull requests", active: true,
-  events: ["pull_request"], authorization_header: $auth,
-  config: {url: $url, content_type: "json"}
+  events: ["pull_request_only"], authorization_header: $auth,
+  config: {url: $url, content_type: "json", is_system_webhook: "true"}
 }' | api -X POST "$GITEA/admin/hooks" -d @- | jq -r '"created system hook \(.id) -> \(.config.url)"'
