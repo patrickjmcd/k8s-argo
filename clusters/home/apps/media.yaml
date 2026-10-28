@@ -38,6 +38,7 @@ spec:
     - app: subwave
     - app: ollama
     - app: aonsoku
+    - app: searxng
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization

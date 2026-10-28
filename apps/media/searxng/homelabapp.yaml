@@ -1,0 +1,55 @@
+# SearXNG metasearch, the web-search backend for SUB/WAVE's DJ skills
+# (apps/media/subwave: Settings -> Search -> searxng,
+# http://searxng.media.svc.cluster.local). DuckDuckGo's Instant Answer API,
+# subwave's default, returns nothing for track-level queries, so the DJ kept
+# saying it couldn't find anything (Oct 2026). Cluster-internal only: no
+# route, no limiter. Stateless.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: searxng
+  namespace: media
+spec:
+  image: searxng/searxng:2026.10.28-c360868e5
+  port: 80
+  containerPort: 8080
+  # server.secret_key only signs cookies/image-proxy URLs, which nothing here
+  # keeps across restarts, so a per-start random key (SEARXNG_SECRET
+  # overrides it) beats a stored secret.
+  command:
+    - sh
+    - -c
+    - SEARXNG_SECRET="$(head -c 32 /dev/urandom | base64 | tr -dc A-Za-z0-9)" exec /usr/local/searxng/entrypoint.sh
+  env:
+    TZ: America/Chicago
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 192Mi
+    cpuLimit: "1"
+    memoryLimit: 768Mi
+  probes:
+    type: httpGet
+    path: /healthz
+    liveness:
+      enabled: true
+  route:
+    enabled: false
+  configMap:
+    enabled: true
+    mountPath: /etc/searxng/settings.yml
+    subPath: settings.yml
+    data:
+      settings.yml: |
+        use_default_settings: true
+        general:
+          instance_name: SearXNG
+        server:
+          limiter: false
+          image_proxy: false
+          public_instance: false
+        search:
+          safe_search: 0
+          # subwave calls /search?format=json
+          formats:
+            - html
+            - json
