@@ -49,4 +49,7 @@ jq -n --arg url "$HOOK_URL" --arg secret "$SECRET" '{
   type: "gitea", active: true, events: ["pull_request_only", "pull_request_sync"],
   config: {url: $url, content_type: "json", secret: $secret}
 }' | api -X POST "$GITEA/repos/$REPO/hooks" -d @- | jq -r '"created hook \(.id) -> \(.config.url) \(.events)"'
-kubectl -n konflate rollout restart deploy/konflate >/dev/null && kubectl -n konflate rollout status deploy/konflate --timeout=120s
+# The first install times out while the Secret doesn't exist yet; --force
+# retries it. On later runs Reloader has already restarted the pod.
+flux reconcile helmrelease konflate -n flux-system --force
+kubectl -n konflate rollout status deploy/konflate --timeout=120s
