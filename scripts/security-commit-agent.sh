@@ -42,7 +42,8 @@ fi
 
 is_ignored_file() {
   local file="$1"
-  for pattern in "${ignored_patterns[@]}"; do
+  # ${arr[@]+...}: bash 3.2 (macOS) treats an empty array as unbound under set -u
+  for pattern in ${ignored_patterns[@]+"${ignored_patterns[@]}"}; do
     # shellcheck disable=SC2254
     if [[ "${file}" == ${pattern} ]]; then
       return 0
