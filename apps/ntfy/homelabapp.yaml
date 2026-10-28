@@ -34,25 +34,10 @@ spec:
   #                    (Alertmanager, n8n, scripts).
   onePassword:
     enabled: true
-  # Webhook templates (ntfy's template-dir default), used as
-  # POST /<topic>?template=<file name without .yml>. A template that calls
-  # `fail` rejects the request (HTTP 400), so nothing is published: that is
-  # how gitea-pr drops every pull_request event except "opened".
-  # Gitea system webhook -> /gitea?template=gitea-pr is created by
-  # scripts/create-gitea-pr-ntfy-hook.sh. Messages stay plain text (iOS shows
-  # markdown literally).
-  configMap:
-    enabled: true
-    mountPath: /etc/ntfy/templates
-    data:
-      gitea-pr.yml: |
-        title: |
-          {{- if not (and .pull_request (eq .action "opened")) }}{{ fail "only opened pull requests notify" }}{{ end -}}
-          New PR in {{ .repository.full_name }}: #{{ .pull_request.number }}
-        message: |
-          {{ .pull_request.title }}
-          {{ .pull_request.head.ref }} → {{ .pull_request.base.ref }}, by {{ .pull_request.user.login }}
-          {{ .pull_request.html_url }}
+  # New-PR notifications (topic gitea) come from n8n, not an ntfy template:
+  # Gitea system hook -> n8n "Gitea PR -> ntfy", which adds the konflate
+  # summary and Review/Merge/Close buttons (scripts/create-gitea-pr-n8n-relay.sh).
+  # Messages stay plain text (iOS shows markdown literally).
   resources:
     cpuRequest: 10m
     memoryRequest: 32Mi
