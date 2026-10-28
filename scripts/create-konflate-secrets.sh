@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # One-off (re-runnable): secrets + Gitea webhook for konflate
 # (clusters/home/apps/konflate.yaml).
-#   1. creates a Gitea access token "konflate" for patrickjmcd (scopes
+#   1. creates a Gitea access token "konflate" for patrickjmcd (scopes read:user,
+#      which konflate needs to resolve its own identity;
 #      write:repository for commit statuses, write:issue for PR comments;
 #      replaces an existing one) and a random webhook secret;
 #   2. stores both in 1Password item vaults/Kubernetes/items/konflate
@@ -22,7 +23,7 @@ fi
 api() { curl -sf -u "patrickjmcd:$PASS" -H 'Content-Type: application/json' "$@"; }
 
 api -X DELETE "$GITEA/users/patrickjmcd/tokens/konflate" >/dev/null 2>&1 && echo "removed old Gitea token konflate" || true
-TOKEN=$(jq -n '{name: "konflate", scopes: ["write:repository", "write:issue"]}' |
+TOKEN=$(jq -n '{name: "konflate", scopes: ["write:repository", "write:issue", "read:user"]}' |
   api -X POST "$GITEA/users/patrickjmcd/tokens" -d @- | jq -r .sha1)
 [ -n "$TOKEN" ] && [ "$TOKEN" != null ] || { echo "token creation failed" >&2; exit 1; }
 echo "created Gitea token konflate"
