@@ -150,6 +150,8 @@ spec:
                         url: https://readarr.x.pmcd.io
                       - title: SABnzbd
                         url: https://sabnzbd.x.pmcd.io
+                      - title: Search
+                        url: https://search.x.pmcd.io
                       - title: Seerr
                         url: https://requests.x.pmcd.io
                       - title: Sonarr
