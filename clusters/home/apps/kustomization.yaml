@@ -38,6 +38,7 @@ resources:
   - voice-assistant.yaml
   - n8n.yaml
   - ntfy.yaml
+  - konflate.yaml
   - outline.yaml
   - media-base.yaml
   - media.yaml
