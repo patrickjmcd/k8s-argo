@@ -130,6 +130,8 @@ spec:
                       # BEGIN GLANCE-GENERATED:Media Services
                       - title: Agregarr
                         url: https://agregarr.x.pmcd.io
+                      - title: Aurral
+                        url: https://aurral.x.pmcd.io
                       - title: Bazarr
                         url: https://bazarr.x.pmcd.io
                       - title: Dispatcharr

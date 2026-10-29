@@ -39,6 +39,7 @@ spec:
     - app: ollama
     - app: aonsoku
     - app: searxng
+    - app: aurral
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization

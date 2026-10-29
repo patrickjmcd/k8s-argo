@@ -1,0 +1,56 @@
+# Aurral (aurral.org): music discovery and requests on top of Lidarr --
+# recommendations from Last.fm/ListenBrainz history, new releases, rotating
+# "flow" playlists published to Navidrome. Lidarr stays in charge of the
+# library; Aurral only sends it requests.
+#
+# Aurral checks that the paths Lidarr reports exist in its own container, so
+# the shared volumes are mounted at Lidarr's paths (/mnt/media, /mnt/downloads)
+# rather than the /data the docs assume. Its own Downloads Folder (flow tracks)
+# is music/aurral, outside Lidarr's root folder (music/library).
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: aurral
+  namespace: media
+spec:
+  image: ghcr.io/lklynet/aurral:2.12.0
+  port: 80
+  containerPort: 3001
+  env:
+    TZ: America/Chicago
+    PUID: "1000"
+    PGID: "1000"
+    TRUST_PROXY: "true"
+    AURRAL_PUBLIC_URL: https://aurral.x.pmcd.io
+    DOWNLOAD_FOLDER: /mnt/media/music/aurral
+    FILE_BROWSE_ROOTS: /mnt/media,/mnt/downloads
+    # Library-scan workers default to a 2Gi heap; keep them under the limit.
+    AURRAL_WORKER_MAX_HEAP_MB: "1024"
+  resources:
+    cpuRequest: 100m
+    memoryRequest: 384Mi
+    cpuLimit: "2"
+    memoryLimit: 2Gi
+  probes:
+    type: httpGet
+    path: /api/health/live
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - aurral.x.pmcd.io
+  persistence:
+    claimName: longhorn-aurral-data
+    mountPath: /config
+  extraVolumes:
+    - name: media
+      claimName: smb-media-claim
+    - name: downloads
+      claimName: sab-downloads-pvc
+  extraVolumeMounts:
+    - name: media
+      mountPath: /mnt/media
+    - name: downloads
+      mountPath: /mnt/downloads
+  glance:
+    monitor: true

@@ -20,6 +20,7 @@ spec:
         group: media-services
       static:
         - https://agregarr.x.pmcd.io
+        - https://aurral.x.pmcd.io
         - https://bazarr.x.pmcd.io
         - https://dispatcharr.x.pmcd.io
         - https://jellyfin.x.pmcd.io
