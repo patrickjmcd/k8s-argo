@@ -275,9 +275,11 @@ spec:
       resources:
         requests:
           cpu: 23m
-          memory: 100Mi
+          memory: 128Mi
+        # Working set peaks at 95-99Mi; the old 100Mi limit OOM-killed it
+        # ~930 times in 40 days.
         limits:
-          memory: 100Mi
+          memory: 256Mi
     grafana:
       deploymentStrategy:
         type: Recreate
