@@ -254,7 +254,7 @@ For media and shared files. CSI driver in `csi-smb-provisioner` namespace. PV na
 ## Kyverno Policies
 
 Kyverno mutates pods automatically:
-- **node-failure-tolerations**: Adds 30s tolerations for `node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable` to all pods
+- **node-failure-tolerations**: Adds 30s tolerations for `node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable` to all pods except `longhorn-system` (an evicted instance-manager kills every engine on the node with filesystems mounted; Oct 29 2026 a router reboot corrupted two volumes that way)
 - **pi5-preference**: Scheduling preference for Pi 5 nodes
 - **goldilocks-namespace-label**: Auto-labels namespaces for VPA recommendations
 

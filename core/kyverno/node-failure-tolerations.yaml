@@ -38,6 +38,11 @@ spec:
                 - Pod
               operations:
                 - CREATE
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - longhorn-system
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
@@ -66,6 +71,11 @@ spec:
                 - Pod
               operations:
                 - CREATE
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - longhorn-system
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
@@ -91,6 +101,11 @@ spec:
                 - Pod
               operations:
                 - CREATE
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - longhorn-system
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
@@ -121,6 +136,11 @@ spec:
                 - Pod
               operations:
                 - CREATE
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - longhorn-system
       preconditions:
         all:
           - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
