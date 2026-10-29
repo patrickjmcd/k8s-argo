@@ -33,6 +33,9 @@ spec:
               value: "8686"
             - name: LIDARR__SERVER__BINDADDRESS
               value: "*"
+            # Host-header allowlist (DNS-rebinding guard); every name clients use, or they get a 400
+            - name: LIDARR__SERVER__ALLOWEDHOSTS
+              value: lidarr,lidarr.media,lidarr.media.svc,lidarr.media.svc.cluster.local,lidarr.x.pmcd.io,lidarr.pmcd.io
             - name: LIDARR__LOG__ANALYTICSENABLED
               value: "False"
             - name: LIDARR__LOG__LEVEL

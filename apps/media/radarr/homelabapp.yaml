@@ -26,6 +26,8 @@ spec:
     TZ: America/Chicago
     RADARR__SERVER__PORT: '7878'
     RADARR__SERVER__BINDADDRESS: '*'
+    # Host-header allowlist (DNS-rebinding guard); every name clients use, or they get a 400
+    RADARR__SERVER__ALLOWEDHOSTS: radarr,radarr.media,radarr.media.svc,radarr.media.svc.cluster.local,radarr.x.pmcd.io,radarr.pmcd.io
     RADARR__LOG__LEVEL: info
     RADARR__LOG__ANALYTICSENABLED: 'False'
     RADARR__AUTH__METHOD: External

@@ -26,6 +26,8 @@ spec:
     TZ: America/Chicago
     PROWLARR__SERVER__PORT: '9696'
     PROWLARR__SERVER__BINDADDRESS: '*'
+    # Host-header allowlist (DNS-rebinding guard); every name clients use, or they get a 400
+    PROWLARR__SERVER__ALLOWEDHOSTS: prowlarr,prowlarr.media,prowlarr.media.svc,prowlarr.media.svc.cluster.local,prowlarr.x.pmcd.io,prowlarr.pmcd.io
     PROWLARR__LOG__LEVEL: info
     PROWLARR__LOG__ANALYTICSENABLED: 'False'
     PROWLARR__AUTH__METHOD: External

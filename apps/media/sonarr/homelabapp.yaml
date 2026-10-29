@@ -26,6 +26,8 @@ spec:
     TZ: America/Chicago
     SONARR__SERVER__PORT: '8989'
     SONARR__SERVER__BINDADDRESS: '*'
+    # Host-header allowlist (DNS-rebinding guard); every name clients use, or they get a 400
+    SONARR__SERVER__ALLOWEDHOSTS: sonarr,sonarr.media,sonarr.media.svc,sonarr.media.svc.cluster.local,sonarr.x.pmcd.io,sonarr.pmcd.io
     SONARR__LOG__LEVEL: Info
     SONARR__LOG__ANALYTICSENABLED: 'False'
     SONARR__AUTH__METHOD: External
