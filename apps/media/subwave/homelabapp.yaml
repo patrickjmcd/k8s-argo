@@ -59,7 +59,7 @@ spec:
     hostnames:
       - subwave.x.pmcd.io
   persistence:
-    claimName: longhorn-subwave-data
+    claimName: longhorn-subwave-data-restored
     mountPath: /var/sub-wave
   extraVolumes:
     - name: media

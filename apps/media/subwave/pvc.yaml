@@ -20,3 +20,43 @@ spec:
   resources:
     requests:
       storage: 25Gi
+---
+# Restored from the 2026-10-29 08:01Z B2 backup after longhorn-subwave-data's
+# ext4 was found corrupted at ~08:14Z (e2fsck -fy dropped most of it). The
+# PV is static so the PVC binds to exactly that Longhorn volume.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: subwave-restore-20261029
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  capacity:
+    storage: 25Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn
+  csi:
+    driver: driver.longhorn.io
+    fsType: ext4
+    volumeHandle: subwave-restore-20261029
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-subwave-data-restored
+  namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  volumeName: subwave-restore-20261029
+  resources:
+    requests:
+      storage: 25Gi
