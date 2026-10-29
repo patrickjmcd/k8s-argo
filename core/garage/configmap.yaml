@@ -12,6 +12,9 @@ data:
     metadata_dir = "/var/lib/garage/meta"
     data_dir = "/var/lib/garage/data"
     db_engine = "lmdb"
+    # Default map (~1 TiB of address space) does not fit the Pi 4 kernels' VA
+    # range ("OutOfMemory error while trying to open LMDB"); meta is far smaller.
+    lmdb_map_size = "64G"
     metadata_auto_snapshot_interval = "6h"
     compression_level = 1
 
