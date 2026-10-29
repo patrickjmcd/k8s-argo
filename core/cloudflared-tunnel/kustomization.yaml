@@ -10,7 +10,7 @@ resources:
 images:
   - name: cloudflared
     newName: cloudflare/cloudflared
-    newTag: 2026.10.5
+    newTag: 2026.10.6
 
 configMapGenerator:
   - name: cloudflared
