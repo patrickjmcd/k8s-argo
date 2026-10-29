@@ -32,5 +32,5 @@ spec:
   # Homebridge empty (new bridge identity, every accessory re-paired). The
   # old copy stays at media-server:/mnt/usb/homebridge-data as a rollback.
   persistence:
-    claimName: longhorn-homebridge-data
+    claimName: longhorn-homebridge-data-restored
     mountPath: /homebridge
