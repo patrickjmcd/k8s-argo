@@ -16,3 +16,14 @@ metadata:
   name: allow-recurring-job-while-volume-detached
   namespace: longhorn-system
 value: "true"
+---
+# Default 5. media-server's USB disk (/mnt/usb) holds Longhorn replicas *and*
+# the Prometheus TSDB; on Oct 30 2026 six concurrent rebuilds held it ~60% busy
+# with ~50% IO stall, Prometheus scraped late and up{} flapped ~1400 times/h
+# (TargetDown/KubeletInstanceUnreachable storms). One at a time per node.
+apiVersion: longhorn.io/v1beta2
+kind: Setting
+metadata:
+  name: concurrent-replica-rebuild-per-node-limit
+  namespace: longhorn-system
+value: "1"
