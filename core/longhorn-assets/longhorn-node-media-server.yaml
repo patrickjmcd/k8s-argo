@@ -11,10 +11,15 @@ spec:
   # bus; with 3 replicas that just faults the local copy, which rebuilds once
   # it re-mounts. storageReserved leaves room for the Prometheus TSDB and
   # cluster-backups that share the drive.
+  #
+  # usb-disk takes no new replicas (Oct 30 2026): under rebuild load the drive
+  # was too slow, its replicas timed out mid-rebuild and faulted again in a
+  # loop, and the timescale volume briefly remounted read-only. Existing
+  # replicas stay; new and rebuilt ones go to the other nodes.
   allowScheduling: true
   disks:
     usb-disk:
-      allowScheduling: true
+      allowScheduling: false
       diskDriver: ""
       diskType: filesystem
       evictionRequested: false
