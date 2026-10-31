@@ -14,3 +14,9 @@ spec:
       - longhorn-system
   endpoints:
     - port: manager
+      metricRelabelings:
+        # longhorn-manager's own client/workqueue latency histograms (~22k
+        # series); no rule or dashboard reads them.
+        - sourceLabels: [__name__]
+          regex: longhorn_(rest_client_.*|workqueue_.*)_bucket
+          action: drop

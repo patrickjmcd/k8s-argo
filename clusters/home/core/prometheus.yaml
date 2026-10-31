@@ -51,7 +51,10 @@ spec:
     prometheus:
       prometheusSpec:
         scrapeInterval: 60s
-        retentionSize: 40GiB
+        # 14 days at ~1.1 GiB/day after the bucket drops below (Oct 31 2026);
+        # the size cap is a backstop, sized with headroom over that.
+        retention: 14d
+        retentionSize: 25GiB
         nodeSelector:
           # arch pinned explicitly: server-side apply merges this map with
           # the previous arm64 selector instead of replacing it
@@ -180,13 +183,18 @@ spec:
           - sourceLabels: [__name__]
             regex: (apiserver|etcd)_.*
             action: drop
+          # controller workqueue histograms: no rule or dashboard reads the
+          # kubelet job's copy (the API server dashboard filters job=apiserver)
+          - sourceLabels: [__name__]
+            regex: workqueue_(work|queue)_duration_seconds_bucket
+            action: drop
     # Latency/size histograms no rule uses (the SLO burn-rate rules read
     # apiserver_request_sli_duration_seconds_bucket, which stays).
     kubeApiServer:
       serviceMonitor:
         metricRelabelings:
           - sourceLabels: [__name__]
-            regex: (apiserver_request_duration_seconds|etcd_request_duration_seconds|apiserver_request_body_size_bytes|apiserver_watch_list_duration_seconds|apiserver_response_sizes|apiserver_watch_cache_read_wait_seconds|apiserver_watch_events_sizes)_bucket
+            regex: (apiserver_request_duration_seconds|etcd_request_duration_seconds|apiserver_request_body_size_bytes|apiserver_watch_list_duration_seconds|apiserver_response_sizes|apiserver_watch_cache_read_wait_seconds|apiserver_watch_events_sizes|apiserver_watch_events_dispatch_duration_seconds|apiserver_storage_list_duration_seconds|apiserver_watch_cache_initialization_duration_seconds)_bucket
             action: drop
     prometheusOperator:
       resources:
