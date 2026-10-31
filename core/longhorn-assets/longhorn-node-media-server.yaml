@@ -16,13 +16,19 @@ spec:
   # was too slow, its replicas timed out mid-rebuild and faulted again in a
   # loop, and the timescale volume briefly remounted read-only. Existing
   # replicas stay; new and rebuilt ones go to the other nodes.
+  #
+  # Existing replicas evicted too (Oct 31 2026): the ones left behind kept
+  # hitting Longhorn's 8s r/w timeout -- 05:07 (timescale journal aborted),
+  # 07:04-07:43 (homebridge EIO, down 5h) and 14:39 (homebridge, subwave,
+  # timescale all degraded). The drive averages a queue depth of ~6 with the
+  # Prometheus TSDB on it, so it can't serve a synchronous replica.
   allowScheduling: true
   disks:
     usb-disk:
       allowScheduling: false
       diskDriver: ""
       diskType: filesystem
-      evictionRequested: false
+      evictionRequested: true
       path: /mnt/usb/longhorn
       storageReserved: 214748364800
       tags: []
