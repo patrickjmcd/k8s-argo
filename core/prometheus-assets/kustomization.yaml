@@ -18,5 +18,7 @@ resources:
   - node-thermal-rules.yaml
   - flux-podmonitor.yaml
   - local-usb.storageclass.yaml
+  - longhorn-prometheus.storageclass.yaml
+  - prometheus-db.pvc.yaml
 
 

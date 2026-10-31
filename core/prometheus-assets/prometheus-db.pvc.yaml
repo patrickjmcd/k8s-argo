@@ -1,0 +1,17 @@
+# Pre-created so the TSDB could be copied in before Prometheus switched to it;
+# the name is what the operator derives from volumeClaimTemplate.metadata.name
+# (prometheus-db) and the pod name, so the StatefulSet adopts it.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-db-prometheus-kube-prometheus-stack-prometheus-0
+  namespace: prometheus
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: longhorn-prometheus
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
