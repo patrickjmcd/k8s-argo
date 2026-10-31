@@ -121,6 +121,8 @@ spec:
                         url: https://tronbyt.x.pmcd.io
                       - title: ntfy
                         url: https://ntfy.x.pmcd.io
+                      - title: openGym
+                        url: https://gym.x.pmcd.io
                       # END GLANCE-GENERATED:Services
 
                   - type: monitor

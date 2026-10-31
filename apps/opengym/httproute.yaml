@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: opengym
+  annotations:
+    glance.pmcd.io/monitor: "true"
+    glance.pmcd.io/monitor-title: "openGym"
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: default
+  hostnames:
+    - gym.x.pmcd.io
+  rules:
+    - backendRefs:
+        - name: opengym
+          port: 80

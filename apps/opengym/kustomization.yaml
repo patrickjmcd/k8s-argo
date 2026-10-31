@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: opengym
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+
+# The API and web images of one release belong together: bump both at once.
+images:
+  - name: opengym-api
+    newName: ghcr.io/duartesantos8/opengym-api
+    newTag: "1.4.3"
+  - name: opengym-web
+    newName: ghcr.io/duartesantos8/opengym-web
+    newTag: "1.4.3"

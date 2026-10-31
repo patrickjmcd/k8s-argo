@@ -40,6 +40,7 @@ resources:
   - ntfy.yaml
   - konflate.yaml
   - outline.yaml
+  - opengym.yaml
   - media-base.yaml
   - media.yaml
   - renovate.yaml

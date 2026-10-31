@@ -60,6 +60,7 @@ spec:
       static:
         - https://git.x.pmcd.io
         - https://grafana.x.pmcd.io
+        - https://gym.x.pmcd.io
         - https://homebox.x.pmcd.io
         - https://immich.x.pmcd.io
         - https://kaneo.x.pmcd.io

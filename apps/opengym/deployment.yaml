@@ -1,0 +1,79 @@
+# Two containers in one pod (upstream's kubernetes/ example), hence plain
+# Kustomize rather than a HomelabApp.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opengym
+  labels:
+    app: opengym
+spec:
+  replicas: 1
+  # The API's data is files on a RWO volume: never run two pods at once.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: opengym
+  template:
+    metadata:
+      labels:
+        app: opengym
+    spec:
+      containers:
+        - name: api
+          image: opengym-api
+          env:
+            - { name: TZ, value: America/Chicago }
+            - { name: PORT, value: "3000" }
+            - { name: DATA_DIR, value: /data }
+            # Passkeys are bound to this exact hostname.
+            - { name: RP_ID, value: gym.x.pmcd.io }
+            - { name: ORIGIN, value: https://gym.x.pmcd.io }
+            - { name: RP_NAME, value: openGym }
+            # The first profile created on the empty instance becomes admin.
+            - { name: FIRST_USER_ADMIN, value: "1" }
+            # TRUST_PROXY stays off: the web container overwrites
+            # X-Forwarded-For with Traefik's pod address anyway.
+          ports:
+            - name: http
+              containerPort: 3000
+          readinessProbe:
+            httpGet: { path: /api/health, port: http }
+          livenessProbe:
+            httpGet: { path: /api/health, port: http }
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 10m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+        - name: web
+          image: opengym-web
+          env:
+            # The image runs as uid 101 and can't bind :80 here.
+            - { name: NGINX_PORT, value: "8080" }
+            # Same pod, so the API is on localhost (no RESOLVER needed).
+            - { name: BACKEND, value: 127.0.0.1 }
+            - { name: PORT, value: "3000" }
+          ports:
+            - name: web
+              containerPort: 8080
+          readinessProbe:
+            httpGet: { path: /, port: web }
+          livenessProbe:
+            httpGet: { path: /, port: web }
+            initialDelaySeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-opengym-data
