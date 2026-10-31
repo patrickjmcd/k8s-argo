@@ -20,7 +20,7 @@ spec:
     spec:
       initContainers:
         - name: patch-pihole-config
-          image: pihole/pihole:2026.10.0
+          image: pihole/pihole:2026.10.1
           command:
             - sh
             - -c
@@ -48,7 +48,7 @@ spec:
               mountPath: /var/ftl
       containers:
         - name: pihole
-          image: pihole/pihole:2026.10.0
+          image: pihole/pihole:2026.10.1
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -140,7 +140,7 @@ spec:
         # write there too, so save it back to the PVC whenever it changes or
         # they are lost on the next restart. .backup is a consistent online copy.
         - name: gravity-sync
-          image: pihole/pihole:2026.10.0
+          image: pihole/pihole:2026.10.1
           env:
             - name: TZ
               value: "America/Chicago"
