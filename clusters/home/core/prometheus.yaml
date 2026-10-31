@@ -72,10 +72,15 @@ spec:
             operator: Exists
             effect: NoExecute
             tolerationSeconds: 30
+        # TSDB on Longhorn (Oct 31 2026), not media-server's USB disk: that
+        # drive was too slow to share with Longhorn replicas. The named template
+        # matches the pre-created PVC in core/prometheus-assets/prometheus-db.pvc.yaml.
         storageSpec:
           volumeClaimTemplate:
+            metadata:
+              name: prometheus-db
             spec:
-              storageClassName: local-usb
+              storageClassName: longhorn-prometheus
               accessModes:
                 - ReadWriteOnce
               resources:
