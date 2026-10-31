@@ -164,6 +164,13 @@ spec:
     # ~709k head series (Oct 2026). The apiserver job already has them.
     kubelet:
       serviceMonitor:
+        # cAdvisor stamps samples with its own (cached) collection time; when
+        # housekeeping lags under I/O load (nightly Longhorn backups) it serves
+        # timestamps older than the last scrape and Prometheus drops the whole
+        # scrape as out-of-order, firing PrometheusOutOfOrderTimestamps on every
+        # node (Oct 2026). Use scrape time instead.
+        honorTimestamps: false
+        trackTimestampsStaleness: false
         metricRelabelings:
           - sourceLabels: [__name__]
             regex: (apiserver|etcd)_.*
