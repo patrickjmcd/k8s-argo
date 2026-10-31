@@ -8,7 +8,7 @@ metadata:
   name: spoolman
   namespace: spoolman
 spec:
-  image: ghcr.io/donkie/spoolman:0.27.0
+  image: ghcr.io/donkie/spoolman:0.27.1
   port: 80
   containerPort: 8000
   env:
