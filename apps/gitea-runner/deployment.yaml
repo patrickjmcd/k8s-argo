@@ -21,6 +21,35 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/arch: amd64
+      initContainers:
+        - name: dind
+          image: docker:29.9.2-dind
+          # Native sidecar: the runner starts only once dockerd has written
+          # its TLS client certs (otherwise it exits on a missing ca.pem).
+          restartPolicy: Always
+          startupProbe:
+            exec:
+              command: [docker, info]
+            periodSeconds: 2
+            failureThreshold: 30
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: /certs
+          # dockerd needs it. Accepted risk: only our own Gitea repos run jobs
+          # here, and a malicious workflow could reach the node.
+          securityContext:
+            privileged: true # security-agent: ignore
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+            - name: docker
+              mountPath: /var/lib/docker
       containers:
         - name: runner
           image: gitea/act_runner:0.6.1
@@ -55,26 +84,6 @@ spec:
               mountPath: /config
             - name: certs
               mountPath: /certs
-        - name: dind
-          image: docker:29.9.2-dind
-          env:
-            - name: DOCKER_TLS_CERTDIR
-              value: /certs
-          # dockerd needs it. Accepted risk: only our own Gitea repos run jobs
-          # here, and a malicious workflow could reach the node.
-          securityContext:
-            privileged: true # security-agent: ignore
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              memory: 4Gi
-          volumeMounts:
-            - name: certs
-              mountPath: /certs
-            - name: docker
-              mountPath: /var/lib/docker
       volumes:
         - name: data
           persistentVolumeClaim:
