@@ -33,7 +33,7 @@ spec:
         runAsGroup: 1000
       initContainers:
         - name: bootstrap
-          image: gitea/gitea:28.2.0-rootless
+          image: gitea/gitea:28.3.0-rootless
           command: ["/bin/sh", "/bootstrap/bootstrap.sh"]
           env: &env
             - name: TZ
@@ -138,7 +138,7 @@ spec:
               memory: 512Mi
       containers:
         - name: gitea
-          image: gitea/gitea:28.2.0-rootless
+          image: gitea/gitea:28.3.0-rootless
           env: *env
           ports:
             - name: http
