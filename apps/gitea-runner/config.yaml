@@ -1,0 +1,18 @@
+# act_runner config (`act_runner generate-config` for every key). Labels map
+# `runs-on` to the image a job's container runs in, on the dind sidecar.
+log:
+  level: info
+runner:
+  file: /data/.runner
+  capacity: 2
+  timeout: 1h
+  labels:
+    - "ubuntu-latest:docker://node:24-bookworm"
+    - "node-24:docker://node:24-bookworm"
+cache:
+  enabled: true
+  dir: /data/cache
+container:
+  network: ""
+  privileged: false
+  force_pull: false

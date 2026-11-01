@@ -51,6 +51,7 @@ resources:
   - immich.yaml
   - immich-extras.yaml
   - gitea.yaml
+  - gitea-runner.yaml
 patches:
   - target:
       kind: Kustomization

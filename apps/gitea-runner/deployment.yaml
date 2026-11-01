@@ -1,0 +1,88 @@
+# Gitea Actions runner. Jobs run as containers on a Docker-in-Docker sidecar,
+# which has to be privileged. Recreate: the RWO data volume can't be mounted
+# by two pods during a rollout.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea-runner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: gitea-runner
+  template:
+    metadata:
+      labels:
+        app: gitea-runner
+      annotations:
+        reloader.stakater.com/auto: "true"
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      containers:
+        - name: runner
+          image: gitea/act_runner:0.6.1
+          env:
+            - name: CONFIG_FILE
+              value: /config/config.yaml
+            - name: GITEA_INSTANCE_URL
+              value: http://gitea.gitea.svc.cluster.local:3000
+            - name: GITEA_RUNNER_NAME
+              value: k8s-runner
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: gitea-runner-1pw
+                  key: GITEA_RUNNER_REGISTRATION_TOKEN
+            - name: DOCKER_HOST
+              value: tcp://localhost:2376
+            - name: DOCKER_CERT_PATH
+              value: /certs/client
+            - name: DOCKER_TLS_VERIFY
+              value: "1"
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+            - name: certs
+              mountPath: /certs
+        - name: dind
+          image: docker:29.9.2-dind
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: /certs
+          # dockerd needs it. Accepted risk: only our own Gitea repos run jobs
+          # here, and a malicious workflow could reach the node.
+          securityContext:
+            privileged: true # security-agent: ignore
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+            - name: docker
+              mountPath: /var/lib/docker
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-gitea-runner-data
+        - name: config
+          configMap:
+            name: gitea-runner-config
+        - name: certs
+          emptyDir: {}
+        - name: docker
+          emptyDir: {}
