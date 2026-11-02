@@ -53,6 +53,12 @@ spec:
     HARDCOVER_SYNC_CONTENT_TYPE: ebook
     HARDCOVER_SYNC_INTERVAL: "1"
     HARDCOVER_SYNC_INTERVAL_UNIT: hours
+    # Auto-download looks each synced book up through the Hardcover metadata
+    # provider and skips it without a key; the sync token works as one.
+    HARDCOVER_ENABLED: "true"
+    HARDCOVER_API_KEY: $(HARDCOVER_SYNC_TOKEN)
+    # Shelfmark can't see what's already in CWA (metadata.db is on CWA's RWO
+    # volume), so remove owned books from the shelf, or they download again.
     # Empty source priority = every enabled source, i.e. just Prowlarr.
     AUTO_DOWNLOAD_ENABLED: "true"
     # A failed download tries another release an hour later.
