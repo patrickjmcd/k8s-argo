@@ -41,6 +41,19 @@ spec:
     PROWLARR_USENET_ACTION: move
     BOOKS_OUTPUT_MODE: folder
     INGEST_DIR: /cwa-book-ingest
+    # Wanted list: books on the Hardcover "Want to Read" shelf become requests
+    # every hour and are searched until found (backing off to every few days
+    # when nothing matches), then removed from the shelf once downloaded.
+    # HARDCOVER_SYNC_TOKEN (no "Bearer " prefix) comes from shelfmark-1pw.
+    HARDCOVER_SYNC_ENABLED: "true"
+    HARDCOVER_SYNC_STATUSES: "1"
+    HARDCOVER_SYNC_CONTENT_TYPE: ebook
+    HARDCOVER_SYNC_INTERVAL: "1"
+    HARDCOVER_SYNC_INTERVAL_UNIT: hours
+    # Empty source priority = every enabled source, i.e. just Prowlarr.
+    AUTO_DOWNLOAD_ENABLED: "true"
+    # A failed download tries another release an hour later.
+    AUTO_DOWNLOAD_FAILURE_RETRY_MINUTES: "60"
   resources:
     cpuRequest: 25m
     memoryRequest: 256Mi
@@ -65,6 +78,8 @@ spec:
     - name: media
       mountPath: /cwa-book-ingest
       subPath: books/cwa-ingest
+  onePassword:
+    enabled: true
   glance:
     monitor: true
     title: Shelfmark
