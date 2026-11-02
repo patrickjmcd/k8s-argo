@@ -27,6 +27,9 @@ spec:
     CALIBRE_WEB_URL: https://books.x.pmcd.io
     SEARCH_MODE: universal
     BOOK_LANGUAGE: en
+    # Onboarding is skipped, so the metadata provider has to be enabled here.
+    METADATA_PROVIDER: openlibrary
+    OPENLIBRARY_ENABLED: "true"
     DIRECT_DOWNLOAD_ENABLED: "false"
     PROWLARR_ENABLED: "true"
     PROWLARR_URL: http://prowlarr.media.svc.cluster.local
