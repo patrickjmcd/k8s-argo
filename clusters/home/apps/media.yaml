@@ -27,7 +27,6 @@ spec:
     - app: radarr
     - app: sonarr
     - app: prowlarr
-    - app: readarr
     - app: agregarr
     - app: hdhr2xmltv
     - app: concertarr

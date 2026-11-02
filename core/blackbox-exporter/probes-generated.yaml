@@ -30,7 +30,6 @@ spec:
         - https://navidrome.x.pmcd.io
         - https://prowlarr.x.pmcd.io
         - https://radarr.x.pmcd.io
-        - https://readarr.x.pmcd.io
         - https://requests.x.pmcd.io
         - https://sabnzbd.x.pmcd.io
         - https://search.x.pmcd.io

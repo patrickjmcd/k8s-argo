@@ -152,8 +152,6 @@ spec:
                         url: https://prowlarr.x.pmcd.io
                       - title: Radarr
                         url: https://radarr.x.pmcd.io
-                      - title: Readarr
-                        url: https://readarr.x.pmcd.io
                       - title: SABnzbd
                         url: https://sabnzbd.x.pmcd.io
                       - title: Search
