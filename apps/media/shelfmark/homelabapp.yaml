@@ -45,6 +45,9 @@ spec:
     # every hour and are searched until found (backing off to every few days
     # when nothing matches), then removed from the shelf once downloaded.
     # HARDCOVER_SYNC_TOKEN (no "Bearer " prefix) comes from shelfmark-1pw.
+    # Synced requests need an admin user to own them, which AUTH_METHOD none
+    # never creates: /config/users.db holds a passwordless "admin" (created by
+    # hand, Nov 2026 -- UserDB("/config/users.db").create_user("admin", role="admin")).
     HARDCOVER_SYNC_ENABLED: "true"
     HARDCOVER_SYNC_STATUSES: "1"
     HARDCOVER_SYNC_CONTENT_TYPE: ebook
