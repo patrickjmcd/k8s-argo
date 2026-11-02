@@ -45,7 +45,6 @@ spec:
       - host all radarr all trust
       - host all sonarr all trust
       - host all prowlarr all trust
-      - host all readarr all trust
       - host all lidarr all trust
       - host all pocketid all trust
       - host all outline all trust
@@ -92,11 +91,6 @@ spec:
         inherit: true
         connectionLimit: -1
       - name: prowlarr
-        ensure: present
-        login: true
-        inherit: true
-        connectionLimit: -1
-      - name: readarr
         ensure: present
         login: true
         inherit: true
