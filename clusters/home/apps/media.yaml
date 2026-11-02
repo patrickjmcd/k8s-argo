@@ -40,6 +40,8 @@ spec:
     - app: aonsoku
     - app: searxng
     - app: aurral
+    - app: calibre-web
+    - app: shelfmark
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization

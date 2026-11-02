@@ -136,6 +136,8 @@ spec:
                         url: https://aurral.x.pmcd.io
                       - title: Bazarr
                         url: https://bazarr.x.pmcd.io
+                      - title: Books
+                        url: https://books.x.pmcd.io
                       - title: Dispatcharr
                         url: https://dispatcharr.x.pmcd.io
                       - title: Jellyfin
@@ -158,6 +160,8 @@ spec:
                         url: https://search.x.pmcd.io
                       - title: Seerr
                         url: https://requests.x.pmcd.io
+                      - title: Shelfmark
+                        url: https://shelfmark.x.pmcd.io
                       - title: Sonarr
                         url: https://sonarr.x.pmcd.io
                       - title: Sportarr

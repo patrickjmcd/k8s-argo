@@ -22,6 +22,7 @@ spec:
         - https://agregarr.x.pmcd.io
         - https://aurral.x.pmcd.io
         - https://bazarr.x.pmcd.io
+        - https://books.x.pmcd.io
         - https://dispatcharr.x.pmcd.io
         - https://jellyfin.x.pmcd.io
         - https://lidarr.x.pmcd.io
@@ -33,6 +34,7 @@ spec:
         - https://requests.x.pmcd.io
         - https://sabnzbd.x.pmcd.io
         - https://search.x.pmcd.io
+        - https://shelfmark.x.pmcd.io
         - https://sonarr.x.pmcd.io
         - https://sportarr.x.pmcd.io
         - https://subwave.x.pmcd.io

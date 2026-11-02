@@ -1,0 +1,67 @@
+# Shelfmark: search for one book, pick a release, done -- no authors to
+# monitor (replaces Readarr). Searches Prowlarr, sends NZBs to SABnzbd
+# (category books -> /mnt/media/downloads/complete/Books), then moves the file
+# into Calibre-Web Automated's ingest folder (apps/media/calibre-web).
+# Direct downloads (Anna's Archive etc.) stay off.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: shelfmark
+  namespace: media
+spec:
+  image: ghcr.io/calibrain/shelfmark:v1.4.0
+  port: 80
+  containerPort: 8084
+  # API keys: SABNZBD_API_KEY comes in under its own name; Prowlarr's is
+  # renamed below with a $(VAR) reference.
+  envFromSecrets:
+    - prowlarr-1pw
+    - sabnzbd-1pw
+  env:
+    TZ: America/Chicago
+    PUID: "1000"
+    PGID: "1000"
+    ONBOARDING: "false"
+    # Internal hostname only, like the *arr apps.
+    AUTH_METHOD: none
+    CALIBRE_WEB_URL: https://books.x.pmcd.io
+    SEARCH_MODE: universal
+    BOOK_LANGUAGE: en
+    DIRECT_DOWNLOAD_ENABLED: "false"
+    PROWLARR_ENABLED: "true"
+    PROWLARR_URL: http://prowlarr.media.svc.cluster.local
+    PROWLARR_API_KEY: $(PROWLARR__AUTH__APIKEY)
+    PROWLARR_USENET_CLIENT: sabnzbd
+    SABNZBD_URL: http://sabnzbd.media.svc.cluster.local
+    SABNZBD_CATEGORY: books
+    # Leaves SABnzbd's history clean once the file is in CWA.
+    PROWLARR_USENET_ACTION: move
+    BOOKS_OUTPUT_MODE: folder
+    INGEST_DIR: /cwa-book-ingest
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 256Mi
+    cpuLimit: "1"
+    memoryLimit: 1Gi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - shelfmark.x.pmcd.io
+  persistence:
+    claimName: longhorn-shelfmark-config
+    mountPath: /config
+  extraVolumes:
+    - name: media
+      claimName: smb-media-claim
+  extraVolumeMounts:
+    # Same path SABnzbd writes to, so the completed path it reports resolves.
+    - name: media
+      mountPath: /mnt/media
+    - name: media
+      mountPath: /cwa-book-ingest
+      subPath: books/cwa-ingest
+  glance:
+    monitor: true
+    title: Shelfmark

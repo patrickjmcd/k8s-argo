@@ -1,0 +1,18 @@
+# /config: Shelfmark's settings and users (most settings are env below).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-shelfmark-config
+  namespace: media
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi

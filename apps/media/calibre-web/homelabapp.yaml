@@ -1,0 +1,52 @@
+# Calibre-Web Automated: the ebook library. Shelfmark (apps/media/shelfmark)
+# drops finished downloads into the ingest folder; CWA imports them into the
+# Calibre library and deletes them from ingest. Kindle delivery is CWA's
+# "Send to eReader" (SMTP via Mailgun, set in Admin > Edit Basic Configuration
+# > E-mail Server; each user's Kindle address goes in their profile).
+# Apple Books: download the EPUB from the web UI on the phone, "Open in Books".
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: calibre-web
+  namespace: media
+spec:
+  image: crocodilestick/calibre-web-automated:v4.0.8
+  port: 80
+  containerPort: 8083
+  env:
+    TZ: America/Chicago
+    PUID: "1000"
+    PGID: "1000"
+    # The ingest folder is on SMB, which has no inotify; poll it instead.
+    # (NETWORK_SHARE_MODE would also turn off WAL on the library, which is on
+    # Longhorn, so only the watcher mode is set.)
+    CWA_WATCH_MODE: poll
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 512Mi
+    # Conversions (calibre ebook-convert) are bursty; a runaway guard only.
+    cpuLimit: "2"
+    memoryLimit: 2Gi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - books.x.pmcd.io
+  persistence:
+    claimName: longhorn-calibre-web-config
+    mountPath: /config
+  extraVolumes:
+    - name: library
+      claimName: longhorn-calibre-web-library
+    - name: media
+      claimName: smb-media-claim
+  extraVolumeMounts:
+    - name: library
+      mountPath: /calibre-library
+    - name: media
+      mountPath: /cwa-book-ingest
+      subPath: books/cwa-ingest
+  glance:
+    monitor: true
+    title: Books
