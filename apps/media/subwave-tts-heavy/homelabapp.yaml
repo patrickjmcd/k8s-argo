@@ -1,0 +1,60 @@
+# SUB/WAVE's tts-heavy sidecar, Chatterbox only, CPU (the cluster has no GPU).
+# Cluster-internal: subwave reaches it through TTS_HEAVY_URL. In subwave pick
+# Admin -> TTS voice -> Chatterbox; reference WAVs go in /var/sub-wave/voices.
+# If this is down, the DJ falls back to Piper.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: subwave-tts-heavy
+  namespace: media
+spec:
+  # Keep on the same version as apps/media/subwave.
+  image: ghcr.io/perminder-klair/subwave-tts-heavy:1.30.0
+  port: 8080
+  env:
+    TZ: America/Chicago
+    TTS_HEAVY_ENGINES: chatterbox
+    TTS_HEAVY_DEVICE: cpu
+    # torch would otherwise start a thread per core and throttle on cpuLimit.
+    OMP_NUM_THREADS: "8"
+  # Must stay on subwave's node: it writes WAVs to subwave's ReadWriteOnce
+  # volume and returns their paths, so both pods have to mount it.
+  nodeSelector:
+    kubernetes.io/hostname: media-server
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: heavy
+      effect: NoSchedule
+  resources:
+    cpuRequest: 1000m
+    memoryRequest: 4Gi
+    # Runaway guard, not a sizing: Chatterbox pegs every core it can see on CPU,
+    # and liquidsoap on this node has to keep encoding the live stream.
+    cpuLimit: "8"
+    # Below upstream's 10g: media-server has ~4Gi actually free, so a runaway
+    # load should OOM here rather than put the node under memory pressure.
+    memoryLimit: 6Gi
+  probes:
+    type: httpGet
+    # Answers while the model loads; subwave only routes to the engine once
+    # /health lists it.
+    path: /health
+    liveness:
+      enabled: true
+  route:
+    enabled: false
+  # No fsGroup: kubelet would recursively re-own subwave's live state volume.
+  # The image's UID 10001 writes to voice/ because subwave leaves it mode 777.
+  persistence:
+    claimName: longhorn-subwave-data-restored
+    mountPath: /var/sub-wave
+  # Scratch storage, not a PVC: only model weights, re-downloaded on every
+  # start, and a new Longhorn volume wouldn't be writable without fsGroup.
+  extraVolumes:
+    - name: hf-cache
+      emptyDir: true
+      sizeLimit: 8Gi
+  extraVolumeMounts:
+    - name: hf-cache
+      mountPath: /opt/chatterbox/hf-cache

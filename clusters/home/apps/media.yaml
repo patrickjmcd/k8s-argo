@@ -35,6 +35,7 @@ spec:
     - app: sportarr
     - app: navidrome
     - app: subwave
+    - app: subwave-tts-heavy
     - app: ollama
     - app: aonsoku
     - app: searxng

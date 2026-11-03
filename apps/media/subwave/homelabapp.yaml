@@ -20,6 +20,8 @@ spec:
     # Play tracks straight off the share instead of streaming them from
     # Navidrome; any path mismatch just falls back to streaming.
     MUSIC_LIBRARY_PATH: /music
+    # Chatterbox lives in apps/media/subwave-tts-heavy.
+    TTS_HEAVY_URL: http://subwave-tts-heavy.media.svc:8080
   # ADMIN_PASS
   onePassword:
     enabled: true
