@@ -1,8 +1,7 @@
 # SUB/WAVE's tts-heavy sidecar, PocketTTS only: ~6x real time on CPU, where
 # Chatterbox is slower than real time (the cluster has no GPU).
 # Cluster-internal: subwave reaches it through TTS_HEAVY_URL. In subwave pick
-# Admin -> TTS voice -> PocketTTS. Built-in voices only: cloning from
-# /var/sub-wave/voices needs HF_TOKEN for the gated kyutai/pocket-tts weights.
+# Admin -> TTS voice -> PocketTTS. Reference clips go in /var/sub-wave/voices.
 # If this is down, the DJ falls back to Piper.
 apiVersion: homelab.pmcd.io/v1alpha1
 kind: HomelabApp
@@ -18,6 +17,10 @@ spec:
     TTS_HEAVY_ENGINES: pocket-tts
     # torch would otherwise start a thread per core and throttle on cpuLimit.
     OMP_NUM_THREADS: "4"
+  # HF_TOKEN, for the gated kyutai/pocket-tts cloning weights. The account must
+  # have accepted the model's terms, or cloned voices revert to a built-in.
+  onePassword:
+    enabled: true
   # Must stay on subwave's node: it writes WAVs to subwave's ReadWriteOnce
   # volume and returns their paths, so both pods have to mount it.
   nodeSelector:
