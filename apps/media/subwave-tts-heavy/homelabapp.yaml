@@ -1,6 +1,8 @@
-# SUB/WAVE's tts-heavy sidecar, Chatterbox only, CPU (the cluster has no GPU).
+# SUB/WAVE's tts-heavy sidecar, PocketTTS only: ~6x real time on CPU, where
+# Chatterbox is slower than real time (the cluster has no GPU).
 # Cluster-internal: subwave reaches it through TTS_HEAVY_URL. In subwave pick
-# Admin -> TTS voice -> Chatterbox; reference WAVs go in /var/sub-wave/voices.
+# Admin -> TTS voice -> PocketTTS. Built-in voices only: cloning from
+# /var/sub-wave/voices needs HF_TOKEN for the gated kyutai/pocket-tts weights.
 # If this is down, the DJ falls back to Piper.
 apiVersion: homelab.pmcd.io/v1alpha1
 kind: HomelabApp
@@ -13,10 +15,9 @@ spec:
   port: 8080
   env:
     TZ: America/Chicago
-    TTS_HEAVY_ENGINES: chatterbox
-    TTS_HEAVY_DEVICE: cpu
+    TTS_HEAVY_ENGINES: pocket-tts
     # torch would otherwise start a thread per core and throttle on cpuLimit.
-    OMP_NUM_THREADS: "8"
+    OMP_NUM_THREADS: "4"
   # Must stay on subwave's node: it writes WAVs to subwave's ReadWriteOnce
   # volume and returns their paths, so both pods have to mount it.
   nodeSelector:
@@ -27,14 +28,15 @@ spec:
       value: heavy
       effect: NoSchedule
   resources:
-    cpuRequest: 1000m
-    memoryRequest: 4Gi
-    # Runaway guard, not a sizing: Chatterbox pegs every core it can see on CPU,
-    # and liquidsoap on this node has to keep encoding the live stream.
-    cpuLimit: "8"
-    # Below upstream's 10g: media-server has ~4Gi actually free, so a runaway
-    # load should OOM here rather than put the node under memory pressure.
-    memoryLimit: 6Gi
+    cpuRequest: 500m
+    memoryRequest: 1Gi
+    # Runaway guard, not a sizing: liquidsoap on this node has to keep encoding
+    # the live stream.
+    cpuLimit: "4"
+    # Estimate for a ~100M-param model on torch, not yet measured. Far below
+    # upstream's 10g, which covers Chatterbox: media-server has ~4Gi actually
+    # free, so a runaway load should OOM here, not pressure the node.
+    memoryLimit: 3Gi
   probes:
     type: httpGet
     # Answers while the model loads; subwave only routes to the engine once
@@ -54,7 +56,7 @@ spec:
   extraVolumes:
     - name: hf-cache
       emptyDir: true
-      sizeLimit: 8Gi
+      sizeLimit: 4Gi
   extraVolumeMounts:
     - name: hf-cache
-      mountPath: /opt/chatterbox/hf-cache
+      mountPath: /opt/pocket-tts/hf-cache
