@@ -38,3 +38,6 @@ spec:
       - reedme.x.pmcd.io
     publicHostnames:
       - feed.reedme.dev
+  glance:
+    monitor: true
+    title: Reedme

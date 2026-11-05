@@ -20,6 +20,9 @@ spec:
       static:
         - https://ha.pmcd.dev      # Home Assistant (haos VM on pve)
         - https://auth.pmcd.dev    # PocketID
+        - https://flux.x.pmcd.io   # Flux web UI (route lives in clusters/home)
+        - https://konflate.x.pmcd.io
+        - https://request.pmcd.dev # Seerr's public path, through Cloudflare
 ---
 # LAN devices outside the cluster: TCP connect only (ICMP would need
 # NET_RAW on the exporter).

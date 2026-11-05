@@ -34,3 +34,6 @@ spec:
   persistence:
     claimName: longhorn-homebridge-data-restored
     mountPath: /homebridge
+  glance:
+    monitor: true
+    title: Homebridge

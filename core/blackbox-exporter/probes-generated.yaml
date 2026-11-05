@@ -59,10 +59,13 @@ spec:
       labels:
         group: services
       static:
+        - https://alertmanager.x.pmcd.io
         - https://git.x.pmcd.io
         - https://grafana.x.pmcd.io
         - https://gym.x.pmcd.io
         - https://homebox.x.pmcd.io
+        - https://homebridge.x.pmcd.io
+        - https://homelable.x.pmcd.io
         - https://immich.x.pmcd.io
         - https://kaneo.x.pmcd.io
         - https://logs.x.pmcd.io
@@ -73,6 +76,7 @@ spec:
         - https://outline.pmcd.dev
         - https://pihole.x.pmcd.io/admin/
         - https://prometheus.x.pmcd.io
+        - https://reedme.x.pmcd.io
         - https://romm.x.pmcd.io
         - https://showmeyourstubs.com
         - https://sparkyfitness.x.pmcd.io

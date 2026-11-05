@@ -24,3 +24,6 @@ spec:
   route:
     hostnames:
     - homelable.x.pmcd.io
+  glance:
+    monitor: true
+    title: Homelable

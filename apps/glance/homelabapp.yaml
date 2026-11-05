@@ -10,7 +10,7 @@ spec:
   resources:
     cpuRequest: 15m
     memoryRequest: 100Mi
-    cpuLimit: 100m
+    cpuLimit: ""
     memoryLimit: 256Mi
   probes:
     liveness:
@@ -68,7 +68,7 @@ spec:
                         title: KCUR
                       - url: https://api.axios.com/feed/
                         title: Axios
-                      - url: https://technotim.live/feed.xml
+                      - url: https://technotim.com/feed.xml
                         title: Techno Tim
 
                   - type: monitor
@@ -80,13 +80,25 @@ spec:
                         url: https://ha.pmcd.dev
                       - title: PocketID
                         url: https://auth.pmcd.dev
+                      - title: Flux
+                        url: https://flux.x.pmcd.io
+                      - title: Konflate
+                        url: https://konflate.x.pmcd.io
+                      - title: Seerr (public)
+                        url: https://request.pmcd.dev
                       # BEGIN GLANCE-GENERATED:Services
+                      - title: Alertmanager
+                        url: https://alertmanager.x.pmcd.io
                       - title: Gitea
                         url: https://git.x.pmcd.io
                       - title: Grafana
                         url: https://grafana.x.pmcd.io
                       - title: Homebox
                         url: https://homebox.x.pmcd.io
+                      - title: Homebridge
+                        url: https://homebridge.x.pmcd.io
+                      - title: Homelable
+                        url: https://homelable.x.pmcd.io
                       - title: Immich
                         url: https://immich.x.pmcd.io
                       - title: Kaneo
@@ -105,6 +117,8 @@ spec:
                         url: https://pihole.x.pmcd.io/admin/
                       - title: Prometheus
                         url: https://prometheus.x.pmcd.io
+                      - title: Reedme
+                        url: https://reedme.x.pmcd.io
                       - title: Romm
                         url: https://romm.x.pmcd.io
                       - title: SparkyFitness
@@ -264,10 +278,10 @@ spec:
                   - type: custom-api
                     title: Chiefs
                     cache: 1h
-                    url: https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id=134931
+                    url: https://www.thesportsdb.com/api/v1/json/123/eventsnext.php?id=134931
                     subrequests:
                       last:
-                        url: https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=134931
+                        url: https://www.thesportsdb.com/api/v1/json/123/eventslast.php?id=134931
                     template: |
                       {{ $last := .Subrequest "last" }}
                       <p class="color-subdue size-h6">LAST</p>
@@ -391,13 +405,19 @@ spec:
 
                   - type: custom-api
                     title: Radarr Stats
-                    cache: 1m
-                    url: http://radarr.media.svc.cluster.local/api/v3/movie?apikey=${RADARR__AUTH__APIKEY}
+                    cache: 15m
+                    url: http://radarr.media.svc.cluster.local/api/v3/movie
+                    headers:
+                      X-Api-Key: ${RADARR__AUTH__APIKEY}
                     subrequests:
                       missing:
-                        url: http://radarr.media.svc.cluster.local/api/v3/wanted/missing?apikey=${RADARR__AUTH__APIKEY}
+                        url: http://radarr.media.svc.cluster.local/api/v3/wanted/missing
+                        headers:
+                          X-Api-Key: ${RADARR__AUTH__APIKEY}
                       queue:
-                        url: http://radarr.media.svc.cluster.local/api/v3/queue?apikey=${RADARR__AUTH__APIKEY}
+                        url: http://radarr.media.svc.cluster.local/api/v3/queue
+                        headers:
+                          X-Api-Key: ${RADARR__AUTH__APIKEY}
                     template: |
                       <div class="flex justify-between text-center">
                         <div>
@@ -416,13 +436,19 @@ spec:
 
                   - type: custom-api
                     title: Sonarr Stats
-                    cache: 1m
-                    url: http://sonarr.media.svc.cluster.local/api/v3/series?apikey=${SONARR__AUTH__APIKEY}
+                    cache: 15m
+                    url: http://sonarr.media.svc.cluster.local/api/v3/series
+                    headers:
+                      X-Api-Key: ${SONARR__AUTH__APIKEY}
                     subrequests:
                       missing:
-                        url: http://sonarr.media.svc.cluster.local/api/v3/wanted/missing?apikey=${SONARR__AUTH__APIKEY}
+                        url: http://sonarr.media.svc.cluster.local/api/v3/wanted/missing
+                        headers:
+                          X-Api-Key: ${SONARR__AUTH__APIKEY}
                       queue:
-                        url: http://sonarr.media.svc.cluster.local/api/v3/queue?apikey=${SONARR__AUTH__APIKEY}
+                        url: http://sonarr.media.svc.cluster.local/api/v3/queue
+                        headers:
+                          X-Api-Key: ${SONARR__AUTH__APIKEY}
                     template: |
                       <div class="flex justify-between text-center">
                         <div>
@@ -510,6 +536,14 @@ spec:
                             url: https://auth.pmcd.dev
                           - title: Tronbyt
                             url: https://tronbyt.x.pmcd.io
+                          - title: Alertmanager
+                            url: https://alertmanager.x.pmcd.io
+                          - title: Headlamp
+                            url: https://headlamp.x.pmcd.io
+                          - title: Hubble
+                            url: https://hubble.x.pmcd.io
+                          - title: Goldilocks
+                            url: https://goldilocks.x.pmcd.io
 
                       - title: Media
                         links:
@@ -528,8 +562,10 @@ spec:
                             url: https://radarr.x.pmcd.io
                           - title: Lidarr
                             url: https://lidarr.x.pmcd.io
-                          - title: Readarr
-                            url: https://readarr.x.pmcd.io
+                          - title: Books
+                            url: https://books.x.pmcd.io
+                          - title: Shelfmark
+                            url: https://shelfmark.x.pmcd.io
                           - title: Bazarr
                             url: https://bazarr.x.pmcd.io
                           - title: Prowlarr
