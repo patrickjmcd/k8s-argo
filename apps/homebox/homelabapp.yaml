@@ -4,7 +4,7 @@ metadata:
   name: homebox
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/homebox:main
+  image: ghcr.io/sysadminsmedia/homebox:0.27.1
   port: 80
   containerPort: 7745
   resources:
@@ -36,6 +36,23 @@ spec:
     HBOX_LABEL_MAKER_HEIGHT: '240'
     HBOX_LABEL_MAKER_DYNAMIC_LENGTH: 'false'
     HBOX_LABEL_MAKER_FONT_SIZE: '24'
+    # Homebox renders the label; Home Assistant prints it on the Niimbot.
+    HBOX_LABEL_MAKER_PRINT_COMMAND: sh /scripts/print-label.sh {{.FileName}}
+  configMap:
+    enabled: true
+    mountPath: /scripts/print-label.sh
+    subPath: print-label.sh
+    data:
+      print-label.sh: |
+        #!/bin/sh
+        # Posts the rendered label PNG to the Home Assistant webhook as a data
+        # URL. HBOX_LABEL_WEBHOOK_URL comes from the homebox 1Password item.
+        set -eu
+        body=$(mktemp)
+        trap 'rm -f "$body"' EXIT
+        printf '{"image":"data:image/png;base64,%s"}' "$(base64 -w0 "$1")" > "$body"
+        wget -q -O /dev/null --header=Content-Type:application/json \
+          --post-file="$body" "$HBOX_LABEL_WEBHOOK_URL"
   persistence:
     claimName: smb-homebox-claim
   glance:
