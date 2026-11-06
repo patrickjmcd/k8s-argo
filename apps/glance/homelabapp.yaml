@@ -600,6 +600,19 @@ spec:
                           - title: Tautulli
                             url: https://tautulli.x.pmcd.io
 
+                      - title: Music
+                        links:
+                          - title: Music
+                            url: https://music.x.pmcd.io
+                          - title: Navidrome
+                            url: https://navidrome.x.pmcd.io
+                          - title: Aurral
+                            url: https://aurral.x.pmcd.io
+                          - title: Concertarr
+                            url: https://concertarr.x.pmcd.io
+                          - title: Subwave
+                            url: https://subwave.x.pmcd.io
+
                       - title: Media Management
                         links:
                           - title: Sonarr
