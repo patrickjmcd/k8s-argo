@@ -22,6 +22,30 @@ metadata:
 spec:
   itemPath: vaults/Kubernetes/items/sonarr
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: glance-seerr-1pw
+  namespace: default
+spec:
+  itemPath: vaults/Kubernetes/items/seerr
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: glance-tautulli-1pw
+  namespace: default
+spec:
+  itemPath: vaults/Kubernetes/items/tautulli
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: glance-navidrome-1pw
+  namespace: default
+spec:
+  itemPath: vaults/Kubernetes/items/navidrome
+---
 # America/Chicago zone file, mounted as /etc/localtime: the Glance image has no
 # tzdata, so it can't honour TZ and would show game times in UTC.
 apiVersion: v1
