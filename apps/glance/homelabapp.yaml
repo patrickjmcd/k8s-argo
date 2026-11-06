@@ -28,6 +28,9 @@ spec:
   - glance-pihole-1pw
   - glance-radarr-1pw
   - glance-sonarr-1pw
+  - glance-seerr-1pw
+  - glance-tautulli-1pw
+  - glance-navidrome-1pw
   configMap:
     enabled: true
     mountPath: /config/glance.yml
@@ -254,6 +257,50 @@ spec:
                         <div class="flex justify-between">
                           <span class="color-negative">{{ .String "metric.name" }}</span>
                           <span class="color-subdue text-truncate" style="margin-left: 1rem">{{ .String "metric.reason" }}</span>
+                        </div>
+                      {{ end }}
+                      {{ if not $any }}
+                        <style>.widget:has(.widget-all-clear) { display: none; }</style>
+                        <div class="widget-all-clear"></div>
+                      {{ end }}
+
+                  # Subsonic answers 200 even when auth fails, so check its status
+                  # or a bad password would just look like nothing is playing.
+                  - type: custom-api
+                    title: Now Playing
+                    cache: 1m
+                    url: http://tautulli.media.svc.cluster.local/api/v2
+                    parameters:
+                      apikey: ${TAUTULLI_API_KEY}
+                      cmd: get_activity
+                    subrequests:
+                      navidrome:
+                        url: http://navidrome.media.svc.cluster.local/rest/getNowPlaying.view
+                        parameters:
+                          u: ${NAVIDROME_USER}
+                          p: ${NAVIDROME_PASSWORD}
+                          v: 1.16.1
+                          c: glance
+                          f: json
+                    template: |
+                      {{ $any := false }}
+                      {{ range .JSON.Array "response.data.sessions" }}
+                        {{ $any = true }}
+                        <div class="flex justify-between" title="{{ .String "player" }}, {{ .String "state" }}, {{ .String "transcode_decision" }}">
+                          <span class="color-highlight text-truncate">{{ .String "full_title" }}</span>
+                          <span class="color-subdue" style="margin-left: 1rem">{{ .String "friendly_name" }}</span>
+                        </div>
+                      {{ end }}
+                      {{ $music := (.Subrequest "navidrome").JSON }}
+                      {{ if ne ($music.String "subsonic-response.status") "ok" }}
+                        {{ $any = true }}
+                        <div class="color-negative">Navidrome: {{ $music.String "subsonic-response.error.message" }}</div>
+                      {{ end }}
+                      {{ range $music.Array "subsonic-response.nowPlaying.entry" }}
+                        {{ $any = true }}
+                        <div class="flex justify-between" title="{{ .String "album" }}, {{ .String "playerName" }}">
+                          <span class="color-highlight text-truncate">{{ .String "artist" }} - {{ .String "title" }}</span>
+                          <span class="color-subdue" style="margin-left: 1rem">{{ .String "username" }}</span>
                         </div>
                       {{ end }}
                       {{ if not $any }}
@@ -490,6 +537,29 @@ spec:
                         <div>
                             <div class="color-highlight size-h3">{{ div (.JSON.Int "usage" | toFloat) 1073741824 | toInt | formatNumber }}GB</div>
                             <div class="size-h6">USAGE</div>
+                        </div>
+                      </div>
+
+                  - type: custom-api
+                    title: Seerr Requests
+                    title-url: https://requests.x.pmcd.io
+                    cache: 15m
+                    url: http://seerr.media.svc.cluster.local/api/v1/request/count
+                    headers:
+                      X-Api-Key: ${SEERR_API_KEY}
+                    template: |
+                      <div class="flex justify-between text-center">
+                        <div>
+                          <div class="color-highlight size-h3">{{ .JSON.Int "pending" }}</div>
+                          <div class="size-h6">PENDING</div>
+                        </div>
+                        <div>
+                          <div class="color-highlight size-h3">{{ .JSON.Int "processing" }}</div>
+                          <div class="size-h6">PROCESSING</div>
+                        </div>
+                        <div>
+                          <div class="color-highlight size-h3">{{ .JSON.Int "available" }}</div>
+                          <div class="size-h6">AVAILABLE</div>
                         </div>
                       </div>
 
