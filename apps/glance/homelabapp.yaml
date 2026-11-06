@@ -42,7 +42,7 @@ spec:
                   - type: calendar
 
                   - type: search
-                    search-engine: duckduckgo
+                    search-engine: https://search.x.pmcd.io/search?q={QUERY}
                     bangs:
                       - title: YouTube
                         shortcut: "!yt"
@@ -217,6 +217,50 @@ spec:
 
               - size: small
                 widgets:
+                  # Both hide themselves when there's nothing to report, with the
+                  # same CSS marker trick as the team cards below.
+                  - type: custom-api
+                    title: Alerts
+                    cache: 1m
+                    url: http://kube-prometheus-stack-alertmanager.prometheus.svc.cluster.local:9093/api/v2/alerts?active=true&silenced=false&inhibited=false
+                    template: |
+                      {{ $any := false }}
+                      {{ range .JSON.Array "" }}
+                        {{ if ne (.String "receivers.0.name") "null" }}
+                          {{ $any = true }}
+                          <div class="flex justify-between" title="{{ .String "annotations.summary" }}">
+                            <span class="{{ if eq (.String "labels.severity") "critical" }}color-negative{{ else }}color-highlight{{ end }}">{{ .String "labels.alertname" }}</span>
+                            <span class="color-subdue text-truncate" style="margin-left: 1rem">{{ .String "labels.namespace" }}</span>
+                          </div>
+                        {{ end }}
+                      {{ end }}
+                      {{ if not $any }}
+                        <style>.widget:has(.widget-all-clear) { display: none; }</style>
+                        <div class="widget-all-clear"></div>
+                      {{ end }}
+
+                  # DependencyNotReady and Progressing clear by themselves and
+                  # would make this flicker after every reconcile.
+                  - type: custom-api
+                    title: Flux
+                    cache: 1m
+                    url: http://kube-prometheus-stack-prometheus.prometheus.svc.cluster.local:9090/api/v1/query
+                    parameters:
+                      query: 'flux_resource_info{ready="False",suspended="False",reason!~"DependencyNotReady|Progressing"}'
+                    template: |
+                      {{ $any := false }}
+                      {{ range .JSON.Array "data.result" }}
+                        {{ $any = true }}
+                        <div class="flex justify-between">
+                          <span class="color-negative">{{ .String "metric.name" }}</span>
+                          <span class="color-subdue text-truncate" style="margin-left: 1rem">{{ .String "metric.reason" }}</span>
+                        </div>
+                      {{ end }}
+                      {{ if not $any }}
+                        <style>.widget:has(.widget-all-clear) { display: none; }</style>
+                        <div class="widget-all-clear"></div>
+                      {{ end }}
+
                   - type: weather
                     location: Kansas City, United States
                     units: imperial
@@ -544,6 +588,10 @@ spec:
                             url: https://n8n.x.pmcd.io
                           - title: ISS Tracker
                             url: https://iss.x.pmcd.io
+                          - title: Homebridge
+                            url: https://homebridge.x.pmcd.io
+                          - title: ADS-B
+                            url: https://adsb.x.pmcd.io
 
                       - title: Personal Apps
                         links:
@@ -557,6 +605,18 @@ spec:
                             url: https://immich.x.pmcd.io
                           - title: Reedme
                             url: https://reedme.x.pmcd.io
+                          - title: Kaneo
+                            url: https://kaneo.x.pmcd.io
+                          - title: Romm
+                            url: https://romm.x.pmcd.io
+                          - title: SparkyFitness
+                            url: https://sparkyfitness.x.pmcd.io
+                          - title: Spoolman
+                            url: https://spoolman.x.pmcd.io
+                          - title: openGym
+                            url: https://gym.x.pmcd.io
+                          - title: Strava
+                            url: https://strava.x.pmcd.io
 
               - size: full
                 widgets:
@@ -590,6 +650,14 @@ spec:
                             url: https://hubble.x.pmcd.io
                           - title: Goldilocks
                             url: https://goldilocks.x.pmcd.io
+                          - title: Gitea
+                            url: https://git.x.pmcd.io
+                          - title: ntfy
+                            url: https://ntfy.x.pmcd.io
+                          - title: Konflate
+                            url: https://konflate.x.pmcd.io
+                          - title: Homelable
+                            url: https://homelable.x.pmcd.io
 
                       - title: Media
                         links:
@@ -599,6 +667,14 @@ spec:
                             url: https://requests.x.pmcd.io
                           - title: Tautulli
                             url: https://tautulli.x.pmcd.io
+                          - title: Tracearr
+                            url: https://tracearr.x.pmcd.io
+                          - title: Sportarr
+                            url: https://sportarr.x.pmcd.io
+                          - title: Youtarr
+                            url: https://youtarr.x.pmcd.io
+                          - title: ErsatzTV
+                            url: https://ersatztv.x.pmcd.io
 
                       - title: Music
                         links:
