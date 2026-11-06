@@ -65,6 +65,7 @@ CACHE_DB = Path(os.getenv("CACHE_DB", "/cache/media.sqlite3"))
 NTFY_URL = os.getenv("NTFY_URL", "").rstrip("/")
 NTFY_TOPIC = os.getenv("NTFY_TOPIC", "media")
 NTFY_TOKEN = os.getenv("NTFY_TOKEN", "")
+TRIAGE_URL = os.getenv("TRIAGE_URL", "").rstrip("/")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 # Plex labeling (optional) — used to build "Music Videos" / "Live Performances" /
@@ -288,8 +289,18 @@ _NTFY_STYLE = {
 }
 
 
-def notify_discord(title: str, description: str, color: int, fields: Optional[dict] = None) -> None:
-    """Send to ntfy (NTFY_URL set) or, failing that, a Discord webhook."""
+def notify_discord(
+    title: str,
+    description: str,
+    color: int,
+    fields: Optional[dict] = None,
+    link: Optional[tuple] = None,
+) -> None:
+    """Send to ntfy (NTFY_URL set) or, failing that, a Discord webhook.
+
+    link is an optional (label, url): tapping the alert opens it, and ntfy also
+    shows a button.
+    """
     if NTFY_URL:
         priority, tag = _NTFY_STYLE.get(color, (3, "tv"))
         lines = [description.replace("`", "")]
@@ -302,12 +313,17 @@ def notify_discord(title: str, description: str, color: int, fields: Optional[di
             "priority": priority,
             "tags": [tag, "youtarr"],
         }
+        if link:
+            body["click"] = link[1]
+            body["actions"] = [{"action": "view", "label": link[0], "url": link[1]}]
         headers = {"Content-Type": "application/json", "User-Agent": "youtarr-postprocessor/1.0"}
         if NTFY_TOKEN:
             headers["Authorization"] = f"Bearer {NTFY_TOKEN}"
         target, payload = NTFY_URL, body
     elif DISCORD_WEBHOOK_URL:
         embed = {"title": title, "description": description, "color": color}
+        if link:
+            embed["url"] = link[1]
         if fields:
             embed["fields"] = [
                 {"name": k, "value": str(v), "inline": True} for k, v in fields.items()
@@ -1111,6 +1127,7 @@ def process_media(media_path: Path) -> None:
                 "Category": category,
                 "Source": src,
             },
+            link=("Triage", TRIAGE_URL) if needs_review and TRIAGE_URL else None,
         )
 
         label_in_plex_async(dst_media, category)

@@ -141,6 +141,8 @@ spec:
                   name: ntfy-publisher-1pw
                   key: NTFY_TOKEN
                   optional: true
+            - name: TRIAGE_URL
+              value: https://ytdl-triage.x.pmcd.io
           command: [ "sh","-lc" ]
           args:
             - >
