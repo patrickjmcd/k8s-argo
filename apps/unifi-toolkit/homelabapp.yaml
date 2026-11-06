@@ -6,6 +6,8 @@ metadata:
 spec:
   image: ghcr.io/crosstalk-solutions/unifi-toolkit:1.13.6
   port: 8000
+  env:
+    ALLOWED_HOSTS: unifi-toolkit.x.pmcd.io
   resources:
     cpuRequest: 15m
     memoryRequest: 100Mi
