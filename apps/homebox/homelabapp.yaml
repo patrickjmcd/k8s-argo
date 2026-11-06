@@ -36,8 +36,9 @@ spec:
     HBOX_LABEL_MAKER_HEIGHT: '240'
     HBOX_LABEL_MAKER_DYNAMIC_LENGTH: 'false'
     HBOX_LABEL_MAKER_FONT_SIZE: '24'
-    # Homebox renders the label; Home Assistant prints it on the Niimbot.
-    HBOX_LABEL_MAKER_PRINT_COMMAND: sh /scripts/print-label.sh {{.FileName}}
+    # Home Assistant builds the label and prints it on the Niimbot. URL comes
+    # first because Homebox drops empty arguments, and the description can be.
+    HBOX_LABEL_MAKER_PRINT_COMMAND: sh /scripts/print-label.sh {{.URL}} {{.TitleText}} {{.DescriptionText}}
   configMap:
     enabled: true
     mountPath: /scripts/print-label.sh
@@ -45,14 +46,21 @@ spec:
     data:
       print-label.sh: |
         #!/bin/sh
-        # Posts the rendered label PNG to the Home Assistant webhook as a data
-        # URL. HBOX_LABEL_WEBHOOK_URL comes from the homebox 1Password item.
+        # Posts label fields to the Home Assistant webhook. HBOX_LABEL_WEBHOOK_URL
+        # comes from the homebox 1Password item.
+        # Asset labels: title = asset ID, description = name + "Location: X".
+        # Item labels:  title = name,     description = "Location: X".
         set -eu
-        body=$(mktemp)
-        trap 'rm -f "$body"' EXIT
-        printf '{"image":"data:image/png;base64,%s"}' "$(base64 -w0 "$1")" > "$body"
+        url=$1 title=$2 desc=${3:-}
+        esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+        location=$(printf '%s\n' "$desc" | sed -n 's/^Location: //p')
+        case $url in
+          */a/*) asset=$title name=$(printf '%s\n' "$desc" | sed -n 1p) ;;
+          *) asset= name=$title ;;
+        esac
         wget -q -O /dev/null --header=Content-Type:application/json \
-          --post-file="$body" "$HBOX_LABEL_WEBHOOK_URL"
+          --post-data="{\"name\":\"$(esc "$name")\",\"location\":\"$(esc "$location")\",\"asset_id\":\"$(esc "$asset")\",\"qr_url\":\"$(esc "$url")\"}" \
+          "$HBOX_LABEL_WEBHOOK_URL"
   persistence:
     claimName: smb-homebox-claim
   glance:
