@@ -37,7 +37,7 @@ spec:
     - app: subwave
     - app: subwave-tts-heavy
     - app: ollama
-    - app: aonsoku
+    - app: feishin
     - app: searxng
     - app: aurral
     - app: calibre-web
