@@ -34,6 +34,9 @@ spec:
     SCAN_WORKERS: '4'
     WEB_SERVER_CONCURRENCY: '2'
     HASHEOUS_API_ENABLED: 'true'
+  # Soft-prefer pi5-kube1: pi5-kube2 ran short of memory (Nov 2026).
+  preferredNodes:
+  - pi5-kube1
   persistence:
     claimName: longhorn-romm-data
     mountPath: ''
