@@ -4,7 +4,7 @@ metadata:
   name: tautulli
   namespace: media
 spec:
-  image: ghcr.io/tautulli/tautulli:v2.18.2
+  image: ghcr.io/tautulli/tautulli:v2.19.0
   port: 80
   containerPort: 8181
   env:
