@@ -4,7 +4,7 @@ metadata:
   name: piper
   namespace: voice-assistant
 spec:
-  image: rhasspy/wyoming-piper:2.5.2
+  image: rhasspy/wyoming-piper:2.5.3
   port: 10200
   resources:
     cpuRequest: 50m
