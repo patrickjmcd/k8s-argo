@@ -1,0 +1,21 @@
+# Instead of the HomelabApp's ServiceMonitor: one exporter replica, so pod and
+# instance only change on restart. Keeping them made every restart start new
+# series -- the dashboard's last_over_time(...[10m]) panels showed each zone
+# twice, and rate() on sonos_radio_phy_errors_total started over.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sonos-exporter-metrics
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: sonos-exporter
+      app.kubernetes.io/name: sonos-exporter
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 60s
+      metricRelabelings:
+        - action: labeldrop
+          regex: (pod|instance)
