@@ -1754,7 +1754,7 @@
       "id": 21,
       "type": "timeseries",
       "title": "PHY error rate",
-      "description": "PHY errors per second. The player counter resets on its own, rate() handles that. 15m window so it works with 5m scrapes.",
+      "description": "PHY errors per second. The player resets its counter on every read, so this uses the exporter's accumulated sonos_radio_phy_errors_total. 15m window so it works with 5m scrapes.",
       "links": [],
       "gridPos": {
         "x": 0,
@@ -1765,7 +1765,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(sonos_phy_errors[15m])",
+          "expr": "rate(sonos_radio_phy_errors_total[15m])",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
@@ -2884,7 +2884,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(sonos_phy_errors{zone=\"$zone\"}[15m])",
+              "expr": "rate(sonos_radio_phy_errors_total{zone=\"$zone\"}[15m])",
               "range": true,
               "instant": false,
               "legendFormat": "{{zone}}",

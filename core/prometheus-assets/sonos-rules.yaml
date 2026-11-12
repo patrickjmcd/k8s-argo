@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sonos
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: sonos
+      rules:
+        # From apps/sonos-exporter (our fork patrickjmcd/sonos-exporter >= 0.2.0,
+        # which adds the _total counter: the player resets its PHY count on
+        # every read, so rate(sonos_phy_errors) is meaningless).
+        #
+        # Baseline when added (Nov 12 2026): Kitchen Move ~2,000/s and the
+        # Living Room Beam ~1,600/s, both on 2.4 GHz; everything on 5 GHz under
+        # ~150/s. The threshold sits above that so it flags a speaker getting
+        # clearly worse, not the known state. Provisional: revisit once the
+        # dashboard has a week or two of history.
+        - alert: SonosRadioNoisy
+          expr: rate(sonos_radio_phy_errors_total[30m]) > 3000
+          for: 2h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sonos {{ $labels.zone }}: {{ $value | humanize }} PHY errors/s for 2h"
+            description: >-
+              The speaker's radio can't decode much of what it hears (interference
+              or weak signal). Expect dropouts on that speaker, and for a soundbar
+              its surround/Sub link. Check what changed nearby (new device, moved
+              speaker, AP channel change); wiring it or moving it closer to an
+              AP fixes it. Dashboard: https://grafana.x.pmcd.io/d/sonos-overview
+
+        # Without this, a broken exporter silently disables the alert above.
+        - alert: SonosExporterScrapeFailing
+          expr: max_over_time(sonos_scrape_success[30m]) == 0 or absent(sonos_scrape_success)
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "sonos-exporter has not read the Sonos household for 30m"
+            description: >-
+              apps/sonos-exporter reads /support/review from one player
+              (--sonos-ip in its HomelabApp). Check that the player is on and
+              still at that IP, and the exporter pod's logs.

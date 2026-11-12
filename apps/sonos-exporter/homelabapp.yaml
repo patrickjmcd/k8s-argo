@@ -11,7 +11,7 @@ metadata:
   name: sonos-exporter
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/sonos-exporter:0.1.0
+  image: ghcr.io/patrickjmcd/sonos-exporter:0.2.0
   port: 9814
   args:
     - --sonos-ip=192.168.1.163   # Bathroom (Sonos One); any player works
