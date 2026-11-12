@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: adsb
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: adsb
+      rules:
+        # apps/adsb adsb-exporter reads stats.json from the receiver Pi
+        # (pi3-piaware-plus, 192.168.1.131): adsb_up 0 means readsb there isn't
+        # writing it, i.e. it isn't decoding. Added after it sat at 0 unnoticed
+        # Nov 10-12 2026 (1090 stick dropped off the USB hub; serial reset).
+        - alert: AdsbReceiverDown
+          expr: >-
+            max_over_time(adsb_up[30m]) == 0
+            or max_over_time(adsb_message_rate_per_second[30m]) == 0
+            or absent(adsb_up)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ADS-B receiver has not decoded anything for 45m"
+            description: >-
+              On the Pi (ssh pi@192.168.1.131, or -J pi@192.168.8.50 if
+              unreachable): `lsusb` should list the Nooelec stick (SN 1090);
+              `vcgencmd get_throttled` should be 0x0; and
+              FEEDER_SERIAL_1090 / FEEDER_READSB_DEVICE in /opt/adsb/config/.env
+              should be 1090 (adsb.im resets them to 00000001; fix, then
+              `sudo bash /opt/adsb/docker-compose-adsb up -d`).
