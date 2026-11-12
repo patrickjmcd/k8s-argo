@@ -32,6 +32,42 @@ spec:
               speaker, AP channel change); wiring it or moving it closer to an
               AP fixes it. Dashboard: https://grafana.x.pmcd.io/d/sonos-overview
 
+        # Home theater satellites (Sub, surrounds) talk only to their soundbar,
+        # over its dedicated link; the exporter names them "<room> (SW)",
+        # "(LR)", "(RR)". Baseline when added: Living Room Sub <-> Beam 72-82.
+        # 40 is a provisional threshold for "about to drop out".
+        - alert: SonosSatelliteLinkWeak
+          expr: >-
+            min by (zone, peer_zone) (
+              {__name__=~"sonos_link_quality_(from|to)", zone=~".+ \\((SW|LR|RR)\\)"}
+            ) < 40
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sonos {{ $labels.zone }}: link to {{ $labels.peer_zone }} weak ({{ $value }}) for 1h"
+            description: >-
+              The satellite's link to its soundbar is degraded; expect it to cut
+              out. Usually interference near the soundbar or the satellite on
+              the link's channel (the soundbar on Wi-Fi shares one radio with
+              it). Dashboard: https://grafana.x.pmcd.io/d/sonos-overview
+
+        # Satellites never sleep, unlike the Move/Roam, so one missing means it
+        # is unplugged or has lost the soundbar. Covers both "reported down" and
+        # "dropped out of the household dump" (series seen today, not up now).
+        - alert: SonosSatelliteMissing
+          expr: >-
+            max by (zone) (max_over_time(sonos_device_up{zone=~".+ \\((SW|LR|RR)\\)"}[1d]))
+            unless on (zone) (sonos_device_up == 1)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sonos {{ $labels.zone }} is missing from the household"
+            description: >-
+              A home theater satellite hasn't been seen for 15m. Check that it
+              has power; if it does, power-cycle it, then the soundbar.
+
         # Without this, a broken exporter silently disables the alert above.
         - alert: SonosExporterScrapeFailing
           expr: max_over_time(sonos_scrape_success[30m]) == 0 or absent(sonos_scrape_success)

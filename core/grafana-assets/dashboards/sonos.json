@@ -92,12 +92,16 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(sonos_device_up == 1)",
+          "expr": "max without (pod, instance) (count(sonos_device_up == 1))",
           "range": true,
           "instant": false,
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -133,11 +137,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 2,
@@ -154,12 +154,16 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(sonos_device_up == 0) or vector(0)",
+          "expr": "max without (pod, instance) (count(sonos_device_up == 0) or vector(0))",
           "range": true,
           "instant": false,
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -195,11 +199,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 3,
@@ -216,12 +216,16 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_scrape_success",
+          "expr": "max without (pod, instance) (sonos_scrape_success)",
           "range": true,
           "instant": false,
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -274,11 +278,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 4,
@@ -295,12 +295,16 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "time() - sonos_scrape_last_success_timestamp_seconds",
+          "expr": "max without (pod, instance) (time() - sonos_scrape_last_success_timestamp_seconds)",
           "range": true,
           "instant": false,
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "s",
@@ -342,11 +346,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 5,
@@ -363,13 +363,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_device_up",
+          "expr": "max without (pod, instance) (sonos_device_up)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -423,10 +427,6 @@
         }
       },
       "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
       "maxDataPoints": 200
     },
     {
@@ -444,13 +444,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (zone) (icmp_latency_ms)",
+          "expr": "max without (pod, instance) (avg by (zone) (icmp_latency_ms))",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -477,11 +481,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 7,
@@ -498,13 +498,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (zone) (icmp_loss)",
+          "expr": "max without (pod, instance) (avg by (zone) (icmp_loss))",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -548,11 +552,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 8,
@@ -569,13 +569,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "min by (zone) (last_over_time(sonos_link_quality_from[10m]) > 0)",
+          "expr": "max without (pod, instance) (min by (zone) (last_over_time(sonos_link_quality_from[10m]) > 0))",
           "range": false,
           "instant": true,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "thresholds": {
@@ -617,11 +621,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 9,
@@ -638,13 +638,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "last_over_time(sonos_uptime_seconds[10m])",
+          "expr": "max without (pod, instance) (last_over_time(sonos_uptime_seconds[10m]))",
           "range": false,
           "instant": true,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "dtdurations",
@@ -682,11 +686,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 10,
@@ -703,13 +703,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count by (software_version) (last_over_time(sonos_device_info[10m]))",
+          "expr": "max without (pod, instance) (count by (software_version) (last_over_time(sonos_device_info[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -747,11 +751,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 1001,
@@ -781,7 +781,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "label_replace(label_replace(label_replace(last_over_time(sonos_device_up[10m]) == 1, \"color\", \"green\", \"\", \"\"), \"id\", \"$1\", \"zone\", \"(.*)\"), \"title\", \"$1\", \"zone\", \"(.*)\") or label_replace(label_replace(label_replace(last_over_time(sonos_device_up[10m]) == 0, \"color\", \"red\", \"\", \"\"), \"id\", \"$1\", \"zone\", \"(.*)\"), \"title\", \"$1\", \"zone\", \"(.*)\")",
+          "expr": "max without (pod, instance) (label_replace(label_replace(label_replace(last_over_time(sonos_device_up[10m]) == 1, \"color\", \"green\", \"\", \"\"), \"id\", \"$1\", \"zone\", \"(.*)\"), \"title\", \"$1\", \"zone\", \"(.*)\") or label_replace(label_replace(label_replace(last_over_time(sonos_device_up[10m]) == 0, \"color\", \"red\", \"\", \"\"), \"id\", \"$1\", \"zone\", \"(.*)\"), \"title\", \"$1\", \"zone\", \"(.*)\"))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -789,13 +789,17 @@
         },
         {
           "editorMode": "code",
-          "expr": "label_join(label_replace(label_replace(last_over_time(sonos_link_quality_from[10m]), \"source\", \"$1\", \"zone\", \"(.*)\"), \"target\", \"$1\", \"peer_zone\", \"(.*)\"), \"id\", \" > \", \"zone\", \"peer_zone\")",
+          "expr": "max without (pod, instance) (label_join(label_replace(label_replace(last_over_time(sonos_link_quality_from[10m]), \"source\", \"$1\", \"zone\", \"(.*)\"), \"target\", \"$1\", \"peer_zone\", \"(.*)\"), \"id\", \" > \", \"zone\", \"peer_zone\"))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "E"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -831,11 +835,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 12,
@@ -852,13 +852,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_link_quality_from",
+          "expr": "max without (pod, instance) (sonos_link_quality_from)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}} \u2192 {{peer_zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -885,11 +889,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 13,
@@ -906,13 +906,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "abs(sonos_link_quality_from - sonos_link_quality_to)",
+          "expr": "max without (pod, instance) (abs(sonos_link_quality_from - sonos_link_quality_to))",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}} \u2192 {{peer_zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -938,11 +942,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 14,
@@ -959,7 +959,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "last_over_time(sonos_link_quality_from[10m])",
+          "expr": "max without (pod, instance) (last_over_time(sonos_link_quality_from[10m]))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -967,13 +967,17 @@
         },
         {
           "editorMode": "code",
-          "expr": "last_over_time(sonos_link_quality_to[10m])",
+          "expr": "max without (pod, instance) (last_over_time(sonos_link_quality_to[10m]))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "TO"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -1126,11 +1130,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 15,
@@ -1147,7 +1147,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_enet_connected[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_enet_connected[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1155,7 +1155,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_enet_speed_mbps[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_enet_speed_mbps[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1163,13 +1163,17 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_bridge_stp_enabled[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_bridge_stp_enabled[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "STP"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -1305,11 +1309,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 16,
@@ -1326,13 +1326,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "(sonos_link_quality_from + sonos_link_quality_to) / 2",
+          "expr": "max without (pod, instance) ((sonos_link_quality_from + sonos_link_quality_to) / 2)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}} \u2192 {{peer_zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1390,11 +1394,7 @@
           "show": true
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 1002,
@@ -1424,13 +1424,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_wifi_mode",
+          "expr": "max without (pod, instance) (sonos_wifi_mode)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}} \u00b7 {{mode_string}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1458,11 +1462,7 @@
           "sort": "none"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 18,
@@ -1479,13 +1479,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_busy_state{state=\"AUDIO_OUT\"}",
+          "expr": "max without (pod, instance) (sonos_busy_state{state=\"AUDIO_OUT\"})",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1526,11 +1530,7 @@
           "sort": "none"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 19,
@@ -1547,13 +1547,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_ieee_channel",
+          "expr": "max without (pod, instance) (sonos_ieee_channel)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1581,11 +1585,7 @@
           "sort": "none"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 20,
@@ -1602,7 +1602,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_ieee_channel[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_ieee_channel[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1610,7 +1610,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_operating_channel[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_operating_channel[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1618,7 +1618,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_ht_channel[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_ht_channel[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1626,7 +1626,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_ht_ap_mode[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_ht_ap_mode[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1634,7 +1634,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_rf_chains{direction=\"rx\"}[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_rf_chains{direction=\"rx\"}[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1642,13 +1642,17 @@
         },
         {
           "editorMode": "code",
-          "expr": "max by (zone) (last_over_time(sonos_rf_chains{direction=\"tx\"}[10m]))",
+          "expr": "max without (pod, instance) (max by (zone) (last_over_time(sonos_rf_chains{direction=\"tx\"}[10m])))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "TX"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -1744,11 +1748,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 21,
@@ -1765,13 +1765,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(sonos_radio_phy_errors_total[15m])",
+          "expr": "max without (pod, instance) (rate(sonos_radio_phy_errors_total[15m]))",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1798,11 +1802,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 1003,
@@ -1832,7 +1832,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(sonos_rx_bytes{interface=\"br0\"}[15m])",
+          "expr": "max without (pod, instance) (rate(sonos_rx_bytes{interface=\"br0\"}[15m]))",
           "range": true,
           "instant": false,
           "legendFormat": "RX {{zone}}",
@@ -1840,13 +1840,17 @@
         },
         {
           "editorMode": "code",
-          "expr": "-rate(sonos_tx_bytes{interface=\"br0\"}[15m])",
+          "expr": "max without (pod, instance) (-rate(sonos_tx_bytes{interface=\"br0\"}[15m]))",
           "range": true,
           "instant": false,
           "legendFormat": "TX {{zone}}",
           "refId": "TX"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1872,11 +1876,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 23,
@@ -1893,13 +1893,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (zone) (rate(sonos_rx_dropped[15m]) + rate(sonos_tx_dropped[15m]))",
+          "expr": "max without (pod, instance) (sum by (zone) (rate(sonos_rx_dropped[15m]) + rate(sonos_tx_dropped[15m])))",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1926,11 +1930,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 24,
@@ -1947,13 +1947,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (zone) (rate(sonos_rx_errors[15m]) + rate(sonos_tx_errors[15m]))",
+          "expr": "max without (pod, instance) (sum by (zone) (rate(sonos_rx_errors[15m]) + rate(sonos_tx_errors[15m])))",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1980,11 +1984,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 25,
@@ -2001,13 +2001,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "last_over_time(sonos_device_info[10m])",
+          "expr": "max without (pod, instance) (last_over_time(sonos_device_info[10m]))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -2066,11 +2070,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 1004,
@@ -2100,13 +2100,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "last_over_time(sonos_battery_level_percent[10m])",
+          "expr": "max without (pod, instance) (last_over_time(sonos_battery_level_percent[10m]))",
           "range": false,
           "instant": true,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
@@ -2149,11 +2153,7 @@
           "values": false
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 27,
@@ -2170,13 +2170,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "last_over_time(sonos_battery_info[10m])",
+          "expr": "max without (pod, instance) (last_over_time(sonos_battery_info[10m]))",
           "range": false,
           "instant": true,
           "format": "table",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -2260,11 +2264,7 @@
             }
           }
         }
-      ],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      ]
     },
     {
       "id": 1005,
@@ -2294,13 +2294,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_noise_floor_dbm",
+          "expr": "max without (pod, instance) (sonos_noise_floor_dbm)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -2326,11 +2330,7 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 29,
@@ -2347,13 +2347,17 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sonos_ofdm_ani_level",
+          "expr": "max without (pod, instance) (sonos_ofdm_ani_level)",
           "range": true,
           "instant": false,
           "legendFormat": "{{zone}}",
           "refId": "A"
         }
       ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -2396,20 +2400,418 @@
           "sort": "desc"
         }
       },
-      "transformations": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      }
+      "transformations": []
     },
     {
       "id": 1006,
+      "type": "row",
+      "title": "UniFi (access point view)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 120,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 38,
+      "type": "table",
+      "title": "Access point per speaker",
+      "description": "What the UniFi access point sees for each Wi-Fi speaker (unpoller). Satellites (Sub, surrounds) talk only to their soundbar and don't appear. Signal is dBm (closer to 0 is stronger); retries are the AP's resends to the speaker as a share of packets sent.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 121,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (zone, ap_name, radio, channel) (unpoller_client_radio_signal_db * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) != 0",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "expr": "max by (zone) (unpoller_client_satisfaction_ratio * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) != 0",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "expr": "sum by (zone) (rate(unpoller_client_transmit_retries_total[15m]) * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) / sum by (zone) (rate(unpoller_client_transmit_packets_total[15m]) * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) > 0",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "expr": "sum by (zone) (increase(unpoller_client_roam_count_total[1d]) * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\"))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "ap_name",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": ".+"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "zone": 0,
+              "ap_name": 1,
+              "radio": 2,
+              "channel": 3,
+              "Value #A": 4,
+              "Value #B": 5,
+              "Value #C": 6,
+              "Value #D": 7
+            },
+            "renameByName": {
+              "zone": "Speaker",
+              "ap_name": "Access point",
+              "radio": "Radio",
+              "channel": "Channel",
+              "Value #A": "Signal",
+              "Value #B": "Satisfaction",
+              "Value #C": "TX retries",
+              "Value #D": "Roams (24h)"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Signal"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dBm"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Satisfaction"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TX retries"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Roams (24h)"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Radio"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "ng": {
+                        "text": "2.4 GHz"
+                      },
+                      "na": {
+                        "text": "5 GHz"
+                      },
+                      "6e": {
+                        "text": "6 GHz"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Speaker",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 39,
+      "type": "timeseries",
+      "title": "Signal at the AP",
+      "description": "Speaker signal as the access point hears it. Below about -70 dBm expect retries.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 128,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (zone) (unpoller_client_radio_signal_db * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) != 0",
+          "legendFormat": "{{zone}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dBm",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 40,
+      "type": "timeseries",
+      "title": "TX retries (AP side)",
+      "description": "Share of packets the AP had to resend to the speaker: the AP's side of the PHY error panels above. Only meaningful while the speaker is streaming.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 128,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (zone) (rate(unpoller_client_transmit_retries_total[15m]) * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) / sum by (zone) (rate(unpoller_client_transmit_packets_total[15m]) * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\"))",
+          "legendFormat": "{{zone}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "Satisfaction",
+      "description": "UniFi's per-client experience score.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 136,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (zone) (unpoller_client_satisfaction_ratio * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\")) != 0",
+          "legendFormat": "{{zone}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": false
+          },
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 42,
+      "type": "timeseries",
+      "title": "Roams per hour",
+      "description": "Access point changes. A fixed speaker roaming means two APs are about equally strong where it sits.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 136,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (zone) (increase(unpoller_client_roam_count_total[1h]) * on (ip) group_left (zone) label_replace(max by (ip_address, zone) (sonos_device_info), \"ip\", \"$1\", \"ip_address\", \"(.+)\"))",
+          "legendFormat": "{{zone}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 1007,
       "type": "row",
       "title": "Zone: $zone",
       "collapsed": true,
       "gridPos": {
         "x": 0,
-        "y": 120,
+        "y": 144,
         "w": 24,
         "h": 1
       },
@@ -2422,19 +2824,23 @@
           "links": [],
           "gridPos": {
             "x": 0,
-            "y": 121,
+            "y": 145,
             "w": 3,
             "h": 4
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sonos_uptime_seconds{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (sonos_uptime_seconds{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "refId": "A"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "unit": "dtdurations",
@@ -2471,11 +2877,7 @@
               "values": false
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 35,
@@ -2485,19 +2887,23 @@
           "links": [],
           "gridPos": {
             "x": 3,
-            "y": 121,
+            "y": 145,
             "w": 3,
             "h": 4
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "icmp_latency_ms{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (icmp_latency_ms{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "refId": "A"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "unit": "ms",
@@ -2538,11 +2944,7 @@
               "values": false
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 36,
@@ -2552,19 +2954,23 @@
           "links": [],
           "gridPos": {
             "x": 6,
-            "y": 121,
+            "y": 145,
             "w": 3,
             "h": 4
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "icmp_loss{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (icmp_loss{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "refId": "A"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
@@ -2605,11 +3011,7 @@
               "values": false
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 37,
@@ -2619,19 +3021,23 @@
           "links": [],
           "gridPos": {
             "x": 9,
-            "y": 121,
+            "y": 145,
             "w": 3,
             "h": 4
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sonos_ieee_channel{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (sonos_ieee_channel{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "refId": "A"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "thresholds": {
@@ -2666,11 +3072,7 @@
               "values": false
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 32,
@@ -2680,20 +3082,24 @@
           "links": [],
           "gridPos": {
             "x": 12,
-            "y": 121,
+            "y": 145,
             "w": 12,
             "h": 4
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sonos_busy_state{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (sonos_busy_state{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "legendFormat": "{{state}}",
               "refId": "A"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -2721,11 +3127,7 @@
               "sort": "none"
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 30,
@@ -2735,14 +3137,14 @@
           "links": [],
           "gridPos": {
             "x": 0,
-            "y": 125,
+            "y": 149,
             "w": 12,
             "h": 8
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(sonos_rx_bytes{zone=\"$zone\"}[15m]) > 0",
+              "expr": "max without (pod, instance) (rate(sonos_rx_bytes{zone=\"$zone\"}[15m]) > 0)",
               "range": true,
               "instant": false,
               "legendFormat": "RX {{interface}}",
@@ -2750,13 +3152,17 @@
             },
             {
               "editorMode": "code",
-              "expr": "-rate(sonos_tx_bytes{zone=\"$zone\"}[15m]) < 0",
+              "expr": "max without (pod, instance) (-rate(sonos_tx_bytes{zone=\"$zone\"}[15m]) < 0)",
               "range": true,
               "instant": false,
               "legendFormat": "TX {{interface}}",
               "refId": "TX"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -2782,11 +3188,7 @@
               "sort": "desc"
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 31,
@@ -2796,14 +3198,14 @@
           "links": [],
           "gridPos": {
             "x": 12,
-            "y": 125,
+            "y": 149,
             "w": 12,
             "h": 8
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sonos_link_quality_from{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (sonos_link_quality_from{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "legendFormat": "\u2192 {{peer_zone}}",
@@ -2811,13 +3213,17 @@
             },
             {
               "editorMode": "code",
-              "expr": "sonos_link_quality_to{zone=\"$zone\"}",
+              "expr": "max without (pod, instance) (sonos_link_quality_to{zone=\"$zone\"})",
               "range": true,
               "instant": false,
               "legendFormat": "\u2190 {{peer_zone}}",
               "refId": "B"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -2863,11 +3269,7 @@
               "sort": "desc"
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         },
         {
           "id": 33,
@@ -2877,20 +3279,24 @@
           "links": [],
           "gridPos": {
             "x": 0,
-            "y": 133,
+            "y": 157,
             "w": 24,
             "h": 5
           },
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(sonos_radio_phy_errors_total{zone=\"$zone\"}[15m])",
+              "expr": "max without (pod, instance) (rate(sonos_radio_phy_errors_total{zone=\"$zone\"}[15m]))",
               "range": true,
               "instant": false,
               "legendFormat": "{{zone}}",
               "refId": "A"
             }
           ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -2917,11 +3323,7 @@
               "sort": "desc"
             }
           },
-          "transformations": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          }
+          "transformations": []
         }
       ],
       "repeat": "zone"
