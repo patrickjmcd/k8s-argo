@@ -1,0 +1,28 @@
+# https://github.com/grahamfairbank/sonos-analyzer -- read-only Sonos network
+# diagnostics (firmware, Wi-Fi/Ethernet, bonded rooms, signal matrix). Stateless.
+# hostNetwork because speaker discovery is SSDP multicast, which doesn't cross
+# the pod network; the UI listens on the node's :8400. If discovery finds
+# nothing (speakers on another VLAN), type one speaker's IP in the UI.
+# The UI has no login, so internal route only.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: sonos-analyzer
+  namespace: default
+spec:
+  image: ghcr.io/grahamfairbank/sonos-analyzer:0.3.0
+  port: 8400
+  hostNetwork: true
+  env:
+    TZ: America/Chicago
+  resources:
+    cpuRequest: 20m
+    memoryRequest: 64Mi
+    cpuLimit: "1"
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    path: /healthz
+  route:
+    hostnames:
+    - sonos-analyzer.x.pmcd.io

@@ -31,6 +31,7 @@ resources:
   - tracearr.yaml
   - unifi-toolkit.yaml
   - homebridge.yaml
+  - sonos-analyzer.yaml
   - mealie.yaml
   - sparkyfitness.yaml
   - sparkyfitness-server.yaml
