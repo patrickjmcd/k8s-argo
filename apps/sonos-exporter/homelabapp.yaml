@@ -1,0 +1,34 @@
+# Prometheus exporter for Sonos network health, from our fork
+# github.com/patrickjmcd/sonos-exporter (of Bierchermuesli/sonos-exporter; the
+# fork only adds the GHCR image build). It reads /support/review on port 1400
+# from one player and finds the rest of the household from that dump, so no
+# SSDP/hostNetwork: the speakers are on 192.168.1.x, the nodes on 192.168.8.x.
+# ICMP probes off (needs ping_group_range or NET_RAW); sonos_device_up then
+# comes from the HTTP scrape. Dashboard: core/grafana-assets/dashboards/sonos.json.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: sonos-exporter
+  namespace: default
+spec:
+  image: ghcr.io/patrickjmcd/sonos-exporter:0.1.0
+  port: 9814
+  args:
+    - --sonos-ip=192.168.1.163   # Bathroom (Sonos One); any player works
+    - --interval=60
+    - --icmp-interval=0
+  env:
+    TZ: America/Chicago
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 64Mi
+    cpuLimit: 500m
+    memoryLimit: 256Mi
+  probes:
+    type: httpGet
+    path: /health
+  route:
+    enabled: false
+  serviceMonitor:
+    enabled: true
+    interval: 60s

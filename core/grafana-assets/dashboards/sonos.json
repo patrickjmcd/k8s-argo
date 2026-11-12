@@ -1,0 +1,2930 @@
+{
+  "uid": "sonos-overview",
+  "title": "Sonos Network Overview",
+  "description": "SonosNet mesh health from the sonos-exporter: reachability, link quality, radio state, traffic and battery.",
+  "tags": [
+    "sonos",
+    "network"
+  ],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "label": "Data source",
+        "current": {
+          "text": "default",
+          "value": "default"
+        }
+      },
+      {
+        "name": "zone",
+        "label": "Zone",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(sonos_device_up, zone)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(sonos_device_up, zone)",
+          "refId": "VariableQueryEditor-VariableQuery"
+        },
+        "multi": true,
+        "includeAll": true,
+        "refresh": 2,
+        "sort": 1,
+        "regex": "",
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "panels": [
+    {
+      "id": 1000,
+      "type": "row",
+      "title": "Overview",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Zones up",
+      "description": "Players reachable (ICMP when enabled, otherwise seen in the last scrape)",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "count(sonos_device_up == 1)",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Zones down",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 6,
+        "y": 1,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "count(sonos_device_up == 0) or vector(0)",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Exporter scrape",
+      "description": "Result of the last /support/review fetch. FAILED means every other panel shows stale values.",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_scrape_success",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "FAILED",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "no data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Data age",
+      "description": "Seconds since the last successful exporter scrape, as seen through the Prometheus scrape. Orange above 10 minutes.",
+      "links": [],
+      "gridPos": {
+        "x": 18,
+        "y": 1,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "time() - sonos_scrape_last_success_timestamp_seconds",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 600
+              },
+              {
+                "color": "red",
+                "value": 1200
+              }
+            ]
+          },
+          "decimals": 0,
+          "noValue": "no data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 5,
+      "type": "status-history",
+      "title": "Reachability",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_device_up",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "down",
+                  "color": "red",
+                  "index": 0
+                },
+                "1": {
+                  "text": "up",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "never",
+        "rowHeight": 0.9,
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "maxDataPoints": 200
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "ICMP latency",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "avg by (zone) (icmp_latency_ms)",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          },
+          "unit": "ms",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "ICMP loss",
+      "description": "Dashed line at 10 % loss",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "avg by (zone) (icmp_loss)",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 0.1
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 8,
+      "type": "bargauge",
+      "title": "Weakest link per zone",
+      "description": "Lowest SonosNet FROM quality a zone has towards any peer, idle links with quality 0 ignored. Below 40 is a weak mesh link.",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "min by (zone) (last_over_time(sonos_link_quality_from[10m]) > 0)",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 40
+              },
+              {
+                "color": "green",
+                "value": 55
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 9,
+      "type": "bargauge",
+      "title": "Uptime",
+      "description": "Seconds since the player booted. Orange when under a day, i.e. a recent reboot.",
+      "links": [],
+      "gridPos": {
+        "x": 8,
+        "y": 19,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "last_over_time(sonos_uptime_seconds[10m])",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dtdurations",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 86400
+              }
+            ]
+          },
+          "noValue": "no data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Software versions",
+      "description": "More than one row means an update is pending or stuck somewhere",
+      "links": [],
+      "gridPos": {
+        "x": 16,
+        "y": 19,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "count by (software_version) (last_over_time(sonos_device_info[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Players",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true
+              },
+              "renameByName": {
+                "software_version": "Version",
+                "Value": "Players"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "SonosNet",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "nodeGraph",
+      "title": "Topology",
+      "description": "SonosNet mesh as reported by each player. Edge value is the FROM link quality, node is green when the player is up.",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 16
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "label_replace(label_replace(label_replace(last_over_time(sonos_device_up[10m]) == 1, \"color\", \"green\", \"\", \"\"), \"id\", \"$1\", \"zone\", \"(.*)\"), \"title\", \"$1\", \"zone\", \"(.*)\") or label_replace(label_replace(label_replace(last_over_time(sonos_device_up[10m]) == 0, \"color\", \"red\", \"\", \"\"), \"id\", \"$1\", \"zone\", \"(.*)\"), \"title\", \"$1\", \"zone\", \"(.*)\")",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "N"
+        },
+        {
+          "editorMode": "code",
+          "expr": "label_join(label_replace(label_replace(last_over_time(sonos_link_quality_from[10m]), \"source\", \"$1\", \"zone\", \"(.*)\"), \"target\", \"$1\", \"peer_zone\", \"(.*)\"), \"id\", \" > \", \"zone\", \"peer_zone\")",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "E"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "nodes": {
+          "mainStatUnit": ""
+        },
+        "edges": {
+          "mainStatUnit": ""
+        },
+        "layoutAlgorithm": "layered"
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true,
+                "instance": true,
+                "job": true,
+                "zone": true,
+                "peer_zone": true,
+                "model": true,
+                "Value #N": true
+              },
+              "renameByName": {
+                "Value #E": "mainstat"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Link quality (FROM)",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_link_quality_from",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}} \u2192 {{peer_zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Link asymmetry |FROM \u2212 TO|",
+      "description": "Large differences point to a one-sided problem such as interference near one player",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 36,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "abs(sonos_link_quality_from - sonos_link_quality_to)",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}} \u2192 {{peer_zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 14,
+      "type": "table",
+      "title": "Links",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 14,
+        "h": 9
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "last_over_time(sonos_link_quality_from[10m])",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "FROM"
+        },
+        {
+          "editorMode": "code",
+          "expr": "last_over_time(sonos_link_quality_to[10m])",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "TO"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "FROM"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "orange",
+                      "value": 40
+                    },
+                    {
+                      "color": "green",
+                      "value": 55
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TO"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "orange",
+                      "value": 40
+                    },
+                    {
+                      "color": "green",
+                      "value": 55
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "FROM",
+            "desc": false
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true,
+                "instance": true,
+                "job": true
+              }
+            }
+          }
+        },
+        {
+          "kind": "Transformation",
+          "group": "merge",
+          "spec": {
+            "options": {}
+          }
+        },
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "indexByName": {
+                "zone": 0,
+                "peer_zone": 1,
+                "model": 2,
+                "Value #FROM": 3,
+                "Value #TO": 4
+              },
+              "renameByName": {
+                "zone": "Zone",
+                "peer_zone": "Peer",
+                "model": "Model",
+                "Value #FROM": "FROM",
+                "Value #TO": "TO"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 15,
+      "type": "table",
+      "title": "Wired & bridge",
+      "description": "Wired players are the roots of the SonosNet mesh",
+      "links": [],
+      "gridPos": {
+        "x": 14,
+        "y": 44,
+        "w": 10,
+        "h": 9
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_enet_connected[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "ETH"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_enet_speed_mbps[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "SPD"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_bridge_stp_enabled[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "STP"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ethernet"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "wireless",
+                        "color": "text",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "wired",
+                        "color": "green",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "STP"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "off",
+                        "color": "text",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "on",
+                        "color": "blue",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Speed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Mbits"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true
+              }
+            }
+          }
+        },
+        {
+          "kind": "Transformation",
+          "group": "merge",
+          "spec": {
+            "options": {}
+          }
+        },
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "indexByName": {
+                "zone": 0,
+                "Value #ETH": 1,
+                "Value #SPD": 2,
+                "Value #STP": 3
+              },
+              "renameByName": {
+                "zone": "Zone",
+                "Value #ETH": "Ethernet",
+                "Value #SPD": "Speed",
+                "Value #STP": "STP"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 16,
+      "type": "heatmap",
+      "title": "Link quality matrix (avg of FROM/TO)",
+      "description": "One row per mesh link, colour is the average of FROM and TO quality over time. Red below 40, green above 55.",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 53,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(sonos_link_quality_from + sonos_link_quality_to) / 2",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}} \u2192 {{peer_zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "showValue": "auto",
+        "color": {
+          "mode": "scheme",
+          "scheme": "RdYlGn",
+          "reverse": true,
+          "scale": "exponential",
+          "exponent": 0.5,
+          "steps": 64,
+          "fill": "dark-orange",
+          "min": 0,
+          "max": 100
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "placement": "bottom",
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "xAxis": {
+          "show": true
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "show": true
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 1002,
+      "type": "row",
+      "title": "Radio",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 62,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 17,
+      "type": "state-timeline",
+      "title": "WiFi mode",
+      "description": "One row per zone and mode. A zone that changes mode shows up as two rows.",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 63,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_wifi_mode",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}} \u00b7 {{mode_string}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "alignValue": "left",
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "never",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 18,
+      "type": "state-timeline",
+      "title": "Playing (AUDIO_OUT)",
+      "description": "Set while the player outputs audio. The other busy flags (NO_PRIMARY, LOCAL_SONOSNET, ...) are static per zone and shown in the zone rows.",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 63,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_busy_state{state=\"AUDIO_OUT\"}",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "playing",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "alignValue": "left",
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "never",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 19,
+      "type": "state-timeline",
+      "title": "IEEE channel",
+      "description": "Channel changes over time",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 71,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_ieee_channel",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "alignValue": "left",
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 20,
+      "type": "table",
+      "title": "Radio details",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 71,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_ieee_channel[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "CH"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_operating_channel[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "MHZ"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_ht_channel[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "HT"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_ht_ap_mode[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "HTAP"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_rf_chains{direction=\"rx\"}[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "RX"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (zone) (last_over_time(sonos_rf_chains{direction=\"tx\"}[10m]))",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "TX"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "HT AP"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "off",
+                        "color": "text",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "on",
+                        "color": "green",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true
+              }
+            }
+          }
+        },
+        {
+          "kind": "Transformation",
+          "group": "merge",
+          "spec": {
+            "options": {}
+          }
+        },
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "indexByName": {
+                "zone": 0,
+                "Value #CH": 1,
+                "Value #MHZ": 2,
+                "Value #HT": 3,
+                "Value #HTAP": 4,
+                "Value #RX": 5,
+                "Value #TX": 6
+              },
+              "renameByName": {
+                "zone": "Zone",
+                "Value #CH": "Channel",
+                "Value #MHZ": "MHz",
+                "Value #HT": "HT channel",
+                "Value #HTAP": "HT AP",
+                "Value #RX": "RX",
+                "Value #TX": "TX"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "PHY error rate",
+      "description": "PHY errors per second. The player counter resets on its own, rate() handles that. 15m window so it works with 5m scrapes.",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 79,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "rate(sonos_phy_errors[15m])",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": true
+          },
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 1003,
+      "type": "row",
+      "title": "Network",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 86,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Bandwidth br0 (RX above, TX below zero)",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 87,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "rate(sonos_rx_bytes{interface=\"br0\"}[15m])",
+          "range": true,
+          "instant": false,
+          "legendFormat": "RX {{zone}}",
+          "refId": "RX"
+        },
+        {
+          "editorMode": "code",
+          "expr": "-rate(sonos_tx_bytes{interface=\"br0\"}[15m])",
+          "range": true,
+          "instant": false,
+          "legendFormat": "TX {{zone}}",
+          "refId": "TX"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": true
+          },
+          "unit": "Bps",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Drops",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 87,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (zone) (rate(sonos_rx_dropped[15m]) + rate(sonos_tx_dropped[15m]))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": true
+          },
+          "unit": "pps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "Errors",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 18,
+        "y": 87,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (zone) (rate(sonos_rx_errors[15m]) + rate(sonos_tx_errors[15m]))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": true
+          },
+          "unit": "pps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 25,
+      "type": "table",
+      "title": "Inventory",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 95,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "last_over_time(sonos_device_info[10m])",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Zone",
+            "desc": false
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true,
+                "instance": true,
+                "job": true,
+                "Value": true,
+                "sw_gen": true
+              },
+              "indexByName": {
+                "zone": 0,
+                "ip_address": 1,
+                "mac_address": 2,
+                "serial_number": 3,
+                "software_version": 4,
+                "hardware_version": 5,
+                "series_id": 6,
+                "local_uid": 7
+              },
+              "renameByName": {
+                "zone": "Zone",
+                "ip_address": "IP",
+                "mac_address": "MAC",
+                "serial_number": "Serial",
+                "software_version": "Software",
+                "hardware_version": "Hardware",
+                "series_id": "Series",
+                "local_uid": "UID"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 1004,
+      "type": "row",
+      "title": "Battery",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 104,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 26,
+      "type": "bargauge",
+      "title": "Battery level",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 105,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "last_over_time(sonos_battery_level_percent[10m])",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 27,
+      "type": "table",
+      "title": "Battery status",
+      "description": "",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 105,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "last_over_time(sonos_battery_info[10m])",
+          "range": false,
+          "instant": true,
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Health"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "GREEN": {
+                        "text": "GREEN",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "YELLOW": {
+                        "text": "YELLOW",
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "RED": {
+                        "text": "RED",
+                        "color": "red",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      },
+      "transformations": [
+        {
+          "kind": "Transformation",
+          "group": "organize",
+          "spec": {
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true,
+                "instance": true,
+                "job": true,
+                "Value": true
+              },
+              "indexByName": {
+                "zone": 0,
+                "power_source": 1,
+                "health": 2,
+                "temperature": 3
+              },
+              "renameByName": {
+                "zone": "Zone",
+                "power_source": "Power",
+                "health": "Health",
+                "temperature": "Temperature"
+              }
+            }
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 1005,
+      "type": "row",
+      "title": "Legacy radio",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 112,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 28,
+      "type": "timeseries",
+      "title": "Noise floor",
+      "description": "Average over RF chains. Only older Atheros based players (Play:1, Play:3, Play:5 gen 1, ...) report this.",
+      "links": [],
+      "gridPos": {
+        "x": 0,
+        "y": 113,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_noise_floor_dbm",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          },
+          "unit": "dBm",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 29,
+      "type": "timeseries",
+      "title": "OFDM ANI level",
+      "description": "Adaptive noise immunity level of the Atheros radio. Higher means the radio is fighting interference. Only older players report this.",
+      "links": [],
+      "gridPos": {
+        "x": 12,
+        "y": 113,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sonos_ofdm_ani_level",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{zone}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 4
+              },
+              {
+                "color": "red",
+                "value": 6
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "transformations": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      }
+    },
+    {
+      "id": 1006,
+      "type": "row",
+      "title": "Zone: $zone",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 120,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 34,
+          "type": "stat",
+          "title": "Uptime",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 0,
+            "y": 121,
+            "w": 3,
+            "h": 4
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sonos_uptime_seconds{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "dtdurations",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "orange",
+                    "value": 0
+                  },
+                  {
+                    "color": "green",
+                    "value": 86400
+                  }
+                ]
+              },
+              "noValue": "no data"
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 35,
+          "type": "stat",
+          "title": "Latency",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 3,
+            "y": 121,
+            "w": 3,
+            "h": 4
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "icmp_latency_ms{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "orange",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 100
+                  }
+                ]
+              },
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 36,
+          "type": "stat",
+          "title": "Loss",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 6,
+            "y": 121,
+            "w": 3,
+            "h": 4
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "icmp_loss{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "orange",
+                    "value": 0.1
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.5
+                  }
+                ]
+              },
+              "decimals": 0
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 37,
+          "type": "stat",
+          "title": "Channel",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 9,
+            "y": 121,
+            "w": 3,
+            "h": 4
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sonos_ieee_channel{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": 0
+                  }
+                ]
+              },
+              "color": {
+                "mode": "fixed",
+                "fixedColor": "text"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "textMode": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 32,
+          "type": "state-timeline",
+          "title": "Busy flags",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 12,
+            "y": 121,
+            "w": 12,
+            "h": 4
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sonos_busy_state{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "legendFormat": "{{state}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "fillOpacity": 70,
+                "lineWidth": 0
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "alignValue": "left",
+            "mergeValues": true,
+            "rowHeight": 0.85,
+            "showValue": "never",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 30,
+          "type": "timeseries",
+          "title": "Bandwidth per interface",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 0,
+            "y": 125,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "rate(sonos_rx_bytes{zone=\"$zone\"}[15m]) > 0",
+              "range": true,
+              "instant": false,
+              "legendFormat": "RX {{interface}}",
+              "refId": "RX"
+            },
+            {
+              "editorMode": "code",
+              "expr": "-rate(sonos_tx_bytes{zone=\"$zone\"}[15m]) < 0",
+              "range": true,
+              "instant": false,
+              "legendFormat": "TX {{interface}}",
+              "refId": "TX"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": true
+              },
+              "unit": "Bps",
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 31,
+          "type": "timeseries",
+          "title": "Links from this zone",
+          "description": "Solid: FROM quality, dashed: TO quality",
+          "links": [],
+          "gridPos": {
+            "x": 12,
+            "y": 125,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sonos_link_quality_from{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "legendFormat": "\u2192 {{peer_zone}}",
+              "refId": "A"
+            },
+            {
+              "editorMode": "code",
+              "expr": "sonos_link_quality_to{zone=\"$zone\"}",
+              "range": true,
+              "instant": false,
+              "legendFormat": "\u2190 {{peer_zone}}",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "spanNulls": true
+              },
+              "color": {
+                "mode": "palette-classic"
+              },
+              "min": 0,
+              "max": 100
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "fill": "dash",
+                      "dash": [
+                        6,
+                        4
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "id": 33,
+          "type": "timeseries",
+          "title": "PHY error rate",
+          "description": "",
+          "links": [],
+          "gridPos": {
+            "x": 0,
+            "y": 133,
+            "w": 24,
+            "h": 5
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "rate(sonos_phy_errors{zone=\"$zone\"}[15m])",
+              "range": true,
+              "instant": false,
+              "legendFormat": "{{zone}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "spanNulls": true
+              },
+              "unit": "short",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "min": 0
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "showLegend": false,
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "transformations": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "repeat": "zone"
+    }
+  ]
+}

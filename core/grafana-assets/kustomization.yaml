@@ -41,6 +41,12 @@ configMapGenerator:
   - name: grafana-dashboard-joshhawleygop   # home-built, from nginx JSON access logs in Loki
     files:
       - dashboards/joshhawleygop.json
+  # From github.com/patrickjmcd/sonos-exporter grafana/sonos-overview-dashboard.json,
+  # converted from Grafana's v2 dashboard schema to classic JSON for the sidecar
+  # (the Battery / Legacy radio rows lose their show-only-with-data condition).
+  - name: grafana-dashboard-sonos           # apps/sonos-exporter
+    files:
+      - dashboards/sonos.json
   - name: grafana-dashboard-hardware-temps  # home-built, node-exporter hwmon (see prometheus-assets/node-thermal-rules.yaml)
     files:
       - dashboards/hardware-temps.json

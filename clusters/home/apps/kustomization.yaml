@@ -32,6 +32,7 @@ resources:
   - unifi-toolkit.yaml
   - homebridge.yaml
   - sonos-analyzer.yaml
+  - sonos-exporter.yaml
   - mealie.yaml
   - sparkyfitness.yaml
   - sparkyfitness-server.yaml
