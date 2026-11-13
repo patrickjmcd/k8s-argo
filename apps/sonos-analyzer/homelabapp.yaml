@@ -10,7 +10,7 @@ metadata:
   name: sonos-analyzer
   namespace: default
 spec:
-  image: ghcr.io/grahamfairbank/sonos-analyzer:0.3.0
+  image: ghcr.io/grahamfairbank/sonos-analyzer:0.4.0
   port: 8400
   env:
     TZ: America/Chicago
