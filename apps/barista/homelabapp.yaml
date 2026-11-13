@@ -2,7 +2,10 @@
 # app. Guests on the WiFi order from coffee.x.pmcd.io (no sign-in); /admin
 # (PocketID, OIDC client "Barista") runs the order queue and edits the menu.
 # Our own app: Go API + embedded React SPA. New orders go to ntfy topic
-# "coffee"; WEBHOOK_URL can be added later for a Home Assistant announcement.
+# "coffee" and to WEBHOOK_URL (1Password; the webhook id is a secret): the
+# HA automation "Barista - announce new orders on the Kitchen Move"
+# (automations.yaml on HAOS, local_only, quiet 9pm-7am) speaks them on
+# media_player.kitchen_move.
 # Guests can opt into Web Push for their order (VAPID keys live in the DB).
 # Database: barista on shared-postgres, trust auth; the app runs its own
 # migrations on start. One replica: live updates are an in-process hub.
@@ -27,7 +30,8 @@ spec:
   # OIDC_CLIENT_ID, OIDC_CLIENT_SECRET and NTFY_TOKEN from
   # vaults/Kubernetes/items/barista (scripts/create-barista-item.sh), plus
   # optional ADMIN_EMAILS (comma-separated; empty = anyone PocketID lets
-  # through the client, so restrict the client to a group there).
+  # through the client, so restrict the client to a group there) and
+  # WEBHOOK_URL (http://192.168.1.21:8123/api/webhook/<id>).
   onePassword:
     enabled: true
   resources:
