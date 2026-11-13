@@ -58,6 +58,7 @@ spec:
       - host all spoolman all trust
       - host all gitea all trust
       - host all stubs all trust
+      - host all barista all trust
       - host all sportarr all trust
       - host all backup all trust
 
@@ -151,6 +152,11 @@ spec:
         inherit: true
         connectionLimit: -1
       - name: stubs
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+      - name: barista
         ensure: present
         login: true
         inherit: true

@@ -250,3 +250,14 @@ spec:
   owner: gitea
   cluster:
     name: shared-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: barista
+  namespace: postgres
+spec:
+  name: barista
+  owner: barista
+  cluster:
+    name: shared-postgres
