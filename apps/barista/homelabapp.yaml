@@ -1,0 +1,47 @@
+# Barista (github.com/patrickjmcd/barista) -- the home coffee bar's ordering
+# app. Guests on the WiFi order from coffee.x.pmcd.io (no sign-in); /admin
+# (PocketID, OIDC client "Barista") runs the order queue and edits the menu.
+# Our own app: Go API + embedded React SPA. New orders go to ntfy topic
+# "coffee"; WEBHOOK_URL can be added later for a Home Assistant announcement.
+# Database: barista on shared-postgres, trust auth; the app runs its own
+# migrations on start. One replica: live updates are an in-process hub.
+# Namespace default for ghcr-registry-cred (the image is private).
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: barista
+  namespace: default
+spec:
+  image: ghcr.io/patrickjmcd/barista:88e255b
+  imagePullSecrets:
+  - ghcr-registry-cred
+  port: 80
+  containerPort: 8080
+  env:
+    TZ: America/Chicago
+    PUBLIC_URL: https://coffee.x.pmcd.io
+    OIDC_ISSUER: https://auth.pmcd.dev
+    NTFY_URL: http://ntfy.ntfy.svc.cluster.local/coffee
+    DATABASE_URL: postgres://barista@shared-postgres-rw.postgres.svc.cluster.local:5432/barista?sslmode=disable
+  # OIDC_CLIENT_ID, OIDC_CLIENT_SECRET and NTFY_TOKEN from
+  # vaults/Kubernetes/items/barista (scripts/create-barista-item.sh), plus
+  # optional ADMIN_EMAILS (comma-separated; empty = anyone PocketID lets
+  # through the client, so restrict the client to a group there).
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 10m
+    memoryRequest: 32Mi
+    cpuLimit: 500m
+    memoryLimit: 128Mi
+  probes:
+    type: httpGet
+    path: /healthz
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+    - coffee.x.pmcd.io
+  glance:
+    monitor: true
+    title: Barista

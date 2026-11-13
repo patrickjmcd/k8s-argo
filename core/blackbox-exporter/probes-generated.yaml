@@ -60,6 +60,7 @@ spec:
         group: services
       static:
         - https://alertmanager.x.pmcd.io
+        - https://coffee.x.pmcd.io
         - https://git.x.pmcd.io
         - https://grafana.x.pmcd.io
         - https://gym.x.pmcd.io

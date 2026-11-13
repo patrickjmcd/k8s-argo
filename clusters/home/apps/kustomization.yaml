@@ -21,6 +21,7 @@ resources:
   - reedme.yaml
   - kaneo.yaml
   - stubs.yaml
+  - barista.yaml
   - adsb.yaml
   - dreeve.yaml
   - hivemq.yaml
