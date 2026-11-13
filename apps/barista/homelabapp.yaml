@@ -3,6 +3,7 @@
 # (PocketID, OIDC client "Barista") runs the order queue and edits the menu.
 # Our own app: Go API + embedded React SPA. New orders go to ntfy topic
 # "coffee"; WEBHOOK_URL can be added later for a Home Assistant announcement.
+# Guests can opt into Web Push for their order (VAPID keys live in the DB).
 # Database: barista on shared-postgres, trust auth; the app runs its own
 # migrations on start. One replica: live updates are an in-process hub.
 # Namespace default for ghcr-registry-cred (the image is private).
@@ -12,7 +13,7 @@ metadata:
   name: barista
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/barista:88e255b
+  image: ghcr.io/patrickjmcd/barista:d284f00
   imagePullSecrets:
   - ghcr-registry-cred
   port: 80
