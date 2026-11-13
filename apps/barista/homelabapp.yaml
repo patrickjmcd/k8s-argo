@@ -16,7 +16,7 @@ metadata:
   name: barista
   namespace: default
 spec:
-  image: ghcr.io/patrickjmcd/barista:d6c596a
+  image: ghcr.io/patrickjmcd/barista:f76abb3
   imagePullSecrets:
   - ghcr-registry-cred
   port: 80
