@@ -9,7 +9,7 @@ metadata:
   name: shelfmark
   namespace: media
 spec:
-  image: ghcr.io/calibrain/shelfmark:v1.6.2
+  image: ghcr.io/calibrain/shelfmark:v1.7.0
   port: 80
   containerPort: 8084
   # API keys: SABNZBD_API_KEY comes in under its own name; Prowlarr's is
