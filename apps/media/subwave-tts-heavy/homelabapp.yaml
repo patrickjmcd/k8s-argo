@@ -10,7 +10,7 @@ metadata:
   namespace: media
 spec:
   # Keep on the same version as apps/media/subwave.
-  image: ghcr.io/perminder-klair/subwave-tts-heavy:1.31.0
+  image: ghcr.io/perminder-klair/subwave-tts-heavy:1.32.0
   port: 8080
   env:
     TZ: America/Chicago
