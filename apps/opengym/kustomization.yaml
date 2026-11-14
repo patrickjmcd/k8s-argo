@@ -15,4 +15,4 @@ images:
     newTag: "1.4.5"
   - name: opengym-web
     newName: ghcr.io/duartesantos8/opengym-web
-    newTag: "1.4.4"
+    newTag: "1.4.5"
