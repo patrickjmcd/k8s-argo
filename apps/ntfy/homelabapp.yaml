@@ -8,7 +8,7 @@ metadata:
   name: ntfy
   namespace: ntfy
 spec:
-  image: binwiederhier/ntfy:v2.37.2
+  image: binwiederhier/ntfy:v2.38.0
   port: 80
   args:
     - serve
