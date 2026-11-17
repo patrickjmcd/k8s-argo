@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: youtarr
-          image: dialmaster/youtarr:v1.92.0
+          image: dialmaster/youtarr:v1.93.0
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
