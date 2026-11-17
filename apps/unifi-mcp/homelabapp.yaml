@@ -14,8 +14,6 @@ spec:
   route:
     hostnames:
     - unifi-mcp.x.pmcd.io
-    middlewares:
-    - unifi-mcp-basicauth
   onePassword:
     enabled: true
   env:
