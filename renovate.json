@@ -61,6 +61,12 @@
       "allowedVersions": "<11.9"
     },
     {
+      "description": "Sure tags stable releases X.Y.Z or X.Y.Z-hotfix.N and also publishes -alpha.N/-rc.N; docker versioning would treat '-hotfix.1' as a fixed suffix and never leave it. Semver orders them, allowedVersions keeps pre-releases out.",
+      "matchPackageNames": ["ghcr.io/we-promise/sure"],
+      "versioning": "semver",
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+(-hotfix\\.\\d+)?$/"
+    },
+    {
       "description": "linuxserver/lidarr publishes old 0.8.x builds as tags like 8.1.2135, which sort above the real 3.x releases. Renovate offered one as a 'major' update (Oct 2026); it was Lidarr 0.8, which has no Postgres support and started on an empty SQLite DB.",
       "matchPackageNames": ["linuxserver/lidarr"],
       "allowedVersions": "<8"

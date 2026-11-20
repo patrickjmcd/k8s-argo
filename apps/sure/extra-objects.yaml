@@ -1,0 +1,61 @@
+# Settings shared by the web HomelabApp and the Sidekiq worker. A Secret only
+# because HomelabApp loads extra env from Secrets (envFromSecrets), not
+# ConfigMaps; nothing here is sensitive. Reloader restarts both on change.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sure-env
+  namespace: sure
+type: Opaque
+stringData:
+  TZ: America/Chicago
+  SELF_HOSTED: "true"
+  # "open" so the first account can be created; set "closed" afterwards.
+  ONBOARDING_STATE: open
+  APP_DOMAIN: sure.x.pmcd.io
+  # TLS ends at Traefik.
+  RAILS_ASSUME_SSL: "true"
+  RAILS_FORCE_SSL: "false"
+  # shared-postgres, trust auth for role sure (core/postgres).
+  DB_HOST: shared-postgres-rw.postgres.svc.cluster.local
+  DB_PORT: "5432"
+  POSTGRES_USER: sure
+  POSTGRES_DB: sure
+  REDIS_URL: redis://sure-redis:6379/1
+  # Uploads/imports/statements in Garage (core/garage, bucket "sure"), so web
+  # and worker share storage without a shared volume. Browsers download via
+  # redirects to s3.x.pmcd.io (LAN/Tailscale, like sure.x.pmcd.io itself).
+  ACTIVE_STORAGE_SERVICE: generic_s3
+  GENERIC_S3_ENDPOINT: https://s3.x.pmcd.io
+  GENERIC_S3_REGION: garage
+  GENERIC_S3_BUCKET: sure
+  GENERIC_S3_FORCE_PATH_STYLE: "true"
+  # SMTP_PORT/USERNAME/PASSWORD from the mailgun item. Port 587 is STARTTLS,
+  # so SMTP_TLS_ENABLED (implicit TLS) stays false.
+  SMTP_ADDRESS: smtp.mailgun.org
+  SMTP_TLS_ENABLED: "false"
+  EMAIL_SENDER: Sure <sure@mail.pmcd.dev>
+  # Sign-in via PocketID (OIDC client "Sure"); OIDC_CLIENT_ID/SECRET are in
+  # the sure 1Password item.
+  OIDC_ISSUER: https://auth.pmcd.dev
+  OIDC_REDIRECT_URI: https://sure.x.pmcd.io/auth/openid_connect/callback
+  OIDC_BUTTON_LABEL: Sign in with PocketID
+---
+# S3 key for the Garage bucket; also synced into the garage namespace, where
+# the bootstrap Job imports it.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: garage-sure
+  namespace: sure
+spec:
+  itemPath: "vaults/Kubernetes/items/garage-sure"
+---
+# SMTP_HOST/PORT/USERNAME/PASSWORD
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: mailgun
+  namespace: sure
+spec:
+  itemPath: "vaults/Kubernetes/items/mailgun"

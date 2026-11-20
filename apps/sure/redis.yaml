@@ -1,0 +1,47 @@
+# Sidekiq queue and cache. No volume: a restart drops queued jobs; the
+# scheduled ones (syncs, market data) come back from Sidekiq cron.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sure-redis
+  namespace: sure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sure-redis
+  template:
+    metadata:
+      labels:
+        app: sure-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:8.10.3-alpine
+          args: ["--save", "", "--appendonly", "no"]
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sure-redis
+  namespace: sure
+spec:
+  selector:
+    app: sure-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

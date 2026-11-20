@@ -1,0 +1,42 @@
+# Sure (we-promise/sure) -- personal finance, the community fork of Maybe.
+# This is the Rails web server; the Sidekiq worker is worker.yaml (a plain
+# Deployment: HomelabApp always adds a readiness probe on the http port).
+# Settings shared with the worker are in sure-env (extra-objects.yaml).
+# Database: sure on shared-postgres; the entrypoint runs db:prepare on boot.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: sure
+  namespace: sure
+spec:
+  image: ghcr.io/we-promise/sure:0.7.6-hotfix.1
+  port: 80
+  containerPort: 3000
+  # From vaults/Kubernetes/items/sure: SECRET_KEY_BASE (also derives the
+  # Active Record encryption keys -- never change it) and OIDC_CLIENT_ID /
+  # OIDC_CLIENT_SECRET.
+  onePassword:
+    enabled: true
+  envFromSecrets:
+    - sure-env
+    - garage-sure
+    - mailgun
+  resources:
+    cpuRequest: 50m
+    memoryRequest: 512Mi
+    cpuLimit: 2000m
+    memoryLimit: 1536Mi
+  probes:
+    type: httpGet
+    path: /up
+    startup:
+      # first boot runs every migration
+      failureThreshold: 60
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - sure.x.pmcd.io
+  glance:
+    monitor: true
+    title: Sure

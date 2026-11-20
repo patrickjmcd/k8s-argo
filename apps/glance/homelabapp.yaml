@@ -134,6 +134,8 @@ spec:
                         url: https://strava.x.pmcd.io
                       - title: Stubs
                         url: https://showmeyourstubs.com
+                      - title: Sure
+                        url: https://sure.x.pmcd.io
                       - title: Traefik
                         url: https://traefik.x.pmcd.io
                       - title: Tronbyt

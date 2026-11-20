@@ -1,0 +1,35 @@
+# Sidekiq: syncs, imports, market data and scheduled jobs. Same image, env and
+# secrets as the web HomelabApp (homelabapp.yaml); bump both tags together.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sure-worker
+  namespace: sure
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sure-worker
+  template:
+    metadata:
+      labels:
+        app: sure-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/we-promise/sure:0.7.6-hotfix.1
+          command: ["bundle", "exec", "sidekiq"]
+          envFrom:
+            - secretRef: {name: sure-1pw}
+            - secretRef: {name: sure-env}
+            - secretRef: {name: garage-sure}
+            - secretRef: {name: mailgun}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 384Mi
+            limits:
+              cpu: 2000m
+              memory: 1536Mi

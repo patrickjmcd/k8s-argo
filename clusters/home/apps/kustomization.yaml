@@ -30,6 +30,7 @@ resources:
   - minecraft.yaml
   - romm.yaml
   - tracearr.yaml
+  - sure.yaml
   - unifi-toolkit.yaml
   - homebridge.yaml
   - sonos-analyzer.yaml

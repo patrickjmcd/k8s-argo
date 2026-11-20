@@ -41,6 +41,13 @@ BUCKETS = [
         "key_secret": os.environ["OUTLINE_SECRET_ACCESS_KEY"],
         "cors_origins": ["https://outline.pmcd.dev"],
     },
+    {
+        "name": "sure",
+        "key_name": "sure",
+        "key_id": os.environ["SURE_ACCESS_KEY_ID"],
+        "key_secret": os.environ["SURE_SECRET_ACCESS_KEY"],
+        "cors_origins": ["https://sure.x.pmcd.io"],
+    },
 ]
 
 
