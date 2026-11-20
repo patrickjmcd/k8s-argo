@@ -9,7 +9,7 @@ metadata:
   name: sure
   namespace: sure
 spec:
-  image: ghcr.io/we-promise/sure:0.7.6-hotfix.1
+  image: ghcr.io/we-promise/sure:0.7.6
   port: 80
   containerPort: 3000
   # From vaults/Kubernetes/items/sure: SECRET_KEY_BASE (also derives the

@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: ghcr.io/we-promise/sure:0.7.6-hotfix.1
+          image: ghcr.io/we-promise/sure:0.7.6
           command: ["bundle", "exec", "sidekiq"]
           envFrom:
             - secretRef: {name: sure-1pw}
