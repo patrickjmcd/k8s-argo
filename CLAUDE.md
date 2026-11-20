@@ -253,13 +253,23 @@ For media and shared files. CSI driver in `csi-smb-provisioner` namespace. PV na
 
 ## Kyverno Policies
 
+Policies are CEL `MutatingPolicy`/`ValidatingPolicy` (`policies.kyverno.io/v1`) since
+Nov 2026 -- Kyverno 1.20 no longer runs legacy `ClusterPolicy`. Lessons from the migration:
+autogen is ON by default for policies matching pods (set `autogen.podControllers.controllers: []`),
+autogen doesn't rewrite JSONPatch paths, ApplyConfiguration can't set atomic lists (affinity,
+tolerations), and a JSONPatch `value` that rebuilds objects with `?field:` or concatenates the
+object's own list with new entries panics the webhook (every policy in that call fails) -- use
+targeted `add .../-` / index `replace` ops. All policies use `failurePolicy: Ignore`. Test a
+change as a copy scoped to a scratch namespace with `failurePolicy: Fail`, driven by
+`kubectl create --dry-run=server` (admission webhooks run on server dry-run).
+
 Kyverno mutates pods automatically:
 - **node-failure-tolerations**: Adds 30s tolerations for `node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable` to all pods except `longhorn-system` (an evicted instance-manager kills every engine on the node with filesystems mounted; Oct 29 2026 a router reboot corrupted two volumes that way)
 - **pi5-preference**: Scheduling preference for Pi 5 nodes
 - **goldilocks-namespace-label**: Auto-labels namespaces for VPA recommendations
 
 Audit-only (never blocks admission):
-- **cpu-limit-guard**: Flags containers with a CPU limit under 100m. See "Resource requests and limits" below. Findings: `kubectl get polr -A | grep cpu-limit-guard`
+- **cpu-limit-guard** (ValidatingPolicy): Flags containers with a CPU limit under 100m. See "Resource requests and limits" below. Findings: `kubectl get polr -A | grep cpu-limit-guard`
 
 Kyverno's webhooks skip `kube-system`, `kyverno` and `flux-system` (`config.webhooks` in
 `clusters/home/core/kyverno.yaml`), so a broken Kyverno can't stop Flux from recreating its

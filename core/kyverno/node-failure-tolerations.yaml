@@ -1,14 +1,8 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
 metadata:
   name: node-failure-tolerations
   annotations:
-    # Autogen deliberately disabled: this policy mutates Pods at admission
-    # only. Letting autogen also mutate Deployment/Job/etc templates would
-    # make the GitOps controller (Flux, drift detection) see permanent
-    # drift on controller specs and fight the webhook. (The old `kyverno.io/pod-controllers` annotation was the
-    # wrong name and silently left autogen enabled.)
-    pod-policies.kyverno.io/autogen-controllers: none
     policies.kyverno.io/title: Node Failure Fast Eviction
     policies.kyverno.io/category: Resiliency
     policies.kyverno.io/description: >-
@@ -20,149 +14,64 @@ metadata:
       policy rewrites exactly that value to 30. Pods declaring any other
       value (the repo convention is an explicit 30) are left alone, as are
       tolerations without tolerationSeconds (DaemonSet forever-tolerations).
-      All patches are targeted JSON patches; nothing ever replaces the
-      tolerations list, so custom tolerations (control-plane,
-      dedicated=heavy, etc.) always survive. CREATE only: pod updates permit
-      only toleration additions, so mutating on UPDATE would get the whole
-      request rejected by validation.
+      Every other toleration is carried over unchanged (control-plane,
+      dedicated=heavy, etc.); if either key is missing entirely (only if
+      DefaultTolerationSeconds were disabled) it is appended at 30s. CREATE
+      only: pod updates permit only toleration additions, so mutating on
+      UPDATE would get the whole request rejected by validation.
+      longhorn-system is excluded: an evicted instance-manager kills every
+      engine on the node with filesystems mounted (Oct 29 2026).
 spec:
-  background: false
-  rules:
-    # Safety net if DefaultTolerationSeconds is ever disabled: pods arriving
-    # with no tolerations at all get the array created with both entries.
-    - name: create-tolerations-array
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-      exclude:
-        any:
-          - resources:
-              namespaces:
-                - longhorn-system
-      preconditions:
-        all:
-          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
-            operator: Equals
-            value: 0
-      mutate:
-        patchesJson6902: |-
-          - op: add
-            path: /spec/tolerations
-            value:
-              - key: node.kubernetes.io/not-ready
-                operator: Exists
-                effect: NoExecute
-                tolerationSeconds: 30
-              - key: node.kubernetes.io/unreachable
-                operator: Exists
-                effect: NoExecute
-                tolerationSeconds: 30
-    # Same safety net for pods that have tolerations but are missing one of
-    # the pair: append only the missing entry, leaving the rest untouched.
-    - name: append-not-ready-toleration
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-      exclude:
-        any:
-          - resources:
-              namespaces:
-                - longhorn-system
-      preconditions:
-        all:
-          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
-            operator: GreaterThan
-            value: 0
-          - key: "{{ request.object.spec.tolerations[?key=='node.kubernetes.io/not-ready'] || '' }}"
-            operator: Equals
-            value: ""
-      mutate:
-        patchesJson6902: |-
-          - op: add
-            path: /spec/tolerations/-
-            value:
-              key: node.kubernetes.io/not-ready
-              operator: Exists
-              effect: NoExecute
-              tolerationSeconds: 30
-    - name: append-unreachable-toleration
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-      exclude:
-        any:
-          - resources:
-              namespaces:
-                - longhorn-system
-      preconditions:
-        all:
-          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
-            operator: GreaterThan
-            value: 0
-          - key: "{{ request.object.spec.tolerations[?key=='node.kubernetes.io/unreachable'] || '' }}"
-            operator: Equals
-            value: ""
-      mutate:
-        patchesJson6902: |-
-          - op: add
-            path: /spec/tolerations/-
-            value:
-              key: node.kubernetes.io/unreachable
-              operator: Exists
-              effect: NoExecute
-              tolerationSeconds: 30
-    # The rule that does the real work: DefaultTolerationSeconds has already
-    # added the pair at 300s to any pod that didn't declare them, so shorten
-    # exactly those to 30s. tolerationSeconds values other than 300 are
-    # explicit declarations and are preserved; entries without
-    # tolerationSeconds (tolerate-forever) are never touched.
-    - name: shorten-default-eviction-window
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-      exclude:
-        any:
-          - resources:
-              namespaces:
-                - longhorn-system
-      preconditions:
-        all:
-          - key: "{{ length(request.object.spec.tolerations || `[]`) }}"
-            operator: GreaterThan
-            value: 0
-      mutate:
-        foreach:
-          - list: request.object.spec.tolerations
-            preconditions:
-              all:
-                - key: "{{ element.key || '' }}"
-                  operator: AnyIn
-                  value:
-                    - node.kubernetes.io/not-ready
-                    - node.kubernetes.io/unreachable
-                - key: "{{ element.effect || '' }}"
-                  operator: Equals
-                  value: NoExecute
-                - key: "{{ element.tolerationSeconds || `0` }}"
-                  operator: Equals
-                  value: 300
-            patchesJson6902: |-
-              - op: replace
-                path: /spec/tolerations/{{elementIndex}}/tolerationSeconds
-                value: 30
+  # Pods only: mutating Deployment/Job templates too would make Flux see
+  # permanent drift and fight the webhook. Autogen is on by default for a
+  # policy matching pods, so it is turned off explicitly.
+  autogen:
+    podControllers:
+      controllers: []
+  # Ignore, not Fail: if the webhook ever errors, a pod keeps the 300s
+  # default instead of every pod creation in the cluster being rejected.
+  # (Nov 2026: a first draft that rebuilt tolerations with `?field:` optional
+  # entries panicked Kyverno 1.19's handler on every pod -- hence the
+  # index-based patches below.)
+  failurePolicy: Ignore
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: false
+    mutateExisting:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE]
+        resources: [pods]
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: [longhorn-system]
+  variables:
+    - name: tols
+      expression: "has(object.spec.tolerations) ? object.spec.tolerations : []"
+    - name: keys
+      expression: "['node.kubernetes.io/not-ready', 'node.kubernetes.io/unreachable']"
+    - name: missing
+      expression: >-
+        variables.keys.filter(k, !variables.tols.exists(t, has(t.key) && t.key == k))
+  mutations:
+    # Targeted patches only; the tolerations list is never replaced, so custom
+    # tolerations always survive.
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          lists.range(size(variables.tols)).filter(i,
+              has(variables.tols[i].key) && variables.tols[i].key in variables.keys &&
+              has(variables.tols[i].effect) && variables.tols[i].effect == 'NoExecute' &&
+              has(variables.tols[i].tolerationSeconds) && variables.tols[i].tolerationSeconds == 300)
+            .map(i, JSONPatch{op: "replace", path: "/spec/tolerations/" + string(i) + "/tolerationSeconds", value: 30})
+          + (size(variables.tols) == 0 && size(variables.missing) > 0
+              ? [JSONPatch{op: "add", path: "/spec/tolerations", value: []}] : [])
+          + variables.missing.map(k, JSONPatch{op: "add", path: "/spec/tolerations/-",
+              value: Object.spec.tolerations{key: k, operator: "Exists", effect: "NoExecute", tolerationSeconds: 30}})

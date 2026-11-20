@@ -5,6 +5,10 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
+  # The DaemonSet rolls one node at a time across all 10 nodes; the default
+  # 5m wait timed out mid-roll on 1.16.0 (Nov 2026) and left the release
+  # failed although the rollout finished.
+  timeout: 15m
   releaseName: alloy
   targetNamespace: loki
   storageNamespace: loki

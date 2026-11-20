@@ -1,9 +1,8 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
 metadata:
   name: trivy-server-liveness-patience
   annotations:
-    pod-policies.kyverno.io/autogen-controllers: none
     policies.kyverno.io/title: Trivy Server Liveness Patience
     policies.kyverno.io/category: Resiliency
     policies.kyverno.io/description: >-
@@ -19,23 +18,35 @@ metadata:
       is unaffected since the probe still fails fast once something is actually
       broken, just with a longer leash.
 spec:
-  background: false
-  rules:
-    - name: relax-trivy-server-liveness
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-              namespaces:
-                - trivy-system
-              selector:
-                matchLabels:
-                  app.kubernetes.io/name: trivy-server
-      mutate:
-        patchesJson6902: |-
-          - op: replace
-            path: /spec/containers/0/livenessProbe/failureThreshold
-            value: 60
+  # Pods only: the StatefulSet stays as the chart renders it.
+  autogen:
+    podControllers:
+      controllers: []
+  failurePolicy: Ignore
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: false
+    mutateExisting:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE]
+        resources: [pods]
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: trivy-system
+    objectSelector:
+      matchLabels:
+        app.kubernetes.io/name: trivy-server
+  matchConditions:
+    - name: has-liveness-probe
+      expression: "has(object.spec.containers[0].livenessProbe)"
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          [JSONPatch{op: "replace", path: "/spec/containers/0/livenessProbe/failureThreshold", value: 60}]

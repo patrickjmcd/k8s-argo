@@ -1,63 +1,61 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
 metadata:
   name: prefer-pi5-nodes
-  # No `kyverno.io/pod-controllers: none` annotation — it looked like it
-  # should suppress autogen (mutate only bare Pods), but the live
-  # ClusterPolicy's status.autogen.rules showed it doesn't in this Kyverno
-  # chart version (confirmed 2026-09-11 while debugging a Grafana
-  # scheduling issue). Autogen is actually wanted here anyway: almost
-  # everything in this cluster is a Deployment/DaemonSet/StatefulSet, not
-  # a bare Pod, so without autogen this policy would barely apply to
-  # anything.
 spec:
-  validationFailureAction: Audit
-  background: false
-  rules:
-    - name: prefer-pi5-if-no-scheduling-constraints
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      # Don't stomp on pods that already declare scheduling intent.
-      preconditions:
-        all:
-          - key: "{{ request.object.spec.nodeSelector || '' }}"
-            operator: Equals
-            value: ""
-          - key: "{{ request.object.spec.affinity || '' }}"
-            operator: Equals
-            value: ""
-      mutate:
-        patchStrategicMerge:
-          spec:
-            affinity:
-              nodeAffinity:
-                # The scheduler normalizes preferred-affinity scores against
-                # the best node, so only the ratio between nodes matters. The
-                # old weights (Pi5 80 + not-Pi4 50) scored Pi5 100 / x86 38 /
-                # Pi4 0, which outvoted free resources: by Oct 2026 the Pi5s
-                # carried 61-65% memory requests and crashed under load while
-                # the Pi4s sat at 68% free. (The Sep 2026 Pi4 CPU saturation
-                # was argocd-application-controller; Argo CD has since been
-                # replaced by Flux.)
-                #
-                # Now: every node gets the 80 baseline and Pi5s a 20 bonus, so
-                # Pi5 100 / everything else 80. Pi5 wins ties, but free
-                # memory/CPU (NodeResourcesFit) decides when they're fuller.
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 80
-                    preference:
-                      matchExpressions:
-                        - key: kubernetes.io/os
-                          operator: In
-                          values:
-                            - linux
-                  - weight: 20
-                    preference:
-                      matchExpressions:
-                        - key: node.kubernetes.io/pi-model
-                          operator: In
-                          values:
-                            - "5"
+  # Pods only. The legacy ClusterPolicy also mutated controller templates
+  # (autogen), but that isn't needed: every pod is admitted on its own. CEL
+  # autogen can't do this one anyway -- it rewrites object.spec references
+  # but not JSONPatch paths, and ApplyConfiguration may not set the atomic
+  # affinity lists. Templates that already carry this affinity keep it: the
+  # webhook-added field has no managedFields owner (86 of 89 controllers,
+  # Nov 2026), so Flux/kro/Helm applies never remove it.
+  autogen:
+    podControllers:
+      controllers: []
+  # A preference, not a requirement: never block admission over it.
+  failurePolicy: Ignore
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: false
+    mutateExisting:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE]
+        resources: [pods]
+  # Don't stomp on pods that already declare scheduling intent.
+  matchConditions:
+    - name: no-scheduling-constraints
+      expression: >-
+        (!has(object.spec.nodeSelector) || size(object.spec.nodeSelector) == 0) &&
+        !has(object.spec.affinity)
+  mutations:
+    # The scheduler normalizes preferred-affinity scores against the best
+    # node, so only the ratio between nodes matters. The old weights (Pi5 80
+    # + not-Pi4 50) scored Pi5 100 / x86 38 / Pi4 0, which outvoted free
+    # resources: by Oct 2026 the Pi5s carried 61-65% memory requests and
+    # crashed under load while the Pi4s sat at 68% free.
+    #
+    # Now: every node gets the 80 baseline and Pi5s a 20 bonus, so Pi5 100 /
+    # everything else 80. Pi5 wins ties, but free memory/CPU
+    # (NodeResourcesFit) decides when they're fuller.
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          [JSONPatch{op: "add", path: "/spec/affinity", value: Object.spec.affinity{
+            nodeAffinity: Object.spec.affinity.nodeAffinity{
+              preferredDuringSchedulingIgnoredDuringExecution: [
+                Object.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution{
+                  weight: 80,
+                  preference: Object.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution.preference{
+                    matchExpressions: [Object.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution.preference.matchExpressions{key: "kubernetes.io/os", operator: "In", values: ["linux"]}]}},
+                Object.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution{
+                  weight: 20,
+                  preference: Object.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution.preference{
+                    matchExpressions: [Object.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution.preference.matchExpressions{key: "node.kubernetes.io/pi-model", operator: "In", values: ["5"]}]}}
+              ]}}}]

@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
 metadata:
   name: add-goldilocks-label
   annotations:
@@ -10,25 +10,33 @@ metadata:
       to all namespaces except system namespaces, enabling resource
       recommendations via Goldilocks.
 spec:
-  rules:
-    - name: add-goldilocks-label
-      match:
-        any:
-          - resources:
-              kinds:
-                - Namespace
-      exclude:
-        any:
-          - resources:
-              names:
-                - kube-system
-                - kube-public
-                - kube-node-lease
-                - longhorn-system
-                - vpa
-                - goldilocks
-      mutate:
-        patchStrategicMerge:
-          metadata:
-            labels:
-              goldilocks.fairwinds.com/enabled: "true"
+  failurePolicy: Ignore
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: false
+    mutateExisting:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [namespaces]
+  matchConditions:
+    - name: not-a-system-namespace
+      expression: >-
+        !(object.metadata.name in ['kube-system', 'kube-public', 'kube-node-lease',
+          'longhorn-system', 'vpa', 'goldilocks'])
+    - name: not-labelled-yet
+      expression: >-
+        !has(object.metadata.labels) ||
+        object.metadata.labels[?'goldilocks.fairwinds.com/enabled'].orValue('') != 'true'
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          has(object.metadata.labels)
+          ? [JSONPatch{op: "add", path: "/metadata/labels/" + jsonpatch.escapeKey("goldilocks.fairwinds.com/enabled"), value: "true"}]
+          : [JSONPatch{op: "add", path: "/metadata/labels", value: {"goldilocks.fairwinds.com/enabled": "true"}}]

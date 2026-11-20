@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: cpu-limit-guard
   annotations:
@@ -45,51 +45,47 @@ metadata:
       performance smell and not always a defect -- some workloads legitimately
       want a tight cap. Findings surface in PolicyReports:
         kubectl get polr -A -o wide | grep cpu-limit-guard
+
+      Unlike the legacy ClusterPolicy, the message names the container.
 spec:
   # Audit only -- never blocks admission. See the note above before changing.
-  background: true
-  rules:
-    - name: cpu-limit-below-cfs-safe-floor
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        failureAction: Audit
-        # No {{ element.* }} here: Kyverno rejects foreach variables in a
-        # rule-level message, and foreach has no message field of its own, so
-        # the offending container cannot be named. The PolicyReport identifies
-        # the pod; `kubectl get pod <name> -o jsonpath=` the limits to find it.
-        message: >-
-          A container in this pod sets a CPU limit below 100m, which is under
-          10ms of quota per 100ms CFS period. Bursty workloads throttle badly
-          there even while averaging well below the limit, so low average
-          utilisation does not mean the limit is safe. If the number came from
-          Goldilocks it belongs in requests, not limits -- applying it as a
-          limit forms a ratchet that collapses the recommendation.
-        foreach:
-          - list: "request.object.spec.containers"
-            deny:
-              conditions:
-                all:
-                  # Containers with no CPU limit are the desired state, not a finding.
-                  - key: "{{ element.resources.limits.cpu || '' }}"
-                    operator: NotEquals
-                    value: ""
-                  - key: "{{ element.resources.limits.cpu }}"
-                    operator: LessThan
-                    value: "100m"
-          # initContainers get their own pass -- several apps here are
-          # initContainer-based (ia-ignition, lidarr, notifiarr, sabnzbd) and a
-          # throttled init container stalls every startup behind it.
-          - list: "request.object.spec.initContainers || `[]`"
-            deny:
-              conditions:
-                all:
-                  - key: "{{ element.resources.limits.cpu || '' }}"
-                    operator: NotEquals
-                    value: ""
-                  - key: "{{ element.resources.limits.cpu }}"
-                    operator: LessThan
-                    value: "100m"
+  validationActions: [Audit]
+  failurePolicy: Ignore
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: true
+  # Report on the controllers too (as the legacy policy's autogen did), so a
+  # finding points at the Deployment/CronJob to fix rather than a pod.
+  autogen:
+    podControllers:
+      controllers: [deployments, statefulsets, daemonsets, jobs, cronjobs]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  variables:
+    # initContainers count too -- several apps here are initContainer-based
+    # (ia-ignition, lidarr, notifiarr, sabnzbd) and a throttled init container
+    # stalls every startup behind it. Containers with no CPU limit are the
+    # desired state, not a finding.
+    - name: offenders
+      expression: >-
+        (object.spec.containers + (has(object.spec.initContainers) ? object.spec.initContainers : []))
+          .filter(c, has(c.resources) && has(c.resources.limits) && 'cpu' in c.resources.limits &&
+            quantity(c.resources.limits['cpu']).isLessThan(quantity('100m')))
+          .map(c, c.name)
+  validations:
+    - expression: "size(variables.offenders) == 0"
+      messageExpression: >-
+        'container(s) ' + variables.offenders.join(', ') + ' set a CPU limit below 100m, under 10ms of quota per 100ms CFS period; bursty workloads throttle badly there even while averaging well below the limit. If the number came from Goldilocks it belongs in requests, not limits.'
+      message: >-
+        A container in this pod sets a CPU limit below 100m, which is under
+        10ms of quota per 100ms CFS period. Bursty workloads throttle badly
+        there even while averaging well below the limit, so low average
+        utilisation does not mean the limit is safe. If the number came from
+        Goldilocks it belongs in requests, not limits -- applying it as a
+        limit forms a ratchet that collapses the recommendation.

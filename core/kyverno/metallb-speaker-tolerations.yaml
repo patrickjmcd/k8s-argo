@@ -1,39 +1,53 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
 metadata:
   name: metallb-speaker-control-plane-tolerations
   annotations:
-    kyverno.io/pod-controllers: none
     policies.kyverno.io/title: MetalLB Speaker Control-Plane Tolerations
     policies.kyverno.io/category: Resiliency
     policies.kyverno.io/description: >-
       Enforces master/control-plane NoSchedule tolerations on the metallb-speaker
       DaemonSet so it runs on all nodes including control-plane. A Rancher CSA
       controller continuously strips these tolerations; this policy re-adds them
-      at admission time so they survive any write to the DaemonSet.
+      at admission time so they survive any write to the DaemonSet. Missing
+      entries are appended; other tolerations are left alone.
 spec:
-  validationFailureAction: Audit
-  background: false
-  rules:
-    - name: add-control-plane-tolerations
-      match:
-        any:
-          - resources:
-              kinds:
-                - DaemonSet
-              names:
-                - metallb-speaker
-              namespaces:
-                - metallb-system
-      mutate:
-        patchStrategicMerge:
-          spec:
-            template:
-              spec:
-                tolerations:
-                  - key: node-role.kubernetes.io/master
-                    effect: NoSchedule
-                    operator: Exists
-                  - key: node-role.kubernetes.io/control-plane
-                    effect: NoSchedule
-                    operator: Exists
+  # Ignore: a Kyverno error then skips one write (the next write re-adds the
+  # tolerations) instead of blocking every write to the DaemonSet.
+  failurePolicy: Ignore
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: false
+    mutateExisting:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [apps]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [daemonsets]
+        resourceNames: [metallb-speaker]
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: metallb-system
+  variables:
+    - name: tols
+      expression: >-
+        has(object.spec.template.spec.tolerations) ? object.spec.template.spec.tolerations : []
+    - name: missing
+      expression: >-
+        ['node-role.kubernetes.io/master', 'node-role.kubernetes.io/control-plane'].filter(k,
+          !variables.tols.exists(t, has(t.key) && t.key == k && has(t.effect) && t.effect == 'NoSchedule'))
+  mutations:
+    # Append-only: other tolerations are never touched. (One op whose value
+    # concatenated the existing list with new entries panicked Kyverno 1.19,
+    # Nov 2026 -- keep these as separate add operations.)
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (size(variables.tols) == 0 && size(variables.missing) > 0
+              ? [JSONPatch{op: "add", path: "/spec/template/spec/tolerations", value: []}] : [])
+          + variables.missing.map(k, JSONPatch{op: "add", path: "/spec/template/spec/tolerations/-",
+              value: Object.spec.template.spec.tolerations{key: k, operator: "Exists", effect: "NoSchedule"}})
