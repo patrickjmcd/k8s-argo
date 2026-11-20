@@ -32,15 +32,24 @@ spec:
       remediateLastFailure: false
   driftDetection:
     mode: enabled
+  # The chart ships its CRDs as templates (not crds/), so an uninstall would
+  # delete them and every policy with them. Keep them. A patch rather than
+  # crds.annotations / kyverno-api.annotations values: chart 3.10 hard-codes
+  # the annotation on the kyverno.io CRDs, and the value then rendered it a
+  # second time (duplicate key, post-render failed).
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: CustomResourceDefinition
+            patch: |
+              apiVersion: apiextensions.k8s.io/v1
+              kind: CustomResourceDefinition
+              metadata:
+                name: ignored
+                annotations:
+                  helm.sh/resource-policy: keep
   values:
-    # The chart ships its CRDs as templates (not crds/), so an uninstall would
-    # delete them and every policy with them. Keep them.
-    crds:
-      annotations:
-        helm.sh/resource-policy: keep
-    kyverno-api:
-      annotations:
-        helm.sh/resource-policy: keep
     config:
       preserve: false
       # Webhooks skip these namespaces (the chart appends kyverno itself).
