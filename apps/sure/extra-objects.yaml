@@ -10,8 +10,8 @@ type: Opaque
 stringData:
   TZ: America/Chicago
   SELF_HOSTED: "true"
-  # "open" so the first account can be created; set "closed" afterwards.
-  ONBOARDING_STATE: open
+  # Only the env default for the setting; a value saved in the admin UI wins.
+  ONBOARDING_STATE: closed
   APP_DOMAIN: sure.x.pmcd.io
   # TLS ends at Traefik.
   RAILS_ASSUME_SSL: "true"
@@ -40,6 +40,13 @@ stringData:
   OIDC_ISSUER: https://auth.pmcd.dev
   OIDC_REDIRECT_URI: https://sure.x.pmcd.io/auth/openid_connect/callback
   OIDC_BUTTON_LABEL: Sign in with PocketID
+  # PocketID only. Linking a PocketID login to an existing account still asks
+  # for that account's password once (oidc_accounts#create_link), so this
+  # can't lock anyone out.
+  AUTH_LOCAL_LOGIN_ENABLED: "false"
+  # A first PocketID login must link to an existing account; without this
+  # any PocketID user gets a new account, whatever ONBOARDING_STATE says.
+  AUTH_JIT_MODE: link_only
 ---
 # S3 key for the Garage bucket; also synced into the garage namespace, where
 # the bootstrap Job imports it.
