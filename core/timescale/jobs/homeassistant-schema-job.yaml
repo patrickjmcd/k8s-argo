@@ -12,7 +12,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: psql
-          image: postgres:18-alpine
+          image: postgres:19-alpine
           env:
             - name: PGHOST
               value: timescale-rw
