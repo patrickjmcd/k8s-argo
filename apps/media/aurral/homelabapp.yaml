@@ -13,7 +13,7 @@ metadata:
   name: aurral
   namespace: media
 spec:
-  image: ghcr.io/lklynet/aurral:3.0.0
+  image: ghcr.io/lklynet/aurral:3.0.1
   port: 80
   containerPort: 3001
   env:
