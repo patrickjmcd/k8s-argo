@@ -193,6 +193,8 @@ spec:
                         url: https://tautulli.x.pmcd.io
                       - title: Tracearr
                         url: https://tracearr.x.pmcd.io
+                      - title: WatchState
+                        url: https://watchstate.x.pmcd.io
                       - title: Youtarr
                         url: https://youtarr.x.pmcd.io
                       # END GLANCE-GENERATED:Media Services

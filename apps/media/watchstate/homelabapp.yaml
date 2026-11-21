@@ -1,0 +1,41 @@
+# WatchState: syncs played/unplayed state and progress between Plex
+# (192.168.1.210) and Jellyfin, so Jellyfin watches show up in Plex -- which is
+# what Maintainerr reads. Backends, tokens and sync direction are configured in
+# its UI (stored on the PVC). First run: import Plex first, add Jellyfin with
+# import off, then turn on two-way.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: watchstate
+  namespace: media
+spec:
+  image: ghcr.io/arabcoders/watchstate:v1.11.0
+  port: 80
+  containerPort: 8080
+  env:
+    TZ: America/Chicago
+    # Its conflict resolution compares timestamps; keep it on the servers' zone.
+    WS_TZ: America/Chicago
+  # The image runs as user (uid 1000); fsGroup makes the volume writable for it.
+  securityContext:
+    fsGroup: 1000
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 192Mi
+    # The import task walks both libraries; give it room.
+    cpuLimit: 1000m
+    memoryLimit: 1Gi
+  probes:
+    type: httpGet
+    path: /v1/api/system/healthcheck
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - watchstate.x.pmcd.io
+  persistence:
+    claimName: longhorn-watchstate-data
+    mountPath: /config
+  glance:
+    monitor: true
+    title: WatchState

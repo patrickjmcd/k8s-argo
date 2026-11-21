@@ -43,6 +43,7 @@ spec:
     - app: calibre-web
     - app: shelfmark
     - app: maintainerr
+    - app: watchstate
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
