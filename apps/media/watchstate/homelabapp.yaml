@@ -16,6 +16,10 @@ spec:
     TZ: America/Chicago
     # Its conflict resolution compares timestamps; keep it on the servers' zone.
     WS_TZ: America/Chicago
+    # The scheduled sync; both are off by default. Import pulls from both
+    # servers on the hour, export pushes changes at :30.
+    WS_CRON_IMPORT: "1"
+    WS_CRON_EXPORT: "1"
   # The image runs as user (uid 1000); fsGroup makes the volume writable for it.
   securityContext:
     fsGroup: 1000
