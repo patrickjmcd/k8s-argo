@@ -344,6 +344,22 @@ sudo cp /usr/lib/cni/* /opt/cni/bin/
 
 Also install the storage clients so CSI mounts work: `nfs-common` and `cifs-utils`.
 
+**Spegel (image sharing between nodes)** -- k3s's embedded registry mirror is on
+(Nov 2026): containerd asks the other nodes for an image before going to the
+registry. Host config, not in git. Every node has
+`/etc/rancher/k3s/registries.yaml`:
+
+```yaml
+mirrors:
+  "*":
+```
+
+and each server's `/etc/rancher/k3s/config.yaml` has `embedded-registry: true`;
+restart k3s / k3s-agent after changing either. A new node needs the file before
+it joins, or it neither shares nor uses peers' images (it still pulls fine).
+Nodes talk on TCP 5001 (p2p) and 6443 (registry). `latest` tags are never
+shared, and an image pulled with a pull secret becomes readable by every node.
+
 **No flannel leftovers** — a node that ever ran flannel keeps its host state until cleaned or rebooted: a `cni0` bridge holding the `.1` of the node's pod CIDR, `flannel.1`, `/etc/cni/net.d/10-flannel.conflist`, `/run/flannel` and `FLANNEL-*` iptables chains. The stale `cni0` is not cosmetic: Cilium (`ipam.mode: kubernetes`) hands out the same `.1`, and a pod that gets it can't receive replies because the host owns that address — seen Sept 2026 as a Traefik pod on `pi5-kube2` crashlooping on "timed out waiting for controller caches to sync". Clean-up steps are in `docs/cilium-migration.md` §6.5.
 
 **inotify instance limit** — `fs.inotify.max_user_instances` is a per-UID limit shared by every root-owned container on the node (not namespaced per-pod), and most system/sidecar containers run as root. A node hosting many containers with fsnotify-based watchers (config reloaders, log tailers, etc.) can silently approach the default cap of 128 as container density grows, at which point the next container to request an inotify instance crash-loops with `OSError: [Errno 24] inotify instance limit reached` — a red herring that looks like an app bug. Confirmed on `pi5-kube0/1/2` in Sept 2026 (91, 72, and 127 of 128 respectively) when the `youtubedl` postprocessor's `watchdog` Observer tipped `pi5-kube2` over the edge. It recurred in Sept 2026 via Grafana Alloy (`clusters/home/core/alloy.yaml`, tails every pod's log file over inotify) exhausting the limit and breaking Argo CD's CronJob log stream (Argo was still in use then).
