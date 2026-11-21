@@ -1,0 +1,40 @@
+# Maintainerr: rule-based cleanup of unwatched media. Talks only to the APIs of
+# Plex (192.168.1.210), Seerr, Radarr, Sonarr and Tautulli -- configured in its
+# UI -- and deletes through them, so it needs no media mount.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: maintainerr
+  namespace: media
+spec:
+  image: ghcr.io/maintainerr/maintainerr:3.33.0
+  port: 80
+  containerPort: 6246
+  env:
+    TZ: America/Chicago
+  # The image runs as node (uid 1000); fsGroup makes the volume writable for it.
+  securityContext:
+    fsGroup: 1000
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 768Mi
+  probes:
+    type: httpGet
+    # Pings the database; the image's own HEALTHCHECK uses it.
+    path: /api/health/ready
+    startup:
+      # First boot runs migrations.
+      failureThreshold: 60
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - maintainerr.x.pmcd.io
+  persistence:
+    claimName: longhorn-maintainerr-data
+    mountPath: /opt/data
+  glance:
+    monitor: true
+    title: Maintainerr

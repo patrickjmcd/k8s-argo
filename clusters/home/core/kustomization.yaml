@@ -15,6 +15,7 @@ resources:
   - monitoring.yaml
   - helm-repositories.yaml
   - reloader.yaml
+  - descheduler.yaml
   - vpa.yaml
   - goldilocks.yaml
   - headlamp.yaml

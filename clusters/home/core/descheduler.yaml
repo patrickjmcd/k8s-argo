@@ -1,0 +1,134 @@
+# Descheduler: moves pods off nodes that got crowded (e.g. everything piling
+# onto the survivors during a node outage, or the Pi 5 preference stacking
+# pi5-kube2 to 88% of its memory requests, Nov 2026). The scheduler only
+# places pods once; this evicts a few so it can place them again.
+#
+# Deliberately cautious:
+#  - a nightly CronJob, not a loop, so evictions (a brief restart for a
+#    single-replica app) happen at 3am;
+#  - pods with a PVC are never evicted (PodsWithPVC): no Longhorn
+#    detach/attach churn for stateful apps;
+#  - infrastructure namespaces are skipped entirely;
+#  - nodeFit: a pod is only evicted if it fits on another node;
+#  - at most 10 pods a night, 3 per node and 2 per namespace.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: descheduler
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: descheduler
+  targetNamespace: kube-system
+  storageNamespace: kube-system
+  chart:
+    spec:
+      chart: descheduler
+      version: 0.37.0
+      sourceRef:
+        kind: HelmRepository
+        name: descheduler
+  install:
+    serverSideApply: true
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  upgrade:
+    serverSideApply: enabled
+    crds: CreateReplace
+    remediation:
+      retries: 0
+      remediateLastFailure: false
+  driftDetection:
+    mode: enabled
+  values:
+    kind: CronJob
+    schedule: "23 3 * * *"
+    timeZone: America/Chicago
+    # A short nightly batch job: the chart's 500m request would reserve half a
+    # Pi core all day for it. The CPU limit is only a runaway guard.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+    deschedulerPolicy:
+      maxNoOfPodsToEvictTotal: 10
+      maxNoOfPodsToEvictPerNode: 3
+      maxNoOfPodsToEvictPerNamespace: 2
+      profiles:
+        - name: default
+          pluginConfig:
+            - name: DefaultEvictor
+              args:
+                nodeFit: true
+                # Leave freshly (re)scheduled pods alone.
+                minPodAge: 2h
+                podProtections:
+                  defaultDisabled:
+                    - PodsWithLocalStorage
+                  extraEnabled:
+                    - PodsWithPVC
+                namespaceLabelSelector:
+                  matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: NotIn
+                      values:
+                        - kube-system
+                        - flux-system
+                        - longhorn-system
+                        - postgres
+                        - cnpg-system
+                        - timescale
+                        - kyverno
+                        - cert-manager
+                        - metallb-system
+                        - gitea
+                        - pihole
+                        - pocketid
+                        - garage
+                        - nats
+                        - hivemq
+            - name: RemoveDuplicates
+            - name: RemovePodsHavingTooManyRestarts
+              args:
+                podRestartThreshold: 100
+                includingInitContainers: true
+            # required affinity only: pi5-preference is a preferred term, and
+            # evicting for it would fight the scheduler every night.
+            - name: RemovePodsViolatingNodeAffinity
+              args:
+                nodeAffinityType:
+                  - requiredDuringSchedulingIgnoredDuringExecution
+            - name: RemovePodsViolatingNodeTaints
+            - name: RemovePodsViolatingInterPodAntiAffinity
+            - name: RemovePodsViolatingTopologySpreadConstraint
+            # Percent of allocatable, by requests. A node below all of
+            # `thresholds` can take pods; one above any `targetThresholds` gives
+            # them up. Nov 2026: pi5-kube2 (88% memory) is the only node over;
+            # macbook-debian and the two smaller control-plane nodes are under.
+            - name: LowNodeUtilization
+              args:
+                thresholds:
+                  cpu: 35
+                  memory: 35
+                  pods: 40
+                targetThresholds:
+                  cpu: 70
+                  memory: 70
+                  pods: 70
+          plugins:
+            balance:
+              enabled:
+                - RemoveDuplicates
+                - RemovePodsViolatingTopologySpreadConstraint
+                - LowNodeUtilization
+            deschedule:
+              enabled:
+                - RemovePodsHavingTooManyRestarts
+                - RemovePodsViolatingNodeTaints
+                - RemovePodsViolatingNodeAffinity
+                - RemovePodsViolatingInterPodAntiAffinity

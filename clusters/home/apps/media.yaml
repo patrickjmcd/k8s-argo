@@ -42,6 +42,7 @@ spec:
     - app: aurral
     - app: calibre-web
     - app: shelfmark
+    - app: maintainerr
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
