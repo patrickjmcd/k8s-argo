@@ -165,6 +165,8 @@ spec:
                         url: https://dispatcharr.x.pmcd.io
                       - title: Jellyfin
                         url: https://jellyfin.x.pmcd.io
+                      - title: Koito
+                        url: https://koito.x.pmcd.io
                       - title: Lidarr
                         url: https://lidarr.x.pmcd.io
                       - title: Maintainerr
@@ -199,6 +201,8 @@ spec:
                         url: https://watchstate.x.pmcd.io
                       - title: Youtarr
                         url: https://youtarr.x.pmcd.io
+                      - title: multi-scrobbler
+                        url: https://multi-scrobbler.x.pmcd.io
                       # END GLANCE-GENERATED:Media Services
 
               - size: full

@@ -25,8 +25,10 @@ spec:
         - https://books.x.pmcd.io
         - https://dispatcharr.x.pmcd.io
         - https://jellyfin.x.pmcd.io
+        - https://koito.x.pmcd.io
         - https://lidarr.x.pmcd.io
         - https://maintainerr.x.pmcd.io
+        - https://multi-scrobbler.x.pmcd.io
         - https://music.x.pmcd.io
         - https://navidrome.x.pmcd.io
         - https://prowlarr.x.pmcd.io

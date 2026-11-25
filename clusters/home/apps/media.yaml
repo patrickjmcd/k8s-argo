@@ -44,6 +44,8 @@ spec:
     - app: shelfmark
     - app: maintainerr
     - app: watchstate
+    - app: koito
+    - app: multi-scrobbler
   resources:
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization

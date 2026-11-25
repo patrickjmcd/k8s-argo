@@ -1,0 +1,47 @@
+# Koito: self-hosted scrobble server (ListenBrainz API) holding the listening
+# history from Navidrome (its ListenBrainz scrobbler points here, see
+# apps/media/navidrome) and Spotify (via apps/media/multi-scrobbler). Has a
+# yearly "Rewind" view -- the Spotify Wrapped replacement.
+#
+# SQLite on the PVC (Koito dropped Postgres in v0.2.1). The admin user is
+# created on first start from KOITO_DEFAULT_PASSWORD (1Password item "koito");
+# changing that field later does nothing. Scrobble API keys: Settings (or the
+# "\" key) -> API Keys.
+#
+# Imports: copy export files into /etc/koito/import and restart the pod. The
+# filename picks the importer: "Streaming_History_Audio" (Spotify extended
+# history), "recenttracks" (Last.fm via lastfm.ghan.nl/export), "listenbrainz"
+# (.zip), "maloja". MusicBrainz lookups run at 1 req/s, so big imports take hours.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: koito
+  namespace: media
+spec:
+  image: gabehf/koito:v0.3.2
+  port: 80
+  containerPort: 4110
+  env:
+    KOITO_FORCE_TZ: America/Chicago
+    KOITO_DEFAULT_USERNAME: patrickjmcd
+  onePassword:
+    enabled: true
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 128Mi
+    # Imports and image fetching are bursty; this is a runaway guard only.
+    cpuLimit: "1"
+    memoryLimit: 1Gi
+  # No documented health endpoint; the default tcpSocket probe on 4110.
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - koito.x.pmcd.io
+  persistence:
+    claimName: longhorn-koito-data
+    mountPath: /etc/koito
+  glance:
+    monitor: true
+    title: Koito

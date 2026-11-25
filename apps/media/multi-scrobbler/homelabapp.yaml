@@ -1,0 +1,47 @@
+# multi-scrobbler: polls Spotify's recently-played and scrobbles it to Koito
+# (apps/media/koito). Navidrome scrobbles to Koito directly, not through here.
+#
+# 1Password item "multi-scrobbler": SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET
+# from a Spotify developer app (must be owned by a Premium account since Mar
+# 2026; redirect URI below), KOITO_TOKEN = a Koito API key. After the first
+# start, authorize Spotify with the "(Re)authenticate" button on its card.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: multi-scrobbler
+  namespace: media
+spec:
+  image: foxxmd/multi-scrobbler:0.21.3
+  port: 80
+  containerPort: 9078
+  env:
+    TZ: America/Chicago
+    BASE_URL: https://multi-scrobbler.x.pmcd.io
+    SPOTIFY_ID: spotify
+    # Spotify only accepts https redirect URIs (or http://127.0.0.1).
+    SPOTIFY_REDIRECT_URI: https://multi-scrobbler.x.pmcd.io/callback
+    KOITO_ID: koito
+    KOITO_URL: http://koito.media.svc.cluster.local
+    KOITO_USER: patrickjmcd
+  onePassword:
+    enabled: true
+  # The image runs as 65532; fsGroup makes /config writable for it.
+  securityContext:
+    fsGroup: 65532
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 192Mi
+    cpuLimit: "1"
+    memoryLimit: 768Mi
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - multi-scrobbler.x.pmcd.io
+  persistence:
+    claimName: longhorn-multi-scrobbler-data
+    mountPath: /config
+  glance:
+    monitor: true
+    title: multi-scrobbler

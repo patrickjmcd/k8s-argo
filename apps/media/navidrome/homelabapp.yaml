@@ -17,6 +17,11 @@ spec:
     ND_SCANNER_SCHEDULE: "@every 1h"
     ND_SCANNER_WATCHERWAIT: "0"
     ND_ENABLEINSIGHTSCOLLECTOR: "false"
+    # Scrobble to Koito (apps/media/koito) instead of listenbrainz.org. Each user
+    # turns it on in Settings -> Personal -> Scrobble to ListenBrainz, with a
+    # Koito API key as the token.
+    ND_LISTENBRAINZ_ENABLED: "true"
+    ND_LISTENBRAINZ_BASEURL: http://koito.media.svc.cluster.local/apis/listenbrainz/1
   resources:
     cpuRequest: 25m
     memoryRequest: 192Mi
