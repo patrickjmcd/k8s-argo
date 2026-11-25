@@ -33,12 +33,17 @@ spec:
       - obsidian-sync.pmcd.dev
   onePassword:
     enabled: true
-  # LiveSync's required settings, as an extra ini next to the entrypoint's
-  # docker.ini (local.d must stay writable, so mount one file, not the dir).
+  # LiveSync's required settings, copied into local.d next to the
+  # entrypoint's docker.ini. Not mounted there: the entrypoint chowns
+  # everything under /opt/couchdb under `set -e`, and a read-only mount makes
+  # it exit 1 silently. Then the image's own entrypoint and command.
+  command: ["sh", "-c"]
+  args:
+    - cp /config/livesync.ini /opt/couchdb/etc/local.d/livesync.ini &&
+      exec tini -- /docker-entrypoint.sh /opt/couchdb/bin/couchdb
   configMap:
     enabled: true
-    mountPath: /opt/couchdb/etc/local.d/livesync.ini
-    subPath: livesync.ini
+    mountPath: /config
     data:
       livesync.ini: |
         [couchdb]
