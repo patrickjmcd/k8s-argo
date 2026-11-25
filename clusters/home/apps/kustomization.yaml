@@ -39,6 +39,7 @@ resources:
   - sparkyfitness.yaml
   - sparkyfitness-server.yaml
   - speech-to-phrase.yaml
+  - silverbullet.yaml
   - voice-assistant.yaml
   - n8n.yaml
   - ntfy.yaml

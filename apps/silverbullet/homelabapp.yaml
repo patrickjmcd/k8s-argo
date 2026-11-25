@@ -1,0 +1,40 @@
+# SilverBullet 3: trial alongside Outline (Nov 2026), seeded with a copy of
+# the BWDG collection. Outline stays the source of truth during the trial.
+#
+# v3 has no single-space mode: /data is the server's data root (spaces.json,
+# users.json, search index). Accounts and spaces are managed at /.dashboard;
+# the first visit to an empty data root runs a setup wizard that creates the
+# admin, so finish it right after the first deploy. LAN/tailnet only.
+# The BWDG notes are copied to /data/notes; create a space pointing at that
+# folder (an existing folder gets no starter content).
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: silverbullet
+  namespace: default
+spec:
+  image: ghcr.io/silverbulletmd/silverbullet:3.0.0
+  port: 80
+  containerPort: 3000
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 1Gi
+  probes:
+    type: httpGet
+    # The image's own healthcheck endpoint; answers without a session.
+    path: /.instance
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - silverbullet.x.pmcd.io
+  persistence:
+    claimName: longhorn-silverbullet-data
+    mountPath: /data
+  env:
+    TZ: America/Chicago
+    SB_UPDATE_CHECK: '0'
+  glance:
+    monitor: true
