@@ -1,0 +1,73 @@
+# CouchDB as the sync server for Obsidian's Self-hosted LiveSync plugin.
+#
+# Public (Cloudflare Tunnel) so the phone syncs anywhere; CouchDB itself
+# requires a login on every request (require_valid_user). Turn on the
+# plugin's end-to-end encryption so the server only ever stores ciphertext.
+#
+# Admin login: COUCHDB_USER / COUCHDB_PASSWORD from 1Password item
+# vaults/Kubernetes/items/couchdb (synced as couchdb-1pw). The image's
+# entrypoint writes them into local.d/docker.ini on start.
+apiVersion: homelab.pmcd.io/v1alpha1
+kind: HomelabApp
+metadata:
+  name: couchdb
+  namespace: default
+spec:
+  image: couchdb:3.5.3
+  port: 80
+  containerPort: 5984
+  resources:
+    cpuRequest: 25m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 1Gi
+  # tcpSocket probes (the default): with require_valid_user every HTTP
+  # endpoint, /_up included, answers 401 without credentials.
+  probes:
+    liveness:
+      enabled: true
+  route:
+    hostnames:
+      - couchdb.x.pmcd.io
+    publicHostnames:
+      - obsidian-sync.pmcd.dev
+  onePassword:
+    enabled: true
+  # LiveSync's required settings, as an extra ini next to the entrypoint's
+  # docker.ini (local.d must stay writable, so mount one file, not the dir).
+  configMap:
+    enabled: true
+    mountPath: /opt/couchdb/etc/local.d/livesync.ini
+    subPath: livesync.ini
+    data:
+      livesync.ini: |
+        [couchdb]
+        single_node = true
+        max_document_size = 50000000
+
+        [chttpd]
+        require_valid_user = true
+        max_http_request_size = 4294967296
+        enable_cors = true
+
+        [chttpd_auth]
+        require_valid_user = true
+        authentication_redirect = /_utils/session.html
+
+        [httpd]
+        WWW-Authenticate = Basic realm="couchdb"
+        bind_address = any
+
+        [cors]
+        origins = app://obsidian.md,capacitor://localhost,http://localhost
+        credentials = true
+        headers = accept, authorization, content-type, origin, referer
+        methods = GET, PUT, POST, HEAD, DELETE
+        max_age = 3600
+  persistence:
+    claimName: longhorn-couchdb-data
+    mountPath: /opt/couchdb/data
+  env:
+    TZ: America/Chicago
+  glance:
+    monitor: true

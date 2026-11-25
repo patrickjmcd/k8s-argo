@@ -94,6 +94,8 @@ spec:
                         url: https://alertmanager.x.pmcd.io
                       - title: Barista
                         url: https://coffee.x.pmcd.io
+                      - title: Couchdb
+                        url: https://couchdb.x.pmcd.io
                       - title: Gitea
                         url: https://git.x.pmcd.io
                       - title: Grafana
