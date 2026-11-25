@@ -37,7 +37,6 @@ resources:
   - csi-driver-smb.yaml
   - csi-driver-nfs.yaml
   - node-tuning.yaml
-  - disk-audit.yaml
   - kube-vip.yaml
   - longhorn.yaml
   - cilium.yaml
