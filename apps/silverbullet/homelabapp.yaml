@@ -30,9 +30,15 @@ spec:
   route:
     hostnames:
       - silverbullet.x.pmcd.io
+  # The volume root holds ext4's lost+found, which makes v3 take /data for a
+  # v2 single-space install and boot into migration mode. Mount a subfolder.
   persistence:
     claimName: longhorn-silverbullet-data
-    mountPath: /data
+    mountPath: ""
+  extraVolumeMounts:
+    - name: data
+      mountPath: /data
+      subPath: silverbullet
   env:
     TZ: America/Chicago
     SB_UPDATE_CHECK: '0'
