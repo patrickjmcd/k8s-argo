@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - pvc.yaml
   - homelabapp.yaml
+  - backup.yaml
+configMapGenerator:
+  - name: couchdb-backup
+    namespace: default
+    files:
+      - backup.py
+generatorOptions:
+  disableNameSuffixHash: true

@@ -1,0 +1,80 @@
+# Nightly dump of the CouchDB (Obsidian LiveSync) databases to the UNAS
+# (//192.168.1.253/PGBackup/couchdb/), keeping 14 days. See backup.py.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: couchdb-backup
+  namespace: default
+spec:
+  schedule: "45 4 * * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: python:3.15-alpine
+              command: ["python3", "/scripts/backup.py"]
+              env:
+                - name: COUCHDB_USER
+                  valueFrom: {secretKeyRef: {name: couchdb-1pw, key: COUCHDB_USER}}
+                - name: COUCHDB_PASSWORD
+                  valueFrom: {secretKeyRef: {name: couchdb-1pw, key: COUCHDB_PASSWORD}}
+                - name: KEEP
+                  value: "14"
+              resources:
+                requests: {cpu: 10m, memory: 64Mi}
+                limits: {memory: 256Mi}
+              volumeMounts:
+                - {name: scripts, mountPath: /scripts, readOnly: true}
+                - {name: backup, mountPath: /backup}
+          volumes:
+            - name: scripts
+              configMap: {name: couchdb-backup}
+            - name: backup
+              persistentVolumeClaim: {claimName: smb-couchdb-backup-claim}
+---
+# The UNAS backup share (same share as the Postgres dumps). Prune=false so
+# removing this from git can never delete the PV/PVC; the share itself is
+# never touched either way (Retain).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: smb-couchdb-backup
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: ""
+  capacity: {storage: 5Gi}
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions: [dir_mode=0777, file_mode=0777, vers=3.0]
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: smb-couchdb-backup-volume-id
+    volumeAttributes:
+      source: "//192.168.1.253/PGBackup"
+    nodeStageSecretRef:
+      name: smb-creds-1pw
+      namespace: csi-smb-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-couchdb-backup-claim
+  namespace: default
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  volumeName: smb-couchdb-backup
+  resources:
+    requests: {storage: 5Gi}
