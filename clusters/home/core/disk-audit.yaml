@@ -1,0 +1,11 @@
+# One-off: report what fills media-server's root disk (85% full, Nov 2026).
+# Remove this file, its entry in kustomization.yaml and core/disk-audit/
+# once the results are read; prune deletes the Job.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: disk-audit
+  namespace: flux-system
+spec:
+  path: ./core/disk-audit
+  force: true

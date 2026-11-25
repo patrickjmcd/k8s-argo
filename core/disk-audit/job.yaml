@@ -1,0 +1,48 @@
+# Read-only disk usage report for media-server's root filesystem.
+# Host / is mounted read-only; output goes to the pod log.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: disk-audit-media-server
+  namespace: kube-system
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: media-server
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: heavy
+          effect: NoSchedule
+      containers:
+        - name: du
+          image: busybox:1.37.0
+          command:
+            - chroot
+            - /host
+            - sh
+            - -c
+            - |
+              echo "== df /"; df -h /
+              echo "== largest directories (root fs only, depth 3)"
+              du -xh --max-depth=3 / 2>/dev/null | sort -h | tail -40
+              echo "== files over 2G (root fs only)"
+              find / -xdev -type f -size +2G -printf '%s\t%p\n' 2>/dev/null | sort -n | tail -20 | numfmt --to=iec --field=1
+              echo "== journal"; du -sh /var/log/journal 2>/dev/null
+              echo "== done"
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          volumeMounts:
+            - name: host
+              mountPath: /host
+              readOnly: true
+      volumes:
+        - name: host
+          hostPath:
+            path: /
+            type: Directory
