@@ -1,0 +1,13 @@
+# Nothing connects to claude-ops (Remote Control is outbound only). Egress
+# stays open: the cluster skills call LAN hostnames (prometheus.x.pmcd.io)
+# through the gateway, and Claude needs the Anthropic API.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: claude-ops-deny-ingress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: claude-ops
+  policyTypes: [Ingress]

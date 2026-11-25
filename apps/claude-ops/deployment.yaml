@@ -1,0 +1,58 @@
+# Claude Code driven from the Claude app with Remote Control (session name
+# "homelab"). Image: github.com/patrickjmcd/claude-ops. First start waits for
+# a one-time login; see that repo's README.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claude-ops
+  namespace: default
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: claude-ops
+  template:
+    metadata:
+      labels:
+        app: claude-ops
+    spec:
+      serviceAccountName: claude-ops
+      imagePullSecrets:
+        - name: ghcr-registry-cred
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: claude
+          image: ghcr.io/patrickjmcd/claude-ops:52693a4
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: GITEA_USER
+              valueFrom: {secretKeyRef: {name: claude-ops-1pw, key: GITEA_USER}}
+            - name: GITEA_TOKEN
+              valueFrom: {secretKeyRef: {name: claude-ops-1pw, key: GITEA_TOKEN}}
+            - name: GITHUB_TOKEN
+              valueFrom: {secretKeyRef: {name: claude-ops-1pw, key: GITHUB_TOKEN}}
+          resources:
+            requests: {cpu: 50m, memory: 512Mi}
+            limits: {memory: 4Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-claude-ops-data

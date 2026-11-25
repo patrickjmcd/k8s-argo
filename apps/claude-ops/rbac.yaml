@@ -1,0 +1,72 @@
+# claude-ops (Claude Code via Remote Control) reads the cluster and changes it
+# only through git: the built-in `view` role (no Secrets), read access to the
+# cluster-scoped and CRD resources `view` leaves out, and patch on Flux
+# objects so `flux reconcile`/`suspend` work. Widening this is the agent's
+# own protected change (see its CLAUDE.md in the claude-ops image).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: claude-ops
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: claude-ops-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+  - kind: ServiceAccount
+    name: claude-ops
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: claude-ops-read
+rules:
+  - apiGroups: [""]
+    resources: [nodes, persistentvolumes, namespaces]
+    verbs: [get, list, watch]
+  - apiGroups: [storage.k8s.io, snapshot.storage.k8s.io, apiextensions.k8s.io, events.k8s.io]
+    resources: ["*"]
+    verbs: [get, list, watch]
+  - apiGroups: [metrics.k8s.io]
+    resources: [nodes, pods]
+    verbs: [get, list]
+  - apiGroups:
+      - source.toolkit.fluxcd.io
+      - kustomize.toolkit.fluxcd.io
+      - helm.toolkit.fluxcd.io
+      - notification.toolkit.fluxcd.io
+      - fluxcd.controlplane.io
+      - homelab.pmcd.io
+      - kro.run
+      - longhorn.io
+      - postgresql.cnpg.io
+      - monitoring.coreos.com
+      - gateway.networking.k8s.io
+      - kyverno.io
+      - policies.kyverno.io
+      - wgpolicyk8s.io
+      - onepassword.com
+    resources: ["*"]
+    verbs: [get, list, watch]
+  - apiGroups: [source.toolkit.fluxcd.io, kustomize.toolkit.fluxcd.io, helm.toolkit.fluxcd.io]
+    resources: [gitrepositories, helmrepositories, ocirepositories, helmcharts, kustomizations, helmreleases]
+    verbs: [patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: claude-ops-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-ops-read
+subjects:
+  - kind: ServiceAccount
+    name: claude-ops
+    namespace: default
