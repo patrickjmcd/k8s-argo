@@ -24,6 +24,10 @@ spec:
   env:
     KOITO_FORCE_TZ: America/Chicago
     KOITO_DEFAULT_USERNAME: patrickjmcd
+    # Imports only keep listens before the first play multi-scrobbler sent
+    # (2026-11-24T14:03:33Z), so the Spotify export doesn't duplicate them:
+    # the export stamps when a song ended, multi-scrobbler when it started.
+    KOITO_IMPORT_BEFORE_UNIX: "1795529013"
   onePassword:
     enabled: true
   resources:
