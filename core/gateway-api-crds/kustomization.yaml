@@ -1,0 +1,14 @@
+# Gateway API CRDs, standard channel. Vendored from
+# https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.7.0/standard-install.yaml
+# To upgrade: replace standard-install.yaml with the new release's file.
+#
+# Before Nov 2026 these came from a hand-installed Helm release
+# (`gateway-api-crd` in kube-system, v1.6.3) that was never in git; Flux took
+# the CRDs over in place. Traefik's chart does not ship them.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - standard-install.yaml
+commonAnnotations:
+  # Deleting these CRDs would delete every Gateway and HTTPRoute.
+  kustomize.toolkit.fluxcd.io/prune: disabled

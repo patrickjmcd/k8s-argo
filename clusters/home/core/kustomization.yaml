@@ -27,6 +27,7 @@ resources:
   - kubernetes-mcp-server.yaml
   - tailscale.yaml
   - kro.yaml
+  - gateway-api-crds.yaml
   - traefik.yaml
   - prometheus.yaml
   - kyverno.yaml
