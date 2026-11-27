@@ -95,7 +95,8 @@ spec:
         loadBalancerIP: 192.168.8.200
       additionalServices:
         internal:
-          type: ClusterIP
+          spec:
+            type: ClusterIP
     additionalArguments:
       - "--api.insecure=true"
       # Hide the Traefik Hub upsell in the dashboard.
