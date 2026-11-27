@@ -70,3 +70,58 @@ subjects:
   - kind: ServiceAccount
     name: claude-ops
     namespace: default
+---
+# Exec into pods, only in the namespaces bound below (requested by the user,
+# Nov 2026). Exec can read whatever a pod mounts, Secrets included, so add a
+# namespace only when it's needed. Never bind this cluster-wide.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: claude-ops-exec
+rules:
+  - apiGroups: [""]
+    resources: [pods/exec]
+    # create for SPDY exec; get for the WebSocket exec newer kubectl uses.
+    verbs: [create, get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: claude-ops-exec
+  namespace: nats
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-ops-exec
+subjects:
+  - kind: ServiceAccount
+    name: claude-ops
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: claude-ops-exec
+  namespace: media
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-ops-exec
+subjects:
+  - kind: ServiceAccount
+    name: claude-ops
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: claude-ops-exec
+  namespace: longhorn-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-ops-exec
+subjects:
+  - kind: ServiceAccount
+    name: claude-ops
+    namespace: default
