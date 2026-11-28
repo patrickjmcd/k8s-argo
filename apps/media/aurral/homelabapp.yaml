@@ -46,6 +46,10 @@ spec:
     memoryRequest: 384Mi
     cpuLimit: "2"
     memoryLimit: 1664Mi  # ~2x 14-day peak (802Mi), Nov 2026
+  # Soft-prefer macbook-debian (15 GiB, mostly free): pi5-kube2 ran out of
+  # memory on 2026-11-28 and took the shared-postgres primary with it.
+  preferredNodes:
+  - macbook-debian
   probes:
     type: httpGet
     path: /api/health/live

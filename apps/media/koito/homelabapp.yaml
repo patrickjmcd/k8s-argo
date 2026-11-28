@@ -37,6 +37,10 @@ spec:
     cpuLimit: "1"
     memoryLimit: 1Gi
   # No documented health endpoint; the default tcpSocket probe on 4110.
+  # Soft-prefer macbook-debian (15 GiB, mostly free): pi5-kube2 ran out of
+  # memory on 2026-11-28 and took the shared-postgres primary with it.
+  preferredNodes:
+  - macbook-debian
   probes:
     liveness:
       enabled: true
