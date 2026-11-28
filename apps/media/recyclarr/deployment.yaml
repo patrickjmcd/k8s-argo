@@ -103,7 +103,7 @@ spec:
           secret:
             secretName: recyclarr-1pw
             items:
-              - key: api-key
+              - key: recyclarr-api-key
                 path: api-key
         - name: state
           persistentVolumeClaim:
