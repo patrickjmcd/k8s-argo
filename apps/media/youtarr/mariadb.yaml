@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: mariadb:11.8.9
+          image: mariadb:11.8.10
           imagePullPolicy: IfNotPresent
           env:
             - name: MARIADB_DATABASE
