@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://schemas.recyclarr.dev/v8/config-schema.json
+# yaml-language-server: $schema=https://schemas.recyclarr.dev/v9/config-schema.json
 # TRaSH Guides sync (replaced Notifiarr's sync, Oct 2026). One instance per
 # app, each with both of its TRaSH profiles. Custom formats and profiles that
 # already exist are adopted by name (Recyclarr >= 8.4), so the ones Notifiarr

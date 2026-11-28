@@ -2,8 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: media
 resources:
-  - cronjob.yaml
+  - onepassword.yaml
+  - storage.yaml
+  - deployment.yaml
 configMapGenerator:
   - name: recyclarr-config
     files:
       - recyclarr.yml
+  - name: recyclarr-settings
+    files:
+      - settings.yml

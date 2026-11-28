@@ -1,0 +1,20 @@
+# Recyclarr state: which custom formats/profiles it owns in Sonarr/Radarr.
+# Upstream: "if you lose it, Recyclarr loses track of which Sonarr and Radarr
+# resources it manages", so it's in the B2 backup group.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-recyclarr-data
+  labels:
+    recurring-job-group.longhorn.io/b2-backup: enabled
+    # makes Longhorn sync the label above from this PVC to its volume
+    recurring-job.longhorn.io/source: enabled
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
