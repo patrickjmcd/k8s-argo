@@ -37,6 +37,17 @@ spec:
                   - pi5-kube1
                   - pi5-kube2
 
+  # Memory request = 14-day p95 (501Mi), limit ~2x the 14-day peak (672Mi).
+  # Without requests the scheduler didn't count Postgres at all: pi5-kube2
+  # filled up and the primary there failed over on 2026-11-28. Instances are
+  # pinned by local-path, so the node must keep this much request room free.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1536Mi
+
   enableSuperuserAccess: true
 
   postgresql:

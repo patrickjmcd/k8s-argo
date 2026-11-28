@@ -16,6 +16,14 @@ spec:
     storageClass: local-path
     size: 15Gi
   primaryUpdateMethod: switchover
+  # Memory request = 14-day p95 (315Mi), limit ~2x the 14-day peak (436Mi).
+  # See core/postgres/cluster.yaml (pi5-kube2 out of memory, 2026-11-28).
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      memory: 1Gi
   # Archive WAL and take base backups to B2 (b2-backup.yaml).
   plugins:
     - name: barman-cloud.cloudnative-pg.io
