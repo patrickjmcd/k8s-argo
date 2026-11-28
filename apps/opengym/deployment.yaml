@@ -50,7 +50,7 @@ spec:
               cpu: 10m
               memory: 128Mi
             limits:
-              memory: 512Mi
+              memory: 256Mi  # >3x 14-day peak (76Mi), Nov 2026
         - name: web
           image: opengym-web
           env:

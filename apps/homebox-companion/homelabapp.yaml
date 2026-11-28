@@ -9,9 +9,9 @@ spec:
   containerPort: 8000
   resources:
     cpuRequest: 25m
-    memoryRequest: 650Mi
+    memoryRequest: 256Mi  # 14-day peak 239Mi (was 650Mi)
     cpuLimit: 1000m
-    memoryLimit: 1Gi
+    memoryLimit: 512Mi  # ~2x peak, Nov 2026
   probes:
     liveness:
       enabled: true

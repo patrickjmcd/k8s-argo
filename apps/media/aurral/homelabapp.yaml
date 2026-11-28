@@ -45,7 +45,7 @@ spec:
     cpuRequest: 100m
     memoryRequest: 384Mi
     cpuLimit: "2"
-    memoryLimit: 2Gi
+    memoryLimit: 1664Mi  # ~2x 14-day peak (802Mi), Nov 2026
   probes:
     type: httpGet
     path: /api/health/live

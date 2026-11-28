@@ -26,7 +26,7 @@ spec:
     cpuRequest: 25m
     memoryRequest: 192Mi
     cpuLimit: "1"
-    memoryLimit: 1Gi
+    memoryLimit: 640Mi  # ~2x 14-day peak (278Mi), Nov 2026
   probes:
     type: httpGet
     path: /ping

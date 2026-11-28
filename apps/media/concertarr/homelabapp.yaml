@@ -11,7 +11,7 @@ spec:
     cpuRequest: 15m
     memoryRequest: 128Mi
     cpuLimit: 500m
-    memoryLimit: 512Mi
+    memoryLimit: 256Mi  # >3x 14-day peak (72Mi), Nov 2026
   probes:
     type: httpGet
     path: /healthz

@@ -67,7 +67,7 @@ spec:
     cpuRequest: 25m
     memoryRequest: 256Mi
     cpuLimit: "1"
-    memoryLimit: 1Gi
+    memoryLimit: 384Mi  # ~2x 14-day peak (129Mi), Nov 2026
   probes:
     liveness:
       enabled: true
