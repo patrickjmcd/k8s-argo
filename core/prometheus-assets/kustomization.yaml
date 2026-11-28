@@ -15,6 +15,7 @@ resources:
   - homelab-storage-rules.yaml
   - nut-ups-rules.yaml
   - adsb-rules.yaml
+  - recyclarr-rules.yaml
   - sonos-rules.yaml
   - macbook-thermal-rules.yaml
   - node-thermal-rules.yaml

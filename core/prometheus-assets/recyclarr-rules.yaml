@@ -1,0 +1,62 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: recyclarr
+  namespace: prometheus
+  labels:
+    release: kube-prometheus-stack   # required: prometheus ruleSelector matches this
+spec:
+  groups:
+    - name: recyclarr
+      rules:
+        # apps/media/recyclarr (server, v9) records each sync in the histogram
+        # recyclarr_sync_job_duration_seconds, labelled by status and trigger.
+        # Its series only appear at a pod's first sync, and increase() doesn't
+        # count a series' first sample, so each count below adds series born in
+        # the window (`x unless x offset W`) to the increase of older ones.
+        - record: recyclarr:sync_jobs:26h
+          expr: >-
+            sum by (recyclarr_sync_job_status) (
+              (recyclarr_sync_job_duration_seconds_count
+                unless recyclarr_sync_job_duration_seconds_count offset 26h)
+              or increase(recyclarr_sync_job_duration_seconds_count[26h])
+            )
+        - alert: RecyclarrSyncFailed
+          expr: >-
+            sum(
+              (recyclarr_sync_job_duration_seconds_count{recyclarr_sync_job_status!="succeeded"}
+                unless recyclarr_sync_job_duration_seconds_count offset 2h)
+              or increase(recyclarr_sync_job_duration_seconds_count{recyclarr_sync_job_status!="succeeded"}[2h])
+            ) > 0.5
+          labels:
+            severity: warning
+          annotations:
+            summary: "Recyclarr sync did not succeed"
+            description: >-
+              A TRaSH Guides sync into Sonarr/Radarr ended with a status other
+              than succeeded in the last 2h. See
+              `kubectl -n media logs deploy/recyclarr` or rerun with
+              `kubectl -n media exec deploy/recyclarr -- recyclarr sync`.
+              Recyclarr 9 fails the sync on unknown trash_ids, so a guide
+              change can cause this.
+        - alert: RecyclarrSyncStale
+          # Scheduled daily at 05:15 America/Chicago (apps/media/recyclarr/settings.yml).
+          expr: >-
+            (sum(recyclarr:sync_jobs:26h{recyclarr_sync_job_status="succeeded"}) or vector(0)) < 0.5
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "No successful Recyclarr sync in 26h"
+            description: >-
+              The daily sync hasn't succeeded. Check the pod
+              (`kubectl -n media get pods -l app.kubernetes.io/name=recyclarr`)
+              and its schedule line at startup (`Sync schedule ... next occurrence`).
+        - alert: RecyclarrDown
+          expr: max_over_time(up{job="recyclarr"}[10m]) == 0 or absent(up{job="recyclarr"})
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Recyclarr server is not being scraped"
+            description: "Prometheus has no healthy target for job recyclarr (media namespace) for 25m."

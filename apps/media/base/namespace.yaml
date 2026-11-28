@@ -5,5 +5,9 @@ metadata:
   name: media
   labels:
     canUseExternalSecrets: "true"
+    # Prometheus only discovers ServiceMonitors in namespaces with this label
+    # (its serviceMonitorNamespaceSelector). Added Nov 2026 for recyclarr; until
+    # then dispatcharr's ServiceMonitor here was silently never scraped.
+    prometheus: enabled
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled

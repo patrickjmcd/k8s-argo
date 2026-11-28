@@ -5,6 +5,7 @@ resources:
   - onepassword.yaml
   - storage.yaml
   - deployment.yaml
+  - metrics.yaml
 configMapGenerator:
   - name: recyclarr-config
     files:

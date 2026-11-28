@@ -1,0 +1,33 @@
+# Prometheus scrapes the management port (7983): /metrics needs no API key.
+# Alerts: core/prometheus-assets/recyclarr-rules.yaml. Dashboard:
+# core/grafana-assets/dashboards/recyclarr.json.
+apiVersion: v1
+kind: Service
+metadata:
+  name: recyclarr-metrics
+  labels:
+    app.kubernetes.io/name: recyclarr
+    app.kubernetes.io/component: metrics
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: recyclarr
+  ports:
+    - name: management
+      port: 7983
+      targetPort: management
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: recyclarr
+spec:
+  jobLabel: app.kubernetes.io/name   # job="recyclarr"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: recyclarr
+      app.kubernetes.io/component: metrics
+  endpoints:
+    - port: management
+      path: /metrics
+      interval: 60s
